@@ -30,6 +30,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # Firebase
+  firebase_core: ^2.27.0
+  firebase_auth: ^4.17.0
+  cloud_firestore: ^4.15.0
+  firebase_storage: ^11.6.0
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # GPS
+  geolocator: ^11.0.0
+  permission_handler: ^11.3.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
