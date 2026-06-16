@@ -12,7 +12,7 @@ class UserModel {
   final bool isActive;
   final DateTime createdAt;
 
-  UserModel({
+  const UserModel({
     required this.uid,
     required this.employeeCode,
     required this.name,
@@ -25,8 +25,15 @@ class UserModel {
     required this.createdAt,
   });
 
+  /// Helper
+  bool get isAdmin => role == 'admin';
+
+  bool get isEmployee => role == 'employee';
+
+  /// Firestore -> Model
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+
     return UserModel(
       uid: doc.id,
       employeeCode: data['employeeCode'] ?? '',
@@ -37,10 +44,13 @@ class UserModel {
       phone: data['phone'] ?? '',
       avatarUrl: data['avatarUrl'] ?? '',
       isActive: data['isActive'] ?? true,
-      createdAt: (data['createdAt'] as Timestamp).toDate(),
+      createdAt: data['createdAt'] != null
+          ? (data['createdAt'] as Timestamp).toDate()
+          : DateTime.now(),
     );
   }
 
+  /// Model -> Firestore
   Map<String, dynamic> toFirestore() {
     return {
       'employeeCode': employeeCode,
@@ -55,25 +65,39 @@ class UserModel {
     };
   }
 
-  // Tiện dụng khi cần update 1 field
+  /// Clone object với dữ liệu mới
   UserModel copyWith({
+    String? employeeCode,
     String? name,
+    String? email,
+    String? role,
+    String? departmentId,
     String? phone,
     String? avatarUrl,
-    String? departmentId,
     bool? isActive,
   }) {
     return UserModel(
       uid: uid,
-      employeeCode: employeeCode,
-      email: email,
-      role: role,
-      createdAt: createdAt,
+      employeeCode: employeeCode ?? this.employeeCode,
       name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      departmentId: departmentId ?? this.departmentId,
       phone: phone ?? this.phone,
       avatarUrl: avatarUrl ?? this.avatarUrl,
-      departmentId: departmentId ?? this.departmentId,
       isActive: isActive ?? this.isActive,
+      createdAt: createdAt,
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserModel('
+        'uid: $uid, '
+        'employeeCode: $employeeCode, '
+        'name: $name, '
+        'email: $email, '
+        'role: $role'
+        ')';
   }
 }

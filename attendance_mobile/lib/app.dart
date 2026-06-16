@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'features/attendance/presentation/gps_test_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Attendance App',
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Attendance App'),
-        ),
-        body: const Center(
-          child: Text('Firebase Connected'),
-        ),
+    return ProviderScope(
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Attendance App',
+        home: const GpsTestScreen(),
       ),
     );
   }
