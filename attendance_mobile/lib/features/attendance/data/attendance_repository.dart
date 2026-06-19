@@ -8,21 +8,36 @@ import '../../../core/constants/app_config.dart';
 import '../../../core/utils/date_helper.dart';
 
 class AttendanceRepository {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GpsService _gpsService = GpsService();
+  final FirebaseFirestore _db =
+      FirebaseFirestore.instance;
 
-  // Đọc cài đặt công ty
-  Future<CompanySettingsModel> getCompanySettings() async {
+  final FirebaseAuth _auth =
+      FirebaseAuth.instance;
+
+  final GpsService _gpsService =
+  GpsService();
+
+  /// Đọc cài đặt công ty
+  Future<CompanySettingsModel>
+  getCompanySettings() async {
     final doc = await _db
         .collection('company_settings')
-        .doc(AppConfig.companySettingsDocId)
+        .doc(
+      AppConfig.companySettingsDocId,
+    )
         .get();
 
-    return CompanySettingsModel.fromFirestore(doc);
+    if (!doc.exists) {
+      throw Exception(
+        'Không tìm thấy cấu hình công ty',
+      );
+    }
+
+    return CompanySettingsModel
+        .fromFirestore(doc);
   }
 
-  // Check In
+  /// Check In
   Future<void> checkIn() async {
     final user = _auth.currentUser;
 
@@ -30,15 +45,13 @@ class AttendanceRepository {
       throw Exception('Chưa đăng nhập');
     }
 
-    // GPS hiện tại
     final position =
-    await _gpsService.getCurrentPosition();
+    await _gpsService
+        .getCurrentPosition();
 
-    // Cài đặt công ty
     final settings =
     await getCompanySettings();
 
-    // Tính khoảng cách
     final distance =
     _gpsService.calculateDistance(
       currentLat: position.latitude,
@@ -47,26 +60,27 @@ class AttendanceRepository {
       companyLng: settings.longitude,
     );
 
-    // Kiểm tra bán kính
     if (!_gpsService.isWithinRadius(
       distance: distance,
       radius: settings.radius,
     )) {
       throw Exception(
         'Bạn đang ở ngoài phạm vi công ty.\n'
-            'Khoảng cách hiện tại: ${distance.toStringAsFixed(0)}m\n'
-            'Bán kính cho phép: ${settings.radius.toStringAsFixed(0)}m',
+            'Khoảng cách hiện tại: '
+            '${distance.toStringAsFixed(0)}m\n'
+            'Bán kính cho phép: '
+            '${settings.radius.toStringAsFixed(0)}m',
       );
     }
 
     final now = DateTime.now();
+
     final today =
     DateHelper.toDateString(now);
 
     final docId =
         '${today}_${user.uid}';
 
-    // Kiểm tra đã Check In chưa
     final existing = await _db
         .collection('attendance')
         .doc(docId)
@@ -78,26 +92,46 @@ class AttendanceRepository {
       );
     }
 
-    // Tính đi muộn
-    final isLate =
-    settings.calculateIsLate(now);
-
-    // Lấy employeeCode
+    /// Lấy user info
     final userDoc = await _db
         .collection('users')
         .doc(user.uid)
         .get();
 
-    final employeeCode =
-        userDoc.data()?['employeeCode'] ?? '';
+    final userData =
+        userDoc.data() ?? {};
 
-    // Lưu Firestore
+    final employeeCode =
+        userData['employeeCode'] ?? '';
+
+    final shiftGroup =
+        userData['shiftGroup'] ?? 'A';
+
+    /// Xác định ca hiện tại
+    final currentShift =
+    settings.getCurrentShift(
+      shiftGroup: shiftGroup,
+      today: now,
+    );
+
+    /// Tính đi muộn
+    final isLate =
+    settings.calculateIsLate(
+      checkInTime: now,
+      shift: currentShift,
+    );
+
     await _db
         .collection('attendance')
         .doc(docId)
         .set({
       'uid': user.uid,
-      'employeeCode': employeeCode,
+
+      'employeeCode':
+      employeeCode,
+
+      'shift':
+      currentShift,
 
       'attendanceDate':
       Timestamp.fromDate(
@@ -121,6 +155,12 @@ class AttendanceRepository {
 
       'distance': distance,
 
+      'checkOutLatitude': null,
+
+      'checkOutLongitude': null,
+
+      'workHours': null,
+
       'isLate': isLate,
 
       'status':
@@ -133,7 +173,7 @@ class AttendanceRepository {
     });
   }
 
-  // Lấy dữ liệu hôm nay
+  /// Lấy attendance hôm nay
   Future<AttendanceModel?>
   getTodayAttendance() async {
     final user = _auth.currentUser;
@@ -159,12 +199,11 @@ class AttendanceRepository {
       return null;
     }
 
-    return AttendanceModel.fromFirestore(
-      doc,
-    );
+    return AttendanceModel
+        .fromFirestore(doc);
   }
 
-  // Check Out
+  /// Check Out
   Future<void> checkOut() async {
     final user = _auth.currentUser;
 
@@ -200,9 +239,9 @@ class AttendanceRepository {
       );
     }
 
-    // GPS hiện tại
     final position =
-    await _gpsService.getCurrentPosition();
+    await _gpsService
+        .getCurrentPosition();
 
     final settings =
     await getCompanySettings();
@@ -221,8 +260,10 @@ class AttendanceRepository {
     )) {
       throw Exception(
         'Bạn đang ở ngoài phạm vi công ty.\n'
-            'Khoảng cách: ${distance.toStringAsFixed(0)}m\n'
-            'Bán kính: ${settings.radius.toStringAsFixed(0)}m',
+            'Khoảng cách hiện tại: '
+            '${distance.toStringAsFixed(0)}m\n'
+            'Bán kính cho phép: '
+            '${settings.radius.toStringAsFixed(0)}m',
       );
     }
 
@@ -255,6 +296,9 @@ class AttendanceRepository {
       'workHours': workHours,
 
       'status': 'completed',
+
+      'updatedAt':
+      Timestamp.fromDate(now),
     });
   }
 }

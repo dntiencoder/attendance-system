@@ -6,6 +6,10 @@ class UserModel {
   final String name;
   final String email;
   final String role;
+
+  // Mới
+  final String shiftGroup; // A | B
+
   final String departmentId;
   final String phone;
   final String avatarUrl;
@@ -18,6 +22,7 @@ class UserModel {
     required this.name,
     required this.email,
     required this.role,
+    required this.shiftGroup,
     this.departmentId = '',
     this.phone = '',
     this.avatarUrl = '',
@@ -25,12 +30,10 @@ class UserModel {
     required this.createdAt,
   });
 
-  /// Helper
   bool get isAdmin => role == 'admin';
 
   bool get isEmployee => role == 'employee';
 
-  /// Firestore -> Model
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
@@ -40,23 +43,31 @@ class UserModel {
       name: data['name'] ?? '',
       email: data['email'] ?? '',
       role: data['role'] ?? 'employee',
+
+      // mới
+      shiftGroup: data['shiftGroup'] ?? 'A',
+
       departmentId: data['departmentId'] ?? '',
       phone: data['phone'] ?? '',
       avatarUrl: data['avatarUrl'] ?? '',
       isActive: data['isActive'] ?? true,
+
       createdAt: data['createdAt'] != null
           ? (data['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
     );
   }
 
-  /// Model -> Firestore
   Map<String, dynamic> toFirestore() {
     return {
       'employeeCode': employeeCode,
       'name': name,
       'email': email,
       'role': role,
+
+      // mới
+      'shiftGroup': shiftGroup,
+
       'departmentId': departmentId,
       'phone': phone,
       'avatarUrl': avatarUrl,
@@ -65,12 +76,12 @@ class UserModel {
     };
   }
 
-  /// Clone object với dữ liệu mới
   UserModel copyWith({
     String? employeeCode,
     String? name,
     String? email,
     String? role,
+    String? shiftGroup,
     String? departmentId,
     String? phone,
     String? avatarUrl,
@@ -82,6 +93,10 @@ class UserModel {
       name: name ?? this.name,
       email: email ?? this.email,
       role: role ?? this.role,
+
+      // mới
+      shiftGroup: shiftGroup ?? this.shiftGroup,
+
       departmentId: departmentId ?? this.departmentId,
       phone: phone ?? this.phone,
       avatarUrl: avatarUrl ?? this.avatarUrl,
@@ -97,7 +112,8 @@ class UserModel {
         'employeeCode: $employeeCode, '
         'name: $name, '
         'email: $email, '
-        'role: $role'
+        'role: $role, '
+        'shiftGroup: $shiftGroup'
         ')';
   }
 }
