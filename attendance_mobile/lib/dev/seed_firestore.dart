@@ -5,7 +5,7 @@ class SeedFirestore {
     final db = FirebaseFirestore.instance;
 
     const adminUid = 'UqyJA2oAr6VzjrOeAUkZRJXRAgh2';
-    const employeeUid = 'QDPeNJaIhZVsNgkw8Bntw7DjjxE3';
+    const employeeUid = '7VtAl9r6rcRgBGLXcVTtUcNn05l2';
 
     final seedCheck =
     await db.collection('dev_metadata').doc('seed').get();
@@ -152,6 +152,7 @@ class SeedFirestore {
         'workHours': null,
 
         'isLate': false,
+        'isEarlyLeave': false,
 
         'status': 'on_time',
 

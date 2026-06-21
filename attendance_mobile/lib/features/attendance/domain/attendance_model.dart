@@ -27,6 +27,7 @@ class AttendanceModel {
   final double? workHours;
 
   final bool isLate;
+  final bool isEarlyLeave;
 
   /// on_time | late | absent
   final String status;
@@ -48,6 +49,7 @@ class AttendanceModel {
     this.checkOutLongitude,
     this.workHours,
     required this.isLate,
+    required this.isEarlyLeave,
     required this.status,
     required this.createdAt,
   });
@@ -116,6 +118,9 @@ class AttendanceModel {
       isLate:
       data['isLate'] ?? false,
 
+      isEarlyLeave:
+      data['isEarlyLeave'] ?? false,
+
       status:
       data['status'] ?? 'on_time',
 
@@ -167,6 +172,7 @@ class AttendanceModel {
       'workHours': workHours,
 
       'isLate': isLate,
+      'isEarlyLeave': isEarlyLeave,
 
       'status': status,
 
@@ -197,6 +203,14 @@ class AttendanceModel {
   bool get hasCheckedOut =>
       checkOut != null;
 
+  bool get isCompleted =>
+      status == 'completed';
+
+  bool get isOnTime =>
+      status == 'on_time';
+
+  bool get isLateStatus =>
+      status == 'late';
   bool get isDayShift =>
       shift == 'day';
 
@@ -215,6 +229,24 @@ class AttendanceModel {
         return '';
     }
   }
+  String get statusLabel {
+    switch (status) {
+      case 'on_time':
+        return 'Đúng giờ';
+
+      case 'late':
+        return 'Đi muộn';
+
+      case 'early_leave':
+        return 'Về sớm';
+
+      case 'completed':
+        return 'Hoàn thành';
+
+      default:
+        return status;
+    }
+  }
 
   AttendanceModel copyWith({
     DateTime? checkOut,
@@ -222,6 +254,7 @@ class AttendanceModel {
     double? checkOutLongitude,
     double? workHours,
     bool? isLate,
+    bool? isEarlyLeave,
     String? status,
     String? shift,
   }) {
@@ -260,6 +293,9 @@ class AttendanceModel {
 
       isLate:
       isLate ?? this.isLate,
+
+      isEarlyLeave:
+      isEarlyLeave ?? this.isEarlyLeave,
 
       status:
       status ?? this.status,

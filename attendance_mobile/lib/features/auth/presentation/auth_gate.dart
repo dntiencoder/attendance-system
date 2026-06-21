@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../data/auth_repository.dart';
 import '../domain/user_model.dart';
-import '../../home/presentation/employee_home_page.dart';
+import '../../home/presentation/home_screen.dart';
 import 'login_page.dart';
 
 class AuthGate extends StatelessWidget {
@@ -46,10 +46,7 @@ class AuthGate extends StatelessWidget {
             if (user == null) {
               return const LoginPage();
             }
-
-            return EmployeeHomePage(
-              user: user,
-            );
+            return const HomeScreen();
           },
         );
       },

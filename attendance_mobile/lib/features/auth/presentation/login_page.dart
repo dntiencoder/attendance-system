@@ -1,201 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/theme/app_colors.dart';
+import '../../../shared/theme/app_spacing.dart';
+import 'auth_provider.dart';
+import 'widgets/login_header.dart';
+import 'widgets/login_form.dart';
 
-import '../data/auth_repository.dart';
-
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final _employeeCodeController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _authRepository = AuthRepository();
-
-  bool _isLoading = false;
-  String _errorMessage = '';
-
-  Future<void> _login() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(authProvider, (prev, next) {
+      if (next.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     });
 
-    try {
-      await _authRepository.login(
-        employeeCode: _employeeCodeController.text,
-        password: _passwordController.text,
-      );
-    } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceFirst(
-          'Exception: ',
-          '',
-        );
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Column(
+        children: [
+          // Header đỏ
+          const LoginHeader(),
 
-  Future<void> _showForgotPasswordDialog() async {
-    final employeeCodeController = TextEditingController();
-
-    await showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Quên mật khẩu'),
-          content: TextField(
-            controller: employeeCodeController,
-            textCapitalization:
-            TextCapitalization.characters,
-            decoration: const InputDecoration(
-              labelText: 'Mã nhân viên',
-              border: OutlineInputBorder(),
+          // Form
+          const Expanded(
+            child: SingleChildScrollView(
+              child: LoginForm(),
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final navigator =
-                Navigator.of(dialogContext);
 
-                final messenger =
-                ScaffoldMessenger.of(context);
-
-                try {
-                  await _authRepository
-                      .sendResetPasswordEmail(
-                    employeeCodeController.text,
-                  );
-
-                  navigator.pop();
-
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Đã gửi email đặt lại mật khẩu',
-                      ),
-                    ),
-                  );
-                } catch (e) {
-                  messenger.showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        e.toString().replaceFirst(
-                          'Exception: ',
-                          '',
-                        ),
-                      ),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Gửi'),
-            ),
-          ],
-        );
-      },
+          // Footer sát đáy
+          _buildFooter(),
+        ],
+      ),
     );
   }
 
-  @override
-  void dispose() {
-    _employeeCodeController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Đăng nhập'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+  Widget _buildFooter() {
+    return SafeArea(
+      top: false,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: AppColors.border),
+          ),
+        ),
         child: Column(
           children: [
-            TextField(
-              controller: _employeeCodeController,
-              textCapitalization:
-              TextCapitalization.characters,
-              textInputAction:
-              TextInputAction.next,
-              decoration: const InputDecoration(
-                labelText: 'Mã nhân viên',
-                border: OutlineInputBorder(),
+            Text(
+              'UMC Việt Nam · Hệ thống chấm công GPS',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              textInputAction:
-              TextInputAction.done,
-              onSubmitted: (_) => _login(),
-              decoration: const InputDecoration(
-                labelText: 'Mật khẩu',
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            if (_errorMessage.isNotEmpty)
-              Text(
-                _errorMessage,
-                style: const TextStyle(
-                  color: Colors.red,
-                ),
-              ),
-
-            const SizedBox(height: 8),
-
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed:
-                _showForgotPasswordDialog,
-                child:
-                const Text('Quên mật khẩu?'),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed:
-                _isLoading ? null : _login,
-                child: _isLoading
-                    ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child:
-                  CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
-                    : const Text(
-                  'Đăng nhập',
-                ),
+            const SizedBox(height: 4),
+            Text(
+              'Phiên bản 1.0.0',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
               ),
             ),
           ],
