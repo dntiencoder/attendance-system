@@ -23,16 +23,17 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF8FAFC),
       body: Center(
         child: Container(
-          width: 420,
-          padding: const EdgeInsets.all(32),
+          width: 450, // Tăng nhẹ độ rộng khung để chứa logo bự cân đối
+          padding: const EdgeInsets.all(36),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey[200]!),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))
+              BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))
             ],
           ),
           child: Form(
@@ -41,25 +42,43 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.lock_person_rounded, size: 64, color: Colors.indigo),
-                const SizedBox(height: 16),
-                const Text(
-                  'HỆ THỐNG ĐĂNG NHẬP ADMIN',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.indigo),
+                // Khối hiển thị LOGO UMC bự, rõ ràng ở chính giữa màn hình Login
+                Column(
+                  children: [
+                    Image.asset(
+                      'assets/logo_umc.jpg', // Tải logo thực tế từ thư mục assets
+                      width: 140,            // Phóng to chiều ngang logo rõ nét
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'UMC ATTENDANCE SYSTEM', 
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFFB91C1C), letterSpacing: 0.5),
+                    ),
+                    const Text(
+                      'Hệ Thống Quản Trị Chấm Công GPS', 
+                      style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 36),
+                const Text(
+                  'ĐĂNG NHẬP HỆ THỐNG',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                ),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: _emailController,
                   validator: (value) {
                     if (value == null || value.isEmpty) return 'Vui lòng nhập tài khoản email';
-                    if (value != 'admin@company.com') return 'Tài khoản admin không tồn tại';
+                    if (value != 'admin@company.com') return 'Tài khoản admin không đúng';
                     return null;
                   },
                   decoration: const InputDecoration(
                     labelText: 'Tài khoản Email',
-                    prefixIcon: Icon(Icons.email_outlined),
-                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email_outlined, color: Color(0xFFB91C1C)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -72,34 +91,29 @@ class _LoginScreenState extends State<LoginScreen> {
                     return null;
                   },
                   decoration: const InputDecoration(
-                    labelText: 'Mật khẩu ',
-                    prefixIcon: Icon(Icons.lock_outline),
-                    border: OutlineInputBorder(),
+                    labelText: 'Mật khẩu',
+                    prefixIcon: Icon(Icons.lock_outline, color: Color(0xFFB91C1C)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
                   ),
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton(
+                const SizedBox(height: 28),
+                ElevatedButton.icon(
                   onPressed: () {
-                    // Trình xác thực Form hoạt động kiểm tra thông tin nhập vào
                     if (_formKey.currentState!.validate()) {
-                      // TODO: Sau này có CSDL Firebase, thay thế đoạn dưới bằng cấu trúc:
-                      // try {
-                      //   await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text, password: _passwordController.text);
-                      // } catch (e) { ... }
-                      
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => const AdminMainDashboard()),
                       );
                     }
                   },
+                  icon: const Icon(Icons.login_rounded),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
+                    backgroundColor: const Color(0xFFB91C1C),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 20),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('ĐĂNG NHẬP HỆ THỐNG', style: TextStyle(fontWeight: FontWeight.bold)),
+                  label: const Text('ĐĂNG NHẬP HỆ THỐNG', style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

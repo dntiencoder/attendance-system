@@ -11,13 +11,16 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hệ Thống Quản Trị Chấm Công',
-      debugShowCheckedModeBanner: false,
+      title: 'Hệ Thống Quản Trị Chấm Công UMC',
+      debugShowCheckedModeBanner: false, 
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFB91C1C),
+          primary: const Color(0xFFB91C1C),
+        ),
         useMaterial3: true,
       ),
-      home: const LoginScreen(), // Vào thẳng màn hình đăng nhập
+      home: const LoginScreen(), 
     );
   }
 }

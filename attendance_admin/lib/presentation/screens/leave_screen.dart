@@ -8,7 +8,6 @@ class LeaveRequestsScreen extends StatefulWidget {
 }
 
 class _LeaveRequestsScreenState extends State<LeaveRequestsScreen> {
-  // Quản lý danh sách đơn nghỉ phép và tương tác thay đổi trạng thái trực tiếp khi Admin bấm nút
   final List<Map<String, String>> _requests = [
     {'name': 'Lê Văn C', 'reason': 'Xin nghỉ ốm đi khám răng định kỳ', 'range': '09/06 đến 10/06', 'status': 'Chờ xử lý'},
   ];
@@ -18,57 +17,55 @@ class _LeaveRequestsScreenState extends State<LeaveRequestsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Phê Duyệt Đơn Xin Nghỉ Phép', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        Row(
+          children: const [
+            Icon(Icons.rate_review_rounded, color: Color(0xFFB91C1C)),
+            SizedBox(width: 8),
+            Text('Phê Duyệt Đơn Xin Nghỉ Phép', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+          ],
+        ),
         const SizedBox(height: 20),
         Expanded(
           child: Card(
+            elevation: 0,
             color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: Color(0xFFE2E8F0))),
             child: ListView(
               children: [
                 DataTable(
-                  headingRowColor: WidgetStateProperty.all(Colors.grey[100]),
+                  headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
                   columns: const [
                     DataColumn(label: Text('Nhân viên', style: TextStyle(fontWeight: FontWeight.bold))),
                     DataColumn(label: Text('Lý do xin nghỉ', style: TextStyle(fontWeight: FontWeight.bold))),
                     DataColumn(label: Text('Khoảng thời gian', style: TextStyle(fontWeight: FontWeight.bold))),
                     DataColumn(label: Text('Trạng thái', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('Thao tác duyệt', style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(label: Text('Quyết định', style: TextStyle(fontWeight: FontWeight.bold))),
                   ],
                   rows: _requests.map((req) {
                     final bool isPending = req['status'] == 'Chờ xử lý';
                     return DataRow(cells: [
-                      DataCell(Text(req['name']!)),
+                      DataCell(Text(req['name']!, style: const TextStyle(fontWeight: FontWeight.w500))),
                       DataCell(Text(req['reason']!)),
                       DataCell(Text(req['range']!)),
                       DataCell(Chip(
-                        label: Text(req['status']!),
+                        label: Text(req['status']!, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: req['status'] == 'Đã duyệt' ? Colors.green : (req['status'] == 'Từ chối' ? Colors.red : Colors.orange))),
                         backgroundColor: req['status'] == 'Đã duyệt' ? const Color(0xFFDCFCE7) : (req['status'] == 'Từ chối' ? const Color(0xFFFEE2E2) : const Color(0xFFFEF9C3)),
                         side: BorderSide.none,
                       )),
                       DataCell(isPending 
                         ? Row(
                             children: [
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() { req['status'] = 'Đã duyệt'; });
-                                  // TODO: Cập nhật Firebase document field 'status' sang 'Approved'
-                                },
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white),
-                                child: const Text('Duyệt'),
+                              IconButton(
+                                icon: const Icon(Icons.check_circle_rounded, color: Colors.green), 
+                                onPressed: () { setState(() { req['status'] = 'Đã duyệt'; }); }
                               ),
-                              const SizedBox(width: 8),
-                              ElevatedButton(
-                                onPressed: () {
-                                  setState(() { req['status'] = 'Từ chối'; });
-                                  // TODO: Cập nhật Firebase field 'status' sang 'Rejected'
-                                },
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-                                child: const Text('Từ chối'),
+                              IconButton(
+                                icon: const Icon(Icons.cancel_rounded, color: Colors.red), 
+                                onPressed: () { setState(() { req['status'] = 'Từ chối'; }); }
                               ),
                             ],
                           )
-                        : const Text('Đã thực hiện xong', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                      ),
+                        : const Text('Đã xử lý xong', style: TextStyle(color: Colors.grey, fontSize: 13))),
                     ]);
                   }).toList(),
                 ),

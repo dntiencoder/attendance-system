@@ -8,7 +8,6 @@ class EmployeeManagementScreen extends StatefulWidget {
 }
 
 class _EmployeeManagementScreenState extends State<EmployeeManagementScreen> {
-  // Bộ lưu trữ danh sách động trong RAM của ứng dụng
   final List<Map<String, String>> _employees = [
     {'id': 'NV001', 'name': 'Nguyễn Văn A', 'email': 'nguyenvana@company.com', 'role': 'Employee'},
     {'id': 'NV002', 'name': 'Trần Thị B', 'email': 'tranthib@company.com', 'role': 'Manager'},
@@ -23,13 +22,13 @@ class _EmployeeManagementScreenState extends State<EmployeeManagementScreen> {
 
     showDialog(
       context: context,
-      barrierDismissible: false, // Ép buộc người dùng phải chọn Lưu hoặc Hủy
+      barrierDismissible: false, 
       builder: (context) {
         return AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.person_add_alt_1_rounded, color: Colors.indigo),
-              SizedBox(width: 10),
+          title: Row(
+            children: const [
+              Icon(Icons.person_add_rounded, color: Color(0xFFB91C1C)),
+              SizedBox(width: 8),
               Text('Thêm Nhân Viên Mới', style: TextStyle(fontWeight: FontWeight.bold)),
             ],
           ),
@@ -40,35 +39,19 @@ class _EmployeeManagementScreenState extends State<EmployeeManagementScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextFormField(
-                    controller: codeController,
-                    validator: (v) => (v == null || v.isEmpty) ? 'Vui lòng điền mã nhân viên' : null,
-                    decoration: const InputDecoration(labelText: 'Mã nhân viên (Ví dụ: NV003)', border: OutlineInputBorder()),
-                  ),
+                  TextFormField(controller: codeController, decoration: const InputDecoration(labelText: 'Mã nhân viên', border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: nameController,
-                    validator: (v) => (v == null || v.isEmpty) ? 'Vui lòng điền họ và tên' : null,
-                    decoration: const InputDecoration(labelText: 'Họ và tên nhân viên', border: OutlineInputBorder()),
-                  ),
+                  TextFormField(controller: nameController, decoration: const InputDecoration(labelText: 'Họ và tên', border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: emailController,
-                    validator: (v) {
-                      if (v == null || v.isEmpty) return 'Vui lòng điền email';
-                      if (!v.contains('@')) return 'Định dạng email không hợp lệ';
-                      return null;
-                    },
-                    decoration: const InputDecoration(labelText: 'Địa chỉ Email', border: OutlineInputBorder()),
-                  ),
+                  TextFormField(controller: emailController, decoration: const InputDecoration(labelText: 'Địa chỉ Email', border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
                     value: selectedRole,
-                    decoration: const InputDecoration(labelText: 'Quyền hạn hệ thống', border: OutlineInputBorder()),
+                    decoration: const InputDecoration(labelText: 'Quyền hạn', border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(8)))),
                     items: const [
-                      DropdownMenuItem(value: 'Employee', child: Text('Nhân viên (Employee)')),
-                      DropdownMenuItem(value: 'Manager', child: Text('Quản lý (Manager)')),
-                      DropdownMenuItem(value: 'Admin', child: Text('Quản trị viên (Admin)')),
+                      DropdownMenuItem(value: 'Employee', child: Text('Employee')),
+                      DropdownMenuItem(value: 'Manager', child: Text('Manager')),
+                      DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                     ],
                     onChanged: (v) { if (v != null) selectedRole = v; },
                   ),
@@ -77,44 +60,19 @@ class _EmployeeManagementScreenState extends State<EmployeeManagementScreen> {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                // Giải phóng bộ nhớ của các Controller trước khi đóng
-                codeController.dispose();
-                nameController.dispose();
-                emailController.dispose();
-                Navigator.pop(context);
-              }, 
-              child: const Text('Hủy bỏ', style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Hủy', style: TextStyle(color: Colors.grey))),
+            ElevatedButton.icon(
               onPressed: () {
                 if (dialogFormKey.currentState!.validate()) {
-                  // Đẩy dữ liệu thật vào danh sách để cập nhật giao diện DataTable
                   setState(() {
-                    _employees.add({
-                      'id': codeController.text.trim().toUpperCase(),
-                      'name': nameController.text.trim(),
-                      'email': emailController.text.trim(),
-                      'role': selectedRole,
-                    });
+                    _employees.add({'id': codeController.text, 'name': nameController.text, 'email': emailController.text, 'role': selectedRole});
                   });
-
-                  // TODO: Sau này nhúng dữ liệu vào Firestore:
-                  // await FirebaseFirestore.instance.collection('users').doc(uid).set({...});
-                  
-                  codeController.dispose();
-                  nameController.dispose();
-                  emailController.dispose();
                   Navigator.pop(context);
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đã cập nhật dữ liệu và lưu nhân viên thành công!')),
-                  );
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
-              child: const Text('Lưu thông tin'),
+              icon: const Icon(Icons.save_rounded),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB91C1C), foregroundColor: Colors.white),
+              label: const Text('Lưu lại'),
             ),
           ],
         );
@@ -130,49 +88,47 @@ class _EmployeeManagementScreenState extends State<EmployeeManagementScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Danh Sách Quản Lý Nhân Viên', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Row(
+              children: const [
+                Icon(Icons.badge_rounded, color: Color(0xFFB91C1C)),
+                SizedBox(width: 8),
+                Text('Danh Sách Hồ Sơ Nhân Sự UMC', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+              ],
+            ),
             ElevatedButton.icon(
-              onPressed: _showAddEmployeeDialog, // Bấm vào sẽ mở Dialog và Form hoạt động thực tế
-              icon: const Icon(Icons.add),
+              onPressed: _showAddEmployeeDialog, 
+              icon: const Icon(Icons.add_circle_outline_rounded),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB91C1C), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
               label: const Text('Thêm Nhân Viên Mới'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo, foregroundColor: Colors.white),
-            )
+            ),
           ],
         ),
         const SizedBox(height: 20),
         Expanded(
           child: Card(
+            elevation: 0,
             color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: Color(0xFFE2E8F0))),
             child: ListView(
               children: [
                 DataTable(
-                  headingRowColor: WidgetStateProperty.all(Colors.grey[100]),
+                  headingRowColor: WidgetStateProperty.all(const Color(0xFFF8FAFC)),
                   columns: const [
                     DataColumn(label: Text('Mã NV', style: TextStyle(fontWeight: FontWeight.bold))),
                     DataColumn(label: Text('Họ Tên', style: TextStyle(fontWeight: FontWeight.bold))),
                     DataColumn(label: Text('Email', style: TextStyle(fontWeight: FontWeight.bold))),
                     DataColumn(label: Text('Quyền hạn', style: TextStyle(fontWeight: FontWeight.bold))),
-                    DataColumn(label: Text('Hành động', style: TextStyle(fontWeight: FontWeight.bold))),
+                    DataColumn(label: Text('Thao tác', style: TextStyle(fontWeight: FontWeight.bold))),
                   ],
                   rows: _employees.map((emp) {
                     return DataRow(cells: [
-                      DataCell(Text(emp['id']!)),
+                      DataCell(Text(emp['id']!, style: const TextStyle(fontWeight: FontWeight.w500))),
                       DataCell(Text(emp['name']!)),
                       DataCell(Text(emp['email']!)),
                       DataCell(Text(emp['role']!)),
-                      DataCell(Row(
-                        children: [
-                          IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () {}),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red), 
-                            onPressed: () {
-                              // Chức năng xóa dòng hoạt động trực tiếp trên giao diện
-                              setState(() {
-                                _employees.remove(emp);
-                              });
-                            },
-                          ),
-                        ],
+                      DataCell(IconButton(
+                        icon: const Icon(Icons.delete_sweep_rounded, color: Colors.red), 
+                        onPressed: () { setState(() { _employees.remove(emp); }); }
                       )),
                     ]);
                   }).toList(),
