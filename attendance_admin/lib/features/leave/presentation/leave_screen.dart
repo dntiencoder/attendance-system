@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class LeaveRequestsScreen extends StatefulWidget {
-  const LeaveRequestsScreen({super.key});
+class LeaveScreen extends StatefulWidget {
+  const LeaveScreen({super.key});
 
   @override
-  State<LeaveRequestsScreen> createState() => _LeaveRequestsScreenState();
+  State<LeaveScreen> createState() => _LeaveScreenState();
 }
 
-class _LeaveRequestsScreenState extends State<LeaveRequestsScreen> {
+class _LeaveScreenState extends State<LeaveScreen> {
   final List<Map<String, String>> _requests = [
     {'name': 'Lê Văn C', 'reason': 'Xin nghỉ ốm đi khám răng định kỳ', 'range': '09/06 đến 10/06', 'status': 'Chờ xử lý'},
   ];
