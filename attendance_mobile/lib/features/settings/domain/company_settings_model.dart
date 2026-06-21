@@ -170,6 +170,36 @@ class CompanySettingsModel {
 
     return checkInTime.isAfter(workStart);
   }
+  bool calculateEarlyLeave({
+    required DateTime checkOutTime,
+    required String shift,
+  }) {
+    final endTime = getShiftEndTime(shift);
+
+    final parts = endTime.split(':');
+    final endHour = int.parse(parts[0]);
+    final endMinute = int.parse(parts[1]);
+
+    DateTime workEnd = DateTime(
+      checkOutTime.year,
+      checkOutTime.month,
+      checkOutTime.day,
+      endHour,
+      endMinute,
+    );
+
+    if (shift == 'night') {
+      // Nếu check-out vào buổi tối (ví dụ 21:00) mà ca đêm kết thúc vào sáng hôm sau (08:00)
+      // thì workEnd phải là ngày hôm sau.
+      if (checkOutTime.hour >= 12 && endHour < 12) {
+        workEnd = workEnd.add(const Duration(days: 1));
+      }
+      // Nếu check-out vào sáng sớm (ví dụ 05:00) và ca đêm kết thúc lúc 08:00 cùng ngày
+      // thì workEnd đã đúng là ngày hiện tại.
+    }
+
+    return checkOutTime.isBefore(workEnd);
+  }
 
   CompanySettingsModel copyWith({
     String? companyName,

@@ -100,6 +100,11 @@ class AttendanceRepository {
 
     final userData =
         userDoc.data() ?? {};
+    if (userData.isEmpty) {
+      throw Exception(
+        'Không tìm thấy thông tin nhân viên',
+      );
+    }
 
     final employeeCode =
         userData['employeeCode'] ?? '';
@@ -280,6 +285,17 @@ class AttendanceRepository {
             .inMinutes /
             60;
 
+// Lấy ca hiện tại
+    final shift =
+        data['shift'] ?? 'day';
+
+// Kiểm tra về sớm
+    final isEarlyLeave =
+    settings.calculateEarlyLeave(
+      checkOutTime: now,
+      shift: shift,
+    );
+
     await _db
         .collection('attendance')
         .doc(docId)
@@ -294,6 +310,8 @@ class AttendanceRepository {
       position.longitude,
 
       'workHours': workHours,
+
+      'isEarlyLeave': isEarlyLeave,
 
       'status': 'completed',
 

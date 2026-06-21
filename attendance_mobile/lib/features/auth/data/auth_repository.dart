@@ -12,37 +12,21 @@ class AuthRepository {
   User? get currentUser => _auth.currentUser;
 
   Future<UserModel> login({
-    required String employeeCode,
+    required String email,
     required String password,
   }) async {
     try {
-      if (employeeCode.trim().isEmpty) {
-        throw Exception('Vui lòng nhập mã nhân viên');
+      if (email.trim().isEmpty) {
+        throw Exception('Vui lòng nhập email');
       }
 
       if (password.trim().isEmpty) {
         throw Exception('Vui lòng nhập mật khẩu');
       }
 
-      final query = await _db
-          .collection('users')
-          .where(
-        'employeeCode',
-        isEqualTo: employeeCode.trim().toUpperCase(),
-      )
-          .limit(1)
-          .get();
-
-      if (query.docs.isEmpty) {
-        throw Exception('Mã nhân viên không tồn tại');
-      }
-
-      final data = query.docs.first.data();
-
-      final email = data['email'] as String;
-
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: email,
+      final credential =
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
         password: password.trim(),
       );
 
@@ -80,7 +64,7 @@ class AuthRepository {
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case 'invalid-credential':
-          throw Exception('Sai mã nhân viên hoặc mật khẩu');
+          throw Exception('Sai email hoặc mật khẩu');
 
         case 'wrong-password':
           throw Exception('Sai mật khẩu');
@@ -127,26 +111,10 @@ class AuthRepository {
   }
 
   Future<void> sendResetPasswordEmail(
-      String employeeCode,
+      String email,
       ) async {
-    final query = await _db
-        .collection('users')
-        .where(
-      'employeeCode',
-      isEqualTo: employeeCode.trim().toUpperCase(),
-    )
-        .limit(1)
-        .get();
-
-    if (query.docs.isEmpty) {
-      throw Exception('Mã nhân viên không tồn tại');
-    }
-
-    final email =
-    query.docs.first.data()['email'] as String;
-
     await _auth.sendPasswordResetEmail(
-      email: email,
+      email: email.trim(),
     );
   }
 
