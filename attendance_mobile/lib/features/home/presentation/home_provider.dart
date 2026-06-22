@@ -8,6 +8,7 @@ import '../../attendance/data/attendance_repository.dart';
 // ===== STATE =====
 class HomeState {
   final UserModel? user;
+  final String? departmentName; // ← thêm
   final AttendanceModel? todayAttendance;
   final String selectedShift; // 'day' | 'night'
   final int monthlyTotal;
@@ -20,6 +21,7 @@ class HomeState {
 
   HomeState({
     this.user,
+    this.departmentName, // ← thêm
     this.todayAttendance,
     this.selectedShift = 'day',
     this.monthlyTotal = 0,
@@ -33,6 +35,7 @@ class HomeState {
 
   HomeState copyWith({
     UserModel? user,
+    String? departmentName, // ← thêm
     AttendanceModel? todayAttendance,
     String? selectedShift,
     int? monthlyTotal,
@@ -45,6 +48,7 @@ class HomeState {
   }) {
     return HomeState(
       user: user ?? this.user,
+      departmentName: departmentName ?? this.departmentName, // ← thêm
       todayAttendance: todayAttendance ?? this.todayAttendance,
       selectedShift: selectedShift ?? this.selectedShift,
       monthlyTotal: monthlyTotal ?? this.monthlyTotal,
@@ -77,9 +81,31 @@ class HomeNotifier extends StateNotifier<HomeState> {
         _loadMonthlyStats(),
         _loadRecentAttendance(),
       ]);
+
+      // Sau khi load user và attendance, tự động xác định ca nếu chưa check-in
+      if (state.todayAttendance == null) {
+        await _determineAutoShift();
+      }
+
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  Future<void> _determineAutoShift() async {
+    final user = state.user;
+    if (user == null) return;
+
+    try {
+      final settings = await _attendanceRepo.getCompanySettings();
+      final currentShift = settings.getCurrentShift(
+        shiftGroup: user.shiftGroup,
+        today: DateTime.now(),
+      );
+      state = state.copyWith(selectedShift: currentShift);
+    } catch (e) {
+      // Nếu không lấy được settings, giữ mặc định là 'day'
     }
   }
 
@@ -88,7 +114,21 @@ class HomeNotifier extends StateNotifier<HomeState> {
     if (uid == null) return;
     final doc = await _db.collection('users').doc(uid).get();
     if (doc.exists) {
-      state = state.copyWith(user: UserModel.fromFirestore(doc));
+      final user = UserModel.fromFirestore(doc);
+      state = state.copyWith(user: user);
+
+      // Tải tên phòng ban
+      if (user.departmentId.isNotEmpty) {
+        final depDoc = await _db
+            .collection('departments')
+            .doc(user.departmentId)
+            .get();
+        if (depDoc.exists) {
+          state = state.copyWith(
+            departmentName: depDoc.data()?['name'],
+          );
+        }
+      }
     }
   }
 

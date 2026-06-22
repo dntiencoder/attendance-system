@@ -208,6 +208,22 @@ class AttendanceRepository {
         .fromFirestore(doc);
   }
 
+  /// Lấy tất cả lịch sử chấm công của user
+  Future<List<AttendanceModel>> getAllAttendance() async {
+    final user = _auth.currentUser;
+    if (user == null) return [];
+
+    final snapshot = await _db
+        .collection('attendance')
+        .where('uid', isEqualTo: user.uid)
+        .orderBy('attendanceDate', descending: true)
+        .get();
+
+    return snapshot.docs
+        .map((doc) => AttendanceModel.fromFirestore(doc))
+        .toList();
+  }
+
   /// Check Out
   Future<void> checkOut() async {
     final user = _auth.currentUser;
