@@ -1,0 +1,38 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../domain/employee_model.dart';
+
+class EmployeeRepository {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  // Lấy danh sách nhân viên realtime
+  Stream<List<EmployeeModel>> getEmployees() {
+    return _db.collection('users')
+        .where('role', isEqualTo: 'employee') // Mobile uses 'employee'
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => EmployeeModel.fromFirestore(doc))
+          .toList();
+    });
+  }
+
+  // Thêm nhân viên mới
+  Future<void> addEmployee(EmployeeModel employee) async {
+    await _db.collection('users').add(employee.toFirestore());
+  }
+
+  // Cập nhật nhân viên
+  Future<void> updateEmployee(EmployeeModel employee) async {
+    await _db.collection('users').doc(employee.id).update(employee.toFirestore());
+  }
+
+  // Xóa nhân viên
+  Future<void> deleteEmployee(String id) async {
+    await _db.collection('users').doc(id).delete();
+  }
+
+  // Cập nhật trạng thái hoạt động
+  Future<void> toggleStatus(String id, bool currentStatus) async {
+    await _db.collection('users').doc(id).update({'isActive': !currentStatus});
+  }
+}
