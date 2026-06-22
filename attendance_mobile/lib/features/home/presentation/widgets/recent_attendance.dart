@@ -35,7 +35,7 @@ class RecentAttendance extends StatelessWidget {
           )
               : Column(
             children: records.asMap().entries.map((entry) {
-              return _AttendanceRow(
+              return AttendanceRowContent(
                 record: entry.value,
                 isLast: entry.key == records.length - 1,
               );
@@ -47,11 +47,11 @@ class RecentAttendance extends StatelessWidget {
   }
 }
 
-class _AttendanceRow extends StatelessWidget {
+class AttendanceRowContent extends StatelessWidget {
   final AttendanceModel record;
   final bool isLast;
 
-  const _AttendanceRow({required this.record, required this.isLast});
+  const AttendanceRowContent({super.key, required this.record, required this.isLast});
 
   @override
   Widget build(BuildContext context) {

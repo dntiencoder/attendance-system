@@ -41,8 +41,7 @@ class CheckinCard extends StatelessWidget {
           ShiftSelector(
             selectedShift:
             selectedShift,
-            enabled:
-            !hasCheckedIn,
+            enabled: false, // Luôn khóa, ca được tự động xác định
             onShiftChanged:
             onShiftChanged,
           ),

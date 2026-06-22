@@ -20,7 +20,7 @@ class ShiftSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Chọn ca làm việc',
+          'Ca làm việc tuần này',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w500,
