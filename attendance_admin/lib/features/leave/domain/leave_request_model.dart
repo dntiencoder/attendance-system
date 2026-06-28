@@ -56,4 +56,15 @@ class LeaveRequestModel {
           : null,
     );
   }
+
+  // Tính số ngày nghỉ
+  int get totalDays {
+    if (startDate == null || endDate == null) return 0;
+    return endDate!.difference(startDate!).inDays + 1;
+  }
+
+  // Kiểm tra trạng thái
+  bool get isPending => status == 'pending';
+  bool get isApproved => status == 'approved';
+  bool get isRejected => status == 'rejected';
 }
