@@ -8,26 +8,29 @@ import '../../attendance/data/attendance_repository.dart';
 // ===== STATE =====
 class HomeState {
   final UserModel? user;
-  final String? departmentName; // ← thêm
+  final String? departmentName;
   final AttendanceModel? todayAttendance;
   final String selectedShift; // 'day' | 'night'
-  final int monthlyTotal;
+  
+  // Standardized field names to match business logic
+  final int monthlyOnTime;
   final int monthlyEarly;
   final int monthlyLate;
-  final int monthlyLeave;
+  final int monthlyAbsent;
+  
   final List<AttendanceModel> recentAttendance;
   final bool isLoading;
   final String? error;
 
   HomeState({
     this.user,
-    this.departmentName, // ← thêm
+    this.departmentName,
     this.todayAttendance,
     this.selectedShift = 'day',
-    this.monthlyTotal = 0,
+    this.monthlyOnTime = 0,
     this.monthlyEarly = 0,
     this.monthlyLate = 0,
-    this.monthlyLeave = 0,
+    this.monthlyAbsent = 0,
     this.recentAttendance = const [],
     this.isLoading = false,
     this.error,
@@ -35,26 +38,26 @@ class HomeState {
 
   HomeState copyWith({
     UserModel? user,
-    String? departmentName, // ← thêm
+    String? departmentName,
     AttendanceModel? todayAttendance,
     String? selectedShift,
-    int? monthlyTotal,
+    int? monthlyOnTime,
     int? monthlyEarly,
     int? monthlyLate,
-    int? monthlyLeave,
+    int? monthlyAbsent,
     List<AttendanceModel>? recentAttendance,
     bool? isLoading,
     String? error,
   }) {
     return HomeState(
       user: user ?? this.user,
-      departmentName: departmentName ?? this.departmentName, // ← thêm
+      departmentName: departmentName ?? this.departmentName,
       todayAttendance: todayAttendance ?? this.todayAttendance,
       selectedShift: selectedShift ?? this.selectedShift,
-      monthlyTotal: monthlyTotal ?? this.monthlyTotal,
+      monthlyOnTime: monthlyOnTime ?? this.monthlyOnTime,
       monthlyEarly: monthlyEarly ?? this.monthlyEarly,
       monthlyLate: monthlyLate ?? this.monthlyLate,
-      monthlyLeave: monthlyLeave ?? this.monthlyLeave,
+      monthlyAbsent: monthlyAbsent ?? this.monthlyAbsent,
       recentAttendance: recentAttendance ?? this.recentAttendance,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -163,7 +166,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
         .map((doc) => AttendanceModel.fromFirestore(doc))
         .toList();
 
-    // Lấy số ngày nghỉ
+    // Lấy số ngày nghỉ (giả lập hoặc từ approved leave requests)
     final leaveSnapshot = await _db
         .collection('leave_requests')
         .where('uid', isEqualTo: uid)
@@ -171,10 +174,10 @@ class HomeNotifier extends StateNotifier<HomeState> {
         .get();
 
     state = state.copyWith(
-      monthlyTotal: records.length,
+      monthlyOnTime: records.where((r) => !r.isLate && !r.isEarlyLeave && r.hasCheckedOut).length,
       monthlyEarly: records.where((r) => r.isEarlyLeave).length,
       monthlyLate: records.where((r) => r.isLate).length,
-      monthlyLeave: leaveSnapshot.docs.length,
+      monthlyAbsent: leaveSnapshot.docs.length,
     );
   }
 

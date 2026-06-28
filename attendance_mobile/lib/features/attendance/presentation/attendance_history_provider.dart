@@ -32,10 +32,10 @@ class AttendanceHistoryState {
     }).toList();
   }
 
-  // Thống kê
-  int get totalDays  => records.where((r) => r.checkIn != null).length;
-  int get earlyDays  => records.where((r) => !r.isLate && r.checkIn != null).length;
-  int get lateDays   => records.where((r) => r.isLate).length;
+  // Thống kê - Luôn đảm bảo không null
+  int get onTimeDays => records.where((r) => r.checkIn != null && !r.isLate && !r.isEarlyLeave && r.hasCheckedOut).length;
+  int get earlyLeaveDays => records.where((r) => r.isEarlyLeave).length;
+  int get lateDays => records.where((r) => r.isLate).length;
   int get absentDays => records.where((r) => r.checkIn == null).length;
 
   AttendanceHistoryState copyWith({
@@ -86,11 +86,47 @@ class AttendanceHistoryNotifier
           .orderBy('attendanceDate', descending: true)
           .get();
 
-      final records = snapshot.docs
+      final List<AttendanceModel> records = snapshot.docs
           .map((doc) => AttendanceModel.fromFirestore(doc))
           .toList();
 
-      state = state.copyWith(records: records, isLoading: false);
+      // Logic Tự động ghi nhận Vắng mặt (Absent Generation)
+      final List<AttendanceModel> allDaysRecords = [];
+      final now = DateTime.now();
+      final lastDayToFill = (month.year == now.year && month.month == now.month)
+          ? now.day
+          : end.day;
+
+      for (int day = 1; day <= lastDayToFill; day++) {
+        final date = DateTime(month.year, month.month, day);
+        
+        // Tìm xem ngày này đã có record chưa
+        final existing = records.firstWhere(
+          (r) => r.attendanceDate.day == day && 
+                 r.attendanceDate.month == month.month && 
+                 r.attendanceDate.year == month.year,
+          orElse: () => AttendanceModel(
+            id: 'virtual_$day',
+            uid: uid,
+            employeeCode: '', 
+            shift: '',
+            attendanceDate: date,
+            latitude: 0,
+            longitude: 0,
+            distance: 0,
+            isLate: false,
+            isEarlyLeave: false,
+            status: 'absent',
+            createdAt: date,
+          ),
+        );
+        allDaysRecords.add(existing);
+      }
+
+      // Sắp xếp lại từ mới nhất đến cũ nhất
+      allDaysRecords.sort((a, b) => b.attendanceDate.compareTo(a.attendanceDate));
+
+      state = state.copyWith(records: allDaysRecords, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

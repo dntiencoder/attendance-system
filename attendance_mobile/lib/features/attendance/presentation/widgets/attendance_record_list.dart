@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../features/attendance/domain/attendance_model.dart';
 import '../../../../core/utils/date_helper.dart';
 import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/widgets/attendance_status_badges.dart';
+import '../../../../shared/widgets/shift_chip.dart';
 
 class AttendanceRecordList extends StatelessWidget {
   final List<AttendanceModel> records;
@@ -90,7 +92,7 @@ class _RecordCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      _weekdayName(record.attendanceDate),
+                      '${DateHelper.getWeekdayName(record.attendanceDate)}, ${DateHelper.toDisplayDate(record.attendanceDate)}',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -98,7 +100,7 @@ class _RecordCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    _ShiftChip(shift: record.shift),
+                    ShiftChip(shift: record.shift),
                   ],
                 ),
                 const SizedBox(height: 3),
@@ -132,81 +134,12 @@ class _RecordCard extends StatelessWidget {
               ],
             ),
           ),
-          _StatusBadge(record: record),
+          AttendanceStatusBadges(attendance: record),
         ],
       ),
     );
   }
 
-  String _weekdayName(DateTime date) {
-    const days = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật'];
-    return '${days[date.weekday - 1]}, ${DateHelper.toDisplayDate(date)}';
-  }
-
   String _timeOrDash(DateTime? dt) =>
       dt != null ? DateHelper.toTimeString(dt) : '--:--';
-}
-
-class _ShiftChip extends StatelessWidget {
-  final String shift;
-  const _ShiftChip({required this.shift});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDay = shift == 'day';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-      decoration: BoxDecoration(
-        color: isDay ? const Color(0xFFFFF4F4) : const Color(0xFFE6F1FB),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        isDay ? 'Ngày' : 'Đêm',
-        style: TextStyle(
-          fontSize: 10,
-          color: isDay ? AppColors.primary : const Color(0xFF185FA5),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final AttendanceModel record;
-  const _StatusBadge({required this.record});
-
-  @override
-  Widget build(BuildContext context) {
-    if (record.checkIn == null) {
-      return _badge('Vắng', const Color(0xFFFCEBEB), const Color(0xFF791F1F));
-    }
-    if (record.isLate && record.isEarlyLeave) {
-      return _badge('Muộn & sớm', const Color(0xFFFCEBEB), AppColors.error);
-    }
-    if (record.isLate) {
-      return _badge('Đi muộn', const Color(0xFFFAEEDA), const Color(0xFF633806));
-    }
-    if (record.isEarlyLeave) {
-      return _badge('Về sớm', const Color(0xFFE6F1FB), const Color(0xFF0C447C));
-    }
-    return _badge('Đúng giờ', const Color(0xFFEAF3DE), const Color(0xFF27500A));
-  }
-
-  Widget _badge(String text, Color bg, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          color: textColor,
-        ),
-      ),
-    );
-  }
 }

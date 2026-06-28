@@ -24,4 +24,20 @@ class DateHelper {
   // Lấy cuối ngày (23:59:59)
   static DateTime endOfDay(DateTime date) =>
       DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+  // Lấy tên Thứ bằng tiếng Việt
+  static String getWeekdayName(DateTime date) {
+    const days = [
+      'Chủ Nhật',
+      'Thứ Hai',
+      'Thứ Ba',
+      'Thứ Tư',
+      'Thứ Năm',
+      'Thứ Sáu',
+      'Thứ Bảy',
+    ];
+    // DateTime.weekday: 1 (Mon) -> 7 (Sun)
+    // Mảng của mình: 0 (Sun) -> 6 (Sat)
+    return days[date.weekday % 7];
+  }
 }

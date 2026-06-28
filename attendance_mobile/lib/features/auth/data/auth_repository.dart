@@ -111,11 +111,36 @@ class AuthRepository {
   }
 
   Future<void> sendResetPasswordEmail(
-      String email,
-      ) async {
+    String email,
+  ) async {
     await _auth.sendPasswordResetEmail(
       email: email.trim(),
     );
+  }
+
+  Future<void> reauthenticate(String currentPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Chưa đăng nhập');
+    final email = user.email;
+    if (email == null) throw Exception('Email không tìm thấy');
+
+    final credential = EmailAuthProvider.credential(
+      email: email,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Chưa đăng nhập');
+    await user.updatePassword(newPassword);
+  }
+
+  Future<void> updatePhoneNumber(String phone) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Chưa đăng nhập');
+    await _db.collection('users').doc(user.uid).update({'phone': phone});
   }
 
   Future<void> logout() async {

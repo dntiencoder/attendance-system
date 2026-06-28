@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/app_colors.dart';
-import '../../../shared/theme/app_spacing.dart';
 import '../../home/presentation/home_provider.dart';
 import 'widgets/profile_header_card.dart';
 import 'widgets/profile_info_list.dart';
@@ -22,36 +21,30 @@ class ProfileScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Hồ sơ cá nhân',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+      backgroundColor: AppColors.backgroundTertiary, // Use tertiary bg from prototype
+      body: Column(
+        children: [
+          ProfileHeaderCard(
+            user: user,
+            departmentName: homeState.departmentName ?? '',
           ),
-        ),
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          children: [
-            ProfileHeaderCard(user: user),
-            const SizedBox(height: AppSpacing.md),
-            ProfileInfoList(
-              user: user,
-              departmentName: homeState.departmentName ?? '',
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  ProfileInfoList(
+                    user: user,
+                    departmentName: homeState.departmentName ?? '',
+                  ),
+                  const SizedBox(height: 10),
+                  const LogoutButton(),
+                  const SizedBox(height: 100),
+                ],
+              ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-
-            const LogoutButton(),
-            const SizedBox(height: 100),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

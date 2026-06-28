@@ -4,6 +4,8 @@ import '../../../../core/utils/date_helper.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/section_title.dart';
+import '../../../../shared/widgets/attendance_status_badges.dart';
+import '../../../../shared/widgets/shift_chip.dart';
 
 class RecentAttendance extends StatelessWidget {
   final List<AttendanceModel> records;
@@ -55,8 +57,7 @@ class AttendanceRowContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final weekdays = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật'];
-    final weekday = weekdays[record.attendanceDate.weekday - 1];
+    final weekday = DateHelper.getWeekdayName(record.attendanceDate);
     final dateStr = '$weekday, ${DateHelper.toDisplayDate(record.attendanceDate)}';
     final checkInStr = record.checkIn != null
         ? DateHelper.toTimeString(record.checkIn!) : '--:--';
@@ -90,7 +91,7 @@ class AttendanceRowContent extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    _ShiftChip(shift: record.shift),
+                    ShiftChip(shift: record.shift),
                   ],
                 ),
                 const SizedBox(height: 2),
@@ -109,84 +110,10 @@ class AttendanceRowContent extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: AppColors.textPrimary),
               ),
               const SizedBox(height: 3),
-              _StatusBadge(record: record),
+              AttendanceStatusBadges(attendance: record),
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ShiftChip extends StatelessWidget {
-  final String shift;
-  const _ShiftChip({required this.shift});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDay = shift == 'day';
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-      decoration: BoxDecoration(
-        color: isDay ? const Color(0xFFFFF4F4) : const Color(0xFFE6F1FB),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        isDay ? 'Ngày' : 'Đêm',
-        style: TextStyle(
-          fontSize: 10,
-          color: isDay ? AppColors.primary : const Color(0xFF185FA5),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  final AttendanceModel record;
-  const _StatusBadge({required this.record});
-
-  @override
-  Widget build(BuildContext context) {
-    final badges = <Widget>[];
-
-    if (record.isLate) {
-      badges.add(_badge('Đi muộn', const Color(0xFFFAEEDA), const Color(0xFF633806)));
-    }
-    if (record.isEarlyLeave) {
-      badges.add(_badge('Về sớm', const Color(0xFFFFE6E6), AppColors.error));
-    }
-
-    if (badges.isEmpty) {
-      if (record.hasCheckedOut) {
-        badges.add(_badge('Hoàn thành', const Color(0xFFE6F1FB), const Color(0xFF0C447C)));
-      } else {
-        badges.add(_badge('Đúng giờ', const Color(0xFFEAF3DE), AppColors.success));
-      }
-    }
-
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      alignment: WrapAlignment.end,
-      children: badges,
-    );
-  }
-
-  Widget _badge(String text, Color bg, Color textColor) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 10,
-          color: textColor,
-          fontWeight: FontWeight.w500,
-        ),
       ),
     );
   }
