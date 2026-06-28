@@ -14,6 +14,8 @@ import 'widgets/home_skeleton.dart';
 
 import '../../../shared/utils/snackbar_utils.dart';
 
+import '../../../core/utils/work_schedule_helper.dart';
+
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -21,6 +23,9 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final homeState = ref.watch(homeProvider);
     final attendanceState = ref.watch(attendanceProvider);
+
+    // Kiểm tra xem hôm nay có phải ngày nghỉ bắt buộc không
+    final isOffDay = WorkScheduleHelper.isOffDay(DateTime.now());
 
     ref.listen<AttendanceState>(
       attendanceProvider,
@@ -71,6 +76,7 @@ class HomeScreen extends ConsumerWidget {
                       todayAttendance: attendanceState.todayAttendance,
                       selectedShift: homeState.selectedShift,
                       isLoading: attendanceState.isLoading,
+                      isOffDay: isOffDay, // ← Thêm tham số này
                       onCheckIn: () async {
                         await ref.read(attendanceProvider.notifier).checkIn();
                       },

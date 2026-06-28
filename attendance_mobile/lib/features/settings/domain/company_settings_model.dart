@@ -112,24 +112,30 @@ class CompanySettingsModel {
     required String shiftGroup,
     required DateTime today,
   }) {
-    final daysPassed =
-        today.difference(rotationStartDate).inDays;
+    // 1. Chuẩn hóa ngày về 00:00:00
+    final normalizedStart = DateTime(rotationStartDate.year, rotationStartDate.month, rotationStartDate.day);
+    final normalizedToday = DateTime(today.year, today.month, today.day);
+    
+    // 2. Tính số ngày đã trôi qua
+    final daysPassed = normalizedToday.difference(normalizedStart).inDays;
+    
+    // 3. Logic 2 tuần (14 ngày) đổi 1 lần:
+    // rotationIndex: cho biết đang ở khối 14 ngày thứ mấy
+    // index 0 (ngày 0-13): Khối 1
+    // index 1 (ngày 14-27): Khối 2
+    final rotationIndex = (daysPassed / 14).floor();
 
-    final rotationIndex =
-        daysPassed ~/ rotationDays;
+    // 4. Xác định trạng thái lật ca (Toggle)
+    final isFlipped = rotationIndex % 2 != 0;
 
-    final isEvenRotation =
-        rotationIndex % 2 == 0;
-
-    if (shiftGroup == 'A') {
-      return isEvenRotation
-          ? 'night'
-          : 'day';
+    // 5. Áp dụng quy tắc (Theo yêu cầu: Tuần này/trước (Khối 2) B làm Đêm)
+    // Khối 1 (0-13): B làm Ngày, A làm Đêm
+    // Khối 2 (14-27): B làm Đêm, A làm Ngày
+    if (shiftGroup == 'B') {
+      return isFlipped ? 'night' : 'day';
+    } else {
+      return isFlipped ? 'day' : 'night';
     }
-
-    return isEvenRotation
-        ? 'day'
-        : 'night';
   }
 
   /// Lấy giờ bắt đầu ca
@@ -189,13 +195,17 @@ class CompanySettingsModel {
     );
 
     if (shift == 'night') {
+      // Nếu check-out vào ban ngày (ví dụ 10:00) sau khi ca đêm kết thúc (08:00)
+      // thì chắc chắn không phải về sớm.
+      if (checkOutTime.hour >= 8 && checkOutTime.hour < 18) {
+        return false;
+      }
+
       // Nếu check-out vào buổi tối (ví dụ 21:00) mà ca đêm kết thúc vào sáng hôm sau (08:00)
       // thì workEnd phải là ngày hôm sau.
       if (checkOutTime.hour >= 12 && endHour < 12) {
         workEnd = workEnd.add(const Duration(days: 1));
       }
-      // Nếu check-out vào sáng sớm (ví dụ 05:00) và ca đêm kết thúc lúc 08:00 cùng ngày
-      // thì workEnd đã đúng là ngày hiện tại.
     }
 
     return checkOutTime.isBefore(workEnd);

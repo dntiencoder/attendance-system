@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
 import '../../../auth/domain/user_model.dart';
 import '../../../auth/data/auth_repository.dart';
+import '../../../home/presentation/home_provider.dart';
 
-class ProfileInfoList extends StatefulWidget {
+class ProfileInfoList extends ConsumerStatefulWidget {
   final UserModel user;
   final String departmentName;
 
@@ -16,10 +18,10 @@ class ProfileInfoList extends StatefulWidget {
   });
 
   @override
-  State<ProfileInfoList> createState() => _ProfileInfoListState();
+  ConsumerState<ProfileInfoList> createState() => _ProfileInfoListState();
 }
 
-class _ProfileInfoListState extends State<ProfileInfoList> {
+class _ProfileInfoListState extends ConsumerState<ProfileInfoList> {
   final _phoneController = TextEditingController();
 
   @override
@@ -53,6 +55,10 @@ class _ProfileInfoListState extends State<ProfileInfoList> {
               if (newPhone.isNotEmpty) {
                 try {
                   await AuthRepository().updatePhoneNumber(newPhone);
+                  
+                  // Sau khi update Firestore thành công, gọi refresh homeProvider để cập nhật UI
+                  ref.read(homeProvider.notifier).refresh();
+
                   if (mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
