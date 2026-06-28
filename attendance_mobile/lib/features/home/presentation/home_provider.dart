@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../attendance/domain/attendance_model.dart';
 import '../../auth/domain/user_model.dart';
 import '../../attendance/data/attendance_repository.dart';
+import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
 
 // ===== STATE =====
 class HomeState {
@@ -166,18 +167,27 @@ class HomeNotifier extends StateNotifier<HomeState> {
         .map((doc) => AttendanceModel.fromFirestore(doc))
         .toList();
 
-    // Lấy số ngày nghỉ (giả lập hoặc từ approved leave requests)
-    final leaveSnapshot = await _db
-        .collection('leave_requests')
-        .where('uid', isEqualTo: uid)
-        .where('status', isEqualTo: 'approved')
-        .get();
+    final attendanceDates = records
+        .where((r) => r.checkIn != null)
+        .map((r) => r.attendanceDate)
+        .toList();
+
+    // Ngày vắng = ngày làm việc bình thường không có attendance (sử dụng Helper mới)
+    final absentDays = WorkScheduleHelper.countAbsentDays(
+      month: now,
+      attendanceDates: attendanceDates,
+    );
+
+    // Đi làm vào ngày thường (không tính tăng ca vào tổng công)
+    final onTimeDays = records.where((r) => 
+        WorkScheduleHelper.isMandatoryWorkDay(r.attendanceDate) &&
+        r.checkIn != null && !r.isLate && !r.isEarlyLeave && r.hasCheckedOut).length;
 
     state = state.copyWith(
-      monthlyOnTime: records.where((r) => !r.isLate && !r.isEarlyLeave && r.hasCheckedOut).length,
+      monthlyOnTime: onTimeDays,
       monthlyEarly: records.where((r) => r.isEarlyLeave).length,
       monthlyLate: records.where((r) => r.isLate).length,
-      monthlyAbsent: leaveSnapshot.docs.length,
+      monthlyAbsent: absentDays,
     );
   }
 

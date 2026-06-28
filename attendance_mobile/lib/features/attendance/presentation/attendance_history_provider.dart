@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/attendance_model.dart';
+import '../../settings/domain/company_settings_model.dart';
+import '../../../core/constants/app_config.dart';
+import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
 
 class AttendanceHistoryState {
   final DateTime selectedMonth;
@@ -97,6 +100,14 @@ class AttendanceHistoryNotifier
           ? now.day
           : end.day;
 
+      // Lấy cấu hình công ty để xác định ca cho các ngày vắng
+      final settingsDoc = await _db.collection('company_settings').doc(AppConfig.companySettingsDocId).get();
+      final settings = CompanySettingsModel.fromFirestore(settingsDoc);
+      
+      // Lấy nhóm ca của user
+      final userDoc = await _db.collection('users').doc(uid).get();
+      final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
+
       for (int day = 1; day <= lastDayToFill; day++) {
         final date = DateTime(month.year, month.month, day);
         
@@ -109,7 +120,7 @@ class AttendanceHistoryNotifier
             id: 'virtual_$day',
             uid: uid,
             employeeCode: '', 
-            shift: '',
+            shift: settings.getCurrentShift(shiftGroup: shiftGroup, today: date),
             attendanceDate: date,
             latitude: 0,
             longitude: 0,
@@ -120,7 +131,17 @@ class AttendanceHistoryNotifier
             createdAt: date,
           ),
         );
-        allDaysRecords.add(existing);
+
+        // NẾU LÀ RECORD VIRTUAL (không đi làm), 
+        // CHỈ ADD VÀO LIST NẾU ĐÓ LÀ NGÀY BẮT BUỘC ĐI LÀM (Work Day)
+        if (existing.id.startsWith('virtual_')) {
+           if (WorkScheduleHelper.isMandatoryWorkDay(date)) {
+             allDaysRecords.add(existing);
+           }
+        } else {
+          // Record thật (đã chấm công hoặc tăng ca) thì luôn add
+          allDaysRecords.add(existing);
+        }
       }
 
       // Sắp xếp lại từ mới nhất đến cũ nhất
