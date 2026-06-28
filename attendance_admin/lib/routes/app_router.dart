@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,7 +7,6 @@ import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/employee/presentation/employee_screen.dart';
 import '../features/attendance/presentation/attendance_screen.dart';
 import '../features/leave/presentation/leave_screen.dart';
-import '../features/department/presentation/department_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -45,10 +43,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/leave',
             builder: (context, state) => const LeaveScreen(),
-          ),
-          GoRoute(
-            path: '/departments',
-            builder: (context, state) => const DepartmentScreen(),
           ),
           GoRoute(
             path: '/settings',

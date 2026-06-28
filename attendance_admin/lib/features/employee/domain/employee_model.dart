@@ -7,7 +7,7 @@ class EmployeeModel {
   final String email;
   final String role;
   final String shiftGroup;
-  final String departmentId;
+  final String department; // Đổi từ departmentId sang tên phòng ban trực tiếp
   final String phone;
   final String avatarUrl;
   final bool isActive;
@@ -20,7 +20,7 @@ class EmployeeModel {
     required this.email,
     required this.role,
     this.shiftGroup = 'A',
-    this.departmentId = '',
+    this.department = '',
     this.phone = '',
     this.avatarUrl = '',
     this.isActive = true,
@@ -34,7 +34,7 @@ class EmployeeModel {
       'email': email,
       'role': role,
       'shiftGroup': shiftGroup,
-      'departmentId': departmentId,
+      'department': department,
       'phone': phone,
       'avatarUrl': avatarUrl,
       'isActive': isActive,
@@ -51,7 +51,7 @@ class EmployeeModel {
       email: map['email'] ?? '',
       role: map['role'] ?? 'employee',
       shiftGroup: map['shiftGroup'] ?? 'A',
-      departmentId: map['departmentId'] ?? '',
+      department: map['department'] ?? '',
       phone: map['phone'] ?? '',
       avatarUrl: map['avatarUrl'] ?? '',
       isActive: map['isActive'] ?? true,

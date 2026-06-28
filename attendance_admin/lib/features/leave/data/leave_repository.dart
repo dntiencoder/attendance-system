@@ -15,10 +15,10 @@ class LeaveRepository {
     });
   }
 
-  Future<void> updateRequestStatus(String id, String status, String adminNote) async {
+  Future<void> updateLeaveStatus(String id, String status, {String? adminNote}) async {
     await _db.collection('leave_requests').doc(id).update({
       'status': status,
-      'adminNote': adminNote,
+      'adminNote': adminNote ?? '',
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

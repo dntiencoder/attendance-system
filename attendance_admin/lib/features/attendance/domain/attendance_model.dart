@@ -11,9 +11,9 @@ class AttendanceModel {
   final double latitude;
   final double longitude;
   final double distance;
-  final double checkOutLatitude;
-  final double checkOutLongitude;
-  final double workHours;
+  final double? checkOutLatitude;
+  final double? checkOutLongitude;
+  final double? workHours;
   final bool isLate;
   final bool isEarlyLeave;
   final String status;
@@ -30,9 +30,9 @@ class AttendanceModel {
     this.latitude = 0.0,
     this.longitude = 0.0,
     this.distance = 0.0,
-    this.checkOutLatitude = 0.0,
-    this.checkOutLongitude = 0.0,
-    this.workHours = 0.0,
+    this.checkOutLatitude,
+    this.checkOutLongitude,
+    this.workHours,
     this.isLate = false,
     this.isEarlyLeave = false,
     this.status = 'completed',
@@ -58,9 +58,9 @@ class AttendanceModel {
       latitude: (map['latitude'] ?? 0.0).toDouble(),
       longitude: (map['longitude'] ?? 0.0).toDouble(),
       distance: (map['distance'] ?? 0.0).toDouble(),
-      checkOutLatitude: (map['checkOutLatitude'] ?? 0.0).toDouble(),
-      checkOutLongitude: (map['checkOutLongitude'] ?? 0.0).toDouble(),
-      workHours: (map['workHours'] ?? 0.0).toDouble(),
+      checkOutLatitude: (map['checkOutLatitude'] as num?)?.toDouble(),
+      checkOutLongitude: (map['checkOutLongitude'] as num?)?.toDouble(),
+      workHours: (map['workHours'] as num?)?.toDouble(),
       isLate: map['isLate'] ?? false,
       isEarlyLeave: map['isEarlyLeave'] ?? false,
       status: map['status'] ?? 'completed',
@@ -68,5 +68,31 @@ class AttendanceModel {
           ? (map['createdAt'] as Timestamp).toDate()
           : null,
     );
+  }
+
+  bool get hasCheckedOut => checkOut != null;
+
+  double get calculatedWorkHours {
+    if (workHours != null) return workHours!;
+    if (checkIn == null || checkOut == null) return 0;
+    return checkOut!.difference(checkIn!).inMinutes / 60;
+  }
+
+  String get shiftLabel {
+    switch (shift) {
+      case 'day': return 'Ca sáng';
+      case 'night': return 'Ca đêm';
+      default: return shift;
+    }
+  }
+
+  String get statusLabel {
+    switch (status) {
+      case 'on_time': return 'Đúng giờ';
+      case 'late': return 'Đi muộn';
+      case 'early_leave': return 'Về sớm';
+      case 'completed': return 'Hoàn thành';
+      default: return status;
+    }
   }
 }
