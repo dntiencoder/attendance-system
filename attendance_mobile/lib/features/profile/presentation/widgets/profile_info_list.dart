@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/theme/app_colors.dart';
-import '../../../../shared/theme/app_spacing.dart';
+import '../../../../shared/theme/app_text_styles.dart';
 import '../../../auth/domain/user_model.dart';
+import '../../../auth/data/auth_repository.dart';
 
-class ProfileInfoList extends StatelessWidget {
+class ProfileInfoList extends StatefulWidget {
   final UserModel user;
   final String departmentName;
 
@@ -14,96 +16,271 @@ class ProfileInfoList extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        children: [
-          _buildInfoItem(
-            icon: Icons.email_outlined,
-            label: 'Email',
-            value: user.email,
+  State<ProfileInfoList> createState() => _ProfileInfoListState();
+}
+
+class _ProfileInfoListState extends State<ProfileInfoList> {
+  final _phoneController = TextEditingController();
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  void _showEditPhoneDialog() {
+    _phoneController.text = widget.user.phone;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cập nhật số điện thoại'),
+        content: TextField(
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+          decoration: const InputDecoration(
+            labelText: 'Số điện thoại',
+            hintText: 'Nhập số điện thoại mới',
           ),
-          _buildDivider(),
-          _buildInfoItem(
-            icon: Icons.phone_outlined,
-            label: 'Số điện thoại',
-            value: user.phone.isNotEmpty ? user.phone : 'Chưa cập nhật',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Hủy'),
           ),
-          _buildDivider(),
-          _buildInfoItem(
-            icon: Icons.business_outlined,
-            label: 'Phòng ban',
-            value: departmentName.isNotEmpty ? departmentName : user.departmentId,
-          ),
-          _buildDivider(),
-          _buildInfoItem(
-            icon: Icons.work_outline,
-            label: 'Chức vụ',
-            value: user.role == 'admin' ? 'Quản trị viên' : 'Nhân viên',
-          ),
-          _buildDivider(),
-          _buildInfoItem(
-            icon: Icons.calendar_today_outlined,
-            label: 'Ngày tham gia',
-            value: '${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}',
+          TextButton(
+            onPressed: () async {
+              final newPhone = _phoneController.text.trim();
+              if (newPhone.isNotEmpty) {
+                try {
+                  await AuthRepository().updatePhoneNumber(newPhone);
+                  if (mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Cập nhật thành công'), backgroundColor: AppColors.success),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppColors.error),
+                    );
+                  }
+                }
+              }
+            },
+            child: const Text('Lưu'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoItem({
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Thông tin cá nhân
+        _buildSection(
+          title: 'Thông tin cá nhân',
+          children: [
+            _buildRow(
+              icon: Icons.badge_outlined,
+              label: 'Mã nhân viên',
+              value: widget.user.employeeCode,
+            ),
+            _buildRow(
+              icon: Icons.person_outline,
+              label: 'Họ và tên',
+              value: widget.user.name,
+            ),
+            _buildRow(
+              icon: Icons.mail_outline,
+              label: 'Email',
+              value: widget.user.email,
+            ),
+            _buildRow(
+              icon: Icons.phone_outlined,
+              label: 'Số điện thoại',
+              value: widget.user.phone.isNotEmpty ? widget.user.phone : 'Chưa cập nhật',
+              isTap: true,
+              onTap: _showEditPhoneDialog,
+            ),
+            _buildRow(
+              icon: Icons.business_outlined,
+              label: 'Phòng ban',
+              value: widget.departmentName.isNotEmpty ? widget.departmentName : widget.user.departmentId,
+            ),
+            _buildRow(
+              icon: Icons.calendar_today_outlined,
+              label: 'Ngày vào làm',
+              value: '${widget.user.createdAt.day.toString().padLeft(2, '0')}/${widget.user.createdAt.month.toString().padLeft(2, '0')}/${widget.user.createdAt.year}',
+              isLast: true,
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 10),
+
+        // Cài đặt
+        _buildSection(
+          title: 'Cài đặt',
+          children: [
+            _buildActionRow(
+              icon: Icons.lock_outline,
+              label: 'Đổi mật khẩu',
+              iconBg: AppColors.primary.withValues(alpha: 0.1),
+              iconColor: AppColors.primary,
+              onTap: () => context.push('/change-password'),
+            ),
+            _buildActionRow(
+              icon: Icons.notifications_none,
+              label: 'Thông báo',
+              iconBg: AppColors.success.withValues(alpha: 0.1),
+              iconColor: AppColors.success,
+              isLast: true,
+              onTap: () {},
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSection({required String title, required List<Widget> children}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(13, 9, 13, 6),
+            child: Text(
+              title.toUpperCase(),
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary,
+                letterSpacing: 0.5,
+                fontSize: 10,
+              ),
+            ),
+          ),
+          const Divider(height: 0.5, thickness: 0.5, color: AppColors.border),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRow({
     required IconData icon,
     required String label,
     required String value,
+    bool isTap = false,
+    bool isLast = false,
+    VoidCallback? onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.md,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 22, color: AppColors.textSecondary),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
+    return InkWell(
+      onTap: isTap ? onTap : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 9),
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : const Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Icon(icon, size: 14, color: AppColors.primary),
             ),
-          ),
-        ],
+            const SizedBox(width: 9),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: AppTextStyles.caption.copyWith(fontSize: 10),
+                  ),
+                  Text(
+                    value,
+                    style: AppTextStyles.body.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isTap)
+              const Icon(
+                Icons.chevron_right,
+                size: 14,
+                color: AppColors.textTertiary,
+              ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDivider() {
-    return Divider(
-      height: 1,
-      indent: 54,
-      endIndent: 16,
-      color: AppColors.border.withValues(alpha: 0.5),
+  Widget _buildActionRow({
+    required IconData icon,
+    required String label,
+    required Color iconBg,
+    required Color iconColor,
+    bool isLast = false,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : const Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Icon(icon, size: 14, color: iconColor),
+            ),
+            const SizedBox(width: 9),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.body.copyWith(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 14,
+              color: AppColors.textTertiary,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

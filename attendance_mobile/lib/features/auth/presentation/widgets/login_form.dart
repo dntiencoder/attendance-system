@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/custom_button.dart';
@@ -95,9 +96,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-                  // TODO: Navigate to forgot password
-                },
+                onPressed: () => context.push('/forgot-password'),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   padding: EdgeInsets.zero,

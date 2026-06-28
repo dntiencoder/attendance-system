@@ -4,6 +4,7 @@ import '../../../../core/utils/date_helper.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/custom_card.dart';
+import '../../../../shared/widgets/attendance_status_badges.dart';
 import 'shift_selector.dart';
 
 class CheckinCard extends StatelessWidget {
@@ -64,7 +65,7 @@ class CheckinCard extends StatelessWidget {
                       .textSecondary,
                 ),
               ),
-              _StatusBadge(
+              AttendanceStatusBadges(
                 attendance:
                 todayAttendance,
               ),
@@ -338,123 +339,5 @@ class _TappableTimeBox
       ),
     );
 
-  }
-}
-
-class _StatusBadge
-    extends StatelessWidget {
-  final AttendanceModel?
-  attendance;
-
-  const _StatusBadge({
-    this.attendance,
-  });
-
-  @override
-  Widget build(
-      BuildContext context,
-      ) {
-    if (attendance == null) {
-      return _badge(
-        'Chưa chấm công',
-        Colors.grey.shade200,
-        AppColors
-            .textSecondary,
-      );
-    }
-
-    final badges = <Widget>[];
-
-    if (attendance!.isLate) {
-      badges.add(
-        _badge(
-          'Đi muộn',
-          const Color(
-            0xFFFAEEDA,
-          ),
-          const Color(
-            0xFF633806,
-          ),
-        ),
-      );
-    }
-
-    if (attendance!.isEarlyLeave) {
-      badges.add(
-        _badge(
-          'Về sớm',
-          const Color(
-            0xFFFFE6E6,
-          ),
-          AppColors.error,
-        ),
-      );
-    }
-
-    if (badges.isEmpty) {
-      if (attendance!
-          .hasCheckedOut) {
-        badges.add(
-          _badge(
-            'Hoàn thành',
-            const Color(
-              0xFFE6F1FB,
-            ),
-            const Color(
-              0xFF0C447C,
-            ),
-          ),
-        );
-      } else {
-        badges.add(
-          _badge(
-            'Đúng giờ',
-            const Color(
-              0xFFEAF3DE,
-            ),
-            AppColors.success,
-          ),
-        );
-      }
-    }
-
-    return Wrap(
-      spacing: 4,
-      runSpacing: 4,
-      alignment:
-      WrapAlignment.end,
-      children: badges,
-    );
-  }
-
-  Widget _badge(
-      String text,
-      Color bg,
-      Color textColor,
-      ) {
-    return Container(
-      padding:
-      const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 3,
-      ),
-      decoration:
-      BoxDecoration(
-        color: bg,
-        borderRadius:
-        BorderRadius.circular(
-          20,
-        ),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight:
-          FontWeight.w500,
-          color: textColor,
-        ),
-      ),
-    );
   }
 }

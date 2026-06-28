@@ -4,7 +4,6 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import 'attendance_history_provider.dart';
 import 'widgets/attendance_filter_chips.dart';
-import 'widgets/attendance_summary.dart';
 import 'widgets/attendance_record_list.dart';
 
 class AttendanceHistoryScreen extends ConsumerWidget {
@@ -33,14 +32,6 @@ class AttendanceHistoryScreen extends ConsumerWidget {
             onSelected: (filter) => ref
                 .read(attendanceHistoryProvider.notifier)
                 .setFilter(filter),
-          ),
-
-          // Tóm tắt tháng
-          AttendanceSummary(
-            total: state.totalDays,
-            early: state.earlyDays,
-            late: state.lateDays,
-            absent: state.absentDays,
           ),
 
           // Danh sách

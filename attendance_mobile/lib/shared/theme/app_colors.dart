@@ -20,4 +20,8 @@ class AppColors {
   static const warning = Color(0xFFFF9800);
 
   static const error = Color(0xFFD32F2F);
+
+  static const backgroundTertiary = Color(0xFFF9FAFB);
+
+  static const textTertiary = Color(0xFF9CA3AF);
 }
