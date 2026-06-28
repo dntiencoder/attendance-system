@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/employee_model.dart';
 import 'employee_provider.dart';
+import '../../department/domain/department_model.dart'; // Thêm model này
+import '../../department/presentation/department_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/loading_widget.dart';
 
@@ -17,24 +19,11 @@ class EmployeeScreen extends ConsumerWidget {
     final avatarController = TextEditingController(text: employee?.avatarUrl ?? '');
     final passwordController = TextEditingController(text: '123456');
     
-    // Danh sách phòng ban cố định (Sơ đồ 4 cấp rút gọn)
-    final departmentOptions = [
-      'FAC Dept (Cơ sở vật chất)',
-      'GA Dept (Hành chính - Nhân sự)',
-      'PD Dept (Phòng PD)',
-      'TE Dept (Kỹ thuật)',
-      'PE Dept (Kỹ thuật sản xuất)',
-      'DX Dept (Chuyển đổi số)',
-      'PMC Dept (Quản lý sản xuất vật tư)',
-      'QA Dept (Đảm bảo chất lượng)',
-      'PUR Dept (Mua hàng)',
-      'Sales Dept (Kinh doanh)',
-      'ACC Dept (Kế toán)',
-      'Planning Dept (Kế hoạch tổng thể)',
-    ];
+    // Lấy danh sách phòng ban từ Provider (lấy thông qua ref.read để tránh watch trong function)
+    final departmentsAsync = ref.read(departmentsStreamProvider);
 
     String selectedShiftGroup = employee?.shiftGroup ?? 'A';
-    String selectedDept = employee?.department ?? departmentOptions.first;
+    String selectedDeptId = employee?.departmentId ?? '';
     
     final dialogFormKey = GlobalKey<FormState>();
 
@@ -111,19 +100,30 @@ class EmployeeScreen extends ConsumerWidget {
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: DropdownButtonFormField<String>(
-                                isExpanded: true, // Cho phép text dài tự xuống dòng hoặc bị cắt bớt thay vì gây lỗi overflow
-                                value: departmentOptions.contains(selectedDept) ? selectedDept : departmentOptions.first,
-                                decoration: const InputDecoration(labelText: 'Phòng ban', border: OutlineInputBorder()),
-                                items: departmentOptions.map((d) => DropdownMenuItem(
-                                  value: d, 
-                                  child: Text(
-                                    d, 
-                                    style: const TextStyle(fontSize: 13), 
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                )).toList(),
-                                onChanged: (v) => setState(() => selectedDept = v!),
+                              child: departmentsAsync.when(
+                                data: (depts) {
+                                  // Nếu chưa chọn hoặc ID không tồn tại trong list mới
+                                  if (selectedDeptId.isEmpty || !depts.any((d) => d.id == selectedDeptId)) {
+                                    if (depts.isNotEmpty) selectedDeptId = depts.first.id;
+                                  }
+
+                                  return DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    value: selectedDeptId.isNotEmpty ? selectedDeptId : null,
+                                    decoration: const InputDecoration(labelText: 'Phòng ban', border: OutlineInputBorder()),
+                                    items: depts.map((d) => DropdownMenuItem(
+                                      value: d.id,
+                                      child: Text(
+                                        d.name,
+                                        style: const TextStyle(fontSize: 13),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )).toList(),
+                                    onChanged: (v) => setState(() => selectedDeptId = v!),
+                                  );
+                                },
+                                loading: () => const Center(child: CircularProgressIndicator()),
+                                error: (_, __) => const Text('Lỗi tải phòng ban'),
                               ),
                             ),
                           ],
@@ -178,7 +178,7 @@ class EmployeeScreen extends ConsumerWidget {
                           email: emailController.text.trim(),
                           role: 'employee',
                           shiftGroup: selectedShiftGroup,
-                          department: selectedDept,
+                          departmentId: selectedDeptId,
                           phone: phoneController.text,
                           avatarUrl: avatarController.text,
                           isActive: employee?.isActive ?? true,
@@ -229,6 +229,7 @@ class EmployeeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final employeesAsync = ref.watch(employeesStreamProvider);
+    final departmentsAsync = ref.watch(departmentsStreamProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,7 +282,14 @@ class EmployeeScreen extends ConsumerWidget {
                     return DataRow(cells: [
                       DataCell(Text(emp.employeeCode)),
                       DataCell(Text(emp.name)),
-                      DataCell(Text(emp.department)),
+                      DataCell(departmentsAsync.when(
+                        data: (depts) {
+                          final dept = depts.firstWhere((d) => d.id == emp.departmentId, orElse: () => DepartmentModel(id: '', name: emp.departmentId));
+                          return Text(dept.name);
+                        },
+                        loading: () => const Text('...'),
+                        error: (_, __) => Text(emp.departmentId),
+                      )),
                       DataCell(Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(

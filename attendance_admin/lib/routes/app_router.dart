@@ -8,6 +8,7 @@ import '../features/employee/presentation/employee_screen.dart';
 import '../features/attendance/presentation/attendance_screen.dart';
 import '../features/leave/presentation/leave_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
+import '../dev/department_seeder.dart'; // Thêm import này
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -47,6 +48,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
+          ),
+          // Route ẩn để seed dữ liệu phòng ban
+          GoRoute(
+            path: '/dev/seed-departments',
+            builder: (context, state) => const DepartmentSeederScreen(),
           ),
         ],
       ),

@@ -51,17 +51,35 @@ class ProfileHeaderCard extends StatelessWidget {
                     width: 2.5,
                   ),
                 ),
-                child: CircleAvatar(
-                  backgroundColor: Colors.transparent,
-                  backgroundImage: user.avatarUrl.isNotEmpty
-                      ? NetworkImage(user.avatarUrl)
-                      : null,
-                  child: user.avatarUrl.isEmpty
-                      ? Text(
-                          initial,
-                          style: AppTextStyles.titleMedium.copyWith(color: AppColors.white),
+                child: ClipOval(
+                  child: user.avatarUrl.isNotEmpty
+                      ? Image.network(
+                          user.avatarUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Text(
+                                initial,
+                                style: AppTextStyles.titleMedium.copyWith(color: AppColors.white),
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            );
+                          },
                         )
-                      : null,
+                      : Center(
+                          child: Text(
+                            initial,
+                            style: AppTextStyles.titleMedium.copyWith(color: AppColors.white),
+                          ),
+                        ),
                 ),
               ),
             ],

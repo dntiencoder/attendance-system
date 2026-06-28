@@ -7,7 +7,7 @@ class EmployeeModel {
   final String email;
   final String role;
   final String shiftGroup;
-  final String department; // Đổi từ departmentId sang tên phòng ban trực tiếp
+  final String departmentId; // Thay đổi từ department sang departmentId
   final String phone;
   final String avatarUrl;
   final bool isActive;
@@ -20,7 +20,7 @@ class EmployeeModel {
     required this.email,
     required this.role,
     this.shiftGroup = 'A',
-    this.department = '',
+    this.departmentId = '',
     this.phone = '',
     this.avatarUrl = '',
     this.isActive = true,
@@ -34,7 +34,7 @@ class EmployeeModel {
       'email': email,
       'role': role,
       'shiftGroup': shiftGroup,
-      'department': department,
+      'departmentId': departmentId, // Lưu departmentId để Mobile có thể tra cứu
       'phone': phone,
       'avatarUrl': avatarUrl,
       'isActive': isActive,
@@ -51,7 +51,7 @@ class EmployeeModel {
       email: map['email'] ?? '',
       role: map['role'] ?? 'employee',
       shiftGroup: map['shiftGroup'] ?? 'A',
-      department: map['department'] ?? '',
+      departmentId: map['departmentId'] ?? map['department'] ?? '', // Hỗ trợ fallback nếu còn dữ liệu cũ
       phone: map['phone'] ?? '',
       avatarUrl: map['avatarUrl'] ?? '',
       isActive: map['isActive'] ?? true,

@@ -5,7 +5,6 @@ import '../domain/attendance_model.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../shared/widgets/loading_widget.dart';
-import '../../../shared/widgets/status_badge.dart';
 import '../../../core/services/export_service.dart';
 
 class AttendanceScreen extends ConsumerStatefulWidget {
@@ -128,6 +127,8 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
                   : SingleChildScrollView(
                       child: DataTable(
                         headingRowColor: WidgetStateProperty.all(AppColors.background),
+                        dataRowMinHeight: 48,
+                        dataRowMaxHeight: 64,
                         columns: const [
                           DataColumn(label: Text('Ngày', style: TextStyle(fontWeight: FontWeight.bold))),
                           DataColumn(label: Text('Mã NV', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -201,57 +202,53 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
   Widget _buildStatusBadge(AttendanceModel log) {
     List<Widget> badges = [];
 
-    // 1. Xác định trạng thái nền tảng
+    // 1. Xác định trạng thái chính
     if (log.status == 'absent') {
-      badges.add(_createBadge('Vắng mặt', Colors.red));
+      badges.add(_createBadge('Vắng mặt', AppColors.error));
     } else if (!log.hasCheckedOut) {
-      // Nếu chưa check-out
-      if (log.isLate) {
-        badges.add(_createBadge('Đang làm việc', Colors.blueGrey));
-      } else {
-        badges.add(_createBadge('Đang làm việc', Colors.blue));
-      }
+      badges.add(_createBadge('Đang làm việc', Colors.blue));
     } else if (!log.isLate && !log.isEarlyLeave) {
-      // Nếu đã check-out và không vi phạm gì
-      badges.add(_createBadge('Hoàn thành', Colors.green));
+      badges.add(_createBadge('Hoàn thành', AppColors.success));
     }
 
-    // 2. Luôn hiển thị badge vi phạm (nếu có) - Độc lập với trạng thái nền
+    // 2. Các trạng thái vi phạm (hiển thị song song)
     if (log.isLate) {
-      if (badges.isNotEmpty) badges.add(const SizedBox(width: 4));
       badges.add(_createBadge('Đi muộn', Colors.orange));
     }
 
     if (log.isEarlyLeave) {
-      if (badges.isNotEmpty) badges.add(const SizedBox(width: 4));
       badges.add(_createBadge('Về sớm', Colors.deepOrange));
     }
 
-    // Trường hợp dự phòng nếu không rơi vào các điều kiện trên
     if (badges.isEmpty) {
       badges.add(_createBadge(log.statusLabel, Colors.grey));
     }
 
     return Wrap(
-      spacing: 4,
+      spacing: 6,
       runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: badges,
     );
   }
 
   Widget _createBadge(String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
       child: Text(
         text,
         style: TextStyle(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
