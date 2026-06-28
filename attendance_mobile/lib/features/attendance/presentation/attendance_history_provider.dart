@@ -86,7 +86,7 @@ class AttendanceHistoryNotifier
           isGreaterThanOrEqualTo: Timestamp.fromDate(start))
           .where('attendanceDate',
           isLessThanOrEqualTo: Timestamp.fromDate(end))
-          .orderBy('attendanceDate', descending: true)
+          // Bỏ orderBy để tránh lỗi thiếu index, sẽ sort bằng code sau
           .get();
 
       final List<AttendanceModel> records = snapshot.docs

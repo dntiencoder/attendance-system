@@ -3,43 +3,45 @@ import 'package:flutter/material.dart';
 class WorkScheduleHelper {
   WorkScheduleHelper._();
 
-  /// Tính tuần thứ mấy trong tháng (1-based)
-  /// Tuần 1 = từ ngày 1 đến hết ngày thứ 7 đầu tiên
-  static int weekOfMonth(DateTime date) {
-    final firstDay = DateTime(date.year, date.month, 1);
-    // Điều chỉnh để Thứ 2 là ngày bắt đầu tuần theo logic Việt Nam (weekday: 1=T2, 7=CN)
-    // Logic của bạn: Tuần 1 bắt đầu từ ngày 1.
-    return ((date.day + firstDay.weekday - 2) / 7).floor() + 1;
-  }
+  // Ngày gốc cố định khớp với Seeder (Thứ Hai 01/06/2026)
+  static final DateTime _baseRotationDate = DateTime(2026, 6, 1);
 
-  /// Kiểm tra Tuần lẻ hay Tuần chẵn
+  /// Kiểm tra xem ngày hiện tại có thuộc "Tuần lẻ" trong chu kỳ 14 ngày không
+  /// Tuần lẻ: Tuần đi làm Thứ 7 (W1, W3, W5...)
+  /// Tuần chẵn: Tuần xoay ca, Thứ 7 tính tăng ca (W2, W4, W6...)
   static bool isOddWeek(DateTime date) {
-    return weekOfMonth(date) % 2 != 0;
+    final normalizedDate = DateTime(date.year, date.month, date.day);
+    final daysPassed = normalizedDate.difference(_baseRotationDate).inDays;
+    
+    // totalWeeks: Tổng số tuần đã trôi qua kể từ ngày gốc
+    final totalWeeks = daysPassed ~/ 7;
+    
+    // Tuần 0, 2, 4... là tuần lẻ (Work Saturday)
+    // Tuần 1, 3, 5... là tuần chẵn (Rotation Week - OT Saturday)
+    return totalWeeks % 2 == 0;
   }
 
-  /// Xác định loại ngày: 'work' (Ngày làm bình thường) | 'overtime' (Tăng ca) | 'off' (Nghỉ bắt buộc)
+  /// Xác định loại ngày: 'work' | 'overtime' | 'off'
   static String getDayType(DateTime date) {
-    final weekday = date.weekday; // 1=T2, 6=T7, 7=CN
+    final weekday = date.weekday;
     final oddWeek = isOddWeek(date);
 
     if (oddWeek) {
-      // Tuần lẻ — KHÔNG chuyển ca
-      // Thứ 2 -> Thứ 7: Ngày làm việc bình thường
+      // Tuần Lẻ (Tuần làm Thứ 7)
       if (weekday >= 1 && weekday <= 6) return 'work';
-      // Chủ nhật: Tăng ca tự nguyện
       if (weekday == 7) return 'overtime';
     } else {
-      // Tuần chẵn — CHUYỂN GIAO CA
-      // Thứ 2 -> Thứ 6: Ngày làm việc bình thường
+      // Tuần Chẵn (Tuần Xoay ca)
       if (weekday >= 1 && weekday <= 5) return 'work';
-      // Thứ 7: Tăng ca tự nguyện
       if (weekday == 6) return 'overtime';
-      // Chủ nhật: Nghỉ bắt buộc
       if (weekday == 7) return 'off';
     }
 
     return 'off';
   }
+
+  // Loại bỏ hàm weekOfMonth cũ vì nó không phản ánh đúng chu kỳ xoay ca 14 ngày của UMC
+
 
   static bool isMandatoryWorkDay(DateTime date) => getDayType(date) == 'work';
 

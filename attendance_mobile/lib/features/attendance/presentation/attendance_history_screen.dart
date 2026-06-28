@@ -38,20 +38,31 @@ class AttendanceHistoryScreen extends ConsumerWidget {
           Expanded(
             child: state.isLoading
                 ? const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primary,
-              ),
-            )
-                : state.filteredRecords.isEmpty
-                ? Center(
-              child: Text(
-                'Không có dữ liệu',
-                style: TextStyle(color: AppColors.textSecondary),
-              ),
-            )
-                : AttendanceRecordList(
-              records: state.filteredRecords,
-            ),
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  )
+                : state.error != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Text(
+                            'Lỗi tải dữ liệu: ${state.error}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: AppColors.error),
+                          ),
+                        ),
+                      )
+                    : state.filteredRecords.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Không có dữ liệu',
+                              style: TextStyle(color: AppColors.textSecondary),
+                            ),
+                          )
+                        : AttendanceRecordList(
+                            records: state.filteredRecords,
+                          ),
           ),
         ],
       ),
