@@ -5,6 +5,7 @@ import '../domain/company_settings_model.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/loading_widget.dart';
+import '../../../core/utils/validators.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -101,13 +102,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   const SizedBox(height: AppSpacing.md),
                   Row(
                     children: [
-                      Expanded(child: _buildTextField(_latController, 'Vĩ độ (Latitude)', Icons.location_on)),
+                      Expanded(child: _buildTextField(_latController, 'Vĩ độ (Latitude)', Icons.location_on, validator: Validators.numeric)),
                       const SizedBox(width: AppSpacing.md),
-                      Expanded(child: _buildTextField(_lngController, 'Kinh độ (Longitude)', Icons.location_on)),
+                      Expanded(child: _buildTextField(_lngController, 'Kinh độ (Longitude)', Icons.location_on, validator: Validators.numeric)),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  _buildTextField(_radiusController, 'Bán kính cho phép (mét)', Icons.radar),
+                  _buildTextField(_radiusController, 'Bán kính cho phép (mét)', Icons.radar, validator: Validators.numeric),
                 ]),
                 
                 const SizedBox(height: AppSpacing.xl),
@@ -139,7 +140,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 _buildHeader('Cấu hình Xoay ca', Icons.sync_problem),
                 const SizedBox(height: AppSpacing.lg),
                 _buildCard([
-                  _buildTextField(_rotationDaysController, 'Chu kỳ xoay ca (ngày)', Icons.calendar_month),
+                  _buildTextField(_rotationDaysController, 'Chu kỳ xoay ca (ngày)', Icons.calendar_month, validator: Validators.numeric),
                   const SizedBox(height: AppSpacing.sm),
                   const Text(
                     'Ghi chú: Chu kỳ này dùng để tự động đổi ca giữa Nhóm A và Nhóm B.',
@@ -195,7 +196,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    String? Function(String?)? validator,
+  }) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -204,31 +210,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         border: const OutlineInputBorder(),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       ),
-      validator: (v) => v == null || v.isEmpty ? 'Không được để trống' : null,
+      validator: validator ?? (v) => v == null || v.isEmpty ? 'Không được để trống' : null,
     );
   }
 
   Future<void> _saveSettings(WidgetRef ref) async {
     if (!_formKey.currentState!.validate()) return;
 
-    final newSettings = CompanySettingsModel(
-      companyName: _companyNameController.text,
-      latitude: double.parse(_latController.text),
-      longitude: double.parse(_lngController.text),
-      radius: double.parse(_radiusController.text),
-      dayShiftStart: _dayStartController.text,
-      dayShiftEnd: _dayEndController.text,
-      nightShiftStart: _nightStartController.text,
-      nightShiftEnd: _nightEndController.text,
-      rotationDays: int.parse(_rotationDaysController.text),
-      rotationStartDate: _currentSettings?.rotationStartDate,
-    );
-
     try {
+      final newSettings = CompanySettingsModel(
+        companyName: _companyNameController.text,
+        latitude: double.parse(_latController.text),
+        longitude: double.parse(_lngController.text),
+        radius: double.parse(_radiusController.text),
+        dayShiftStart: _dayStartController.text,
+        dayShiftEnd: _dayEndController.text,
+        nightShiftStart: _nightStartController.text,
+        nightShiftEnd: _nightEndController.text,
+        rotationDays: int.parse(_rotationDaysController.text),
+        rotationStartDate: _currentSettings?.rotationStartDate,
+      );
+
       await ref.read(settingsRepositoryProvider).updateSettings(newSettings);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Đã cập nhật cấu hình hệ thống thành công!')),
+        );
+      }
+    } on FormatException catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Một trong các trường số (Vĩ độ, Kinh độ, Bán kính, Chu kỳ xoay ca) không hợp lệ.'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
