@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../domain/attendance_model.dart';
 import '../../../services/gps_service.dart';
@@ -245,9 +246,16 @@ class AttendanceRepository {
         .orderBy('attendanceDate', descending: true)
         .get();
 
-    return snapshot.docs
-        .map((doc) => AttendanceModel.fromFirestore(doc))
-        .toList();
+    final List<AttendanceModel> records = [];
+    for (final doc in snapshot.docs) {
+      try {
+        records.add(AttendanceModel.fromFirestore(doc));
+      } catch (e) {
+        // Bỏ qua document lỗi để không làm crash toàn bộ danh sách lịch sử.
+        debugPrint('Bỏ qua document attendance lỗi (${doc.id}): $e');
+      }
+    }
+    return records;
   }
 
   /// Check Out

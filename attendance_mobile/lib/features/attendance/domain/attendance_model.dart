@@ -71,19 +71,21 @@ class AttendanceModel {
       shift: data['shift'] ?? '',
 
       attendanceDate:
-      (data['attendanceDate']
+      data['attendanceDate'] is Timestamp
+          ? (data['attendanceDate']
       as Timestamp)
-          .toDate(),
+          .toDate()
+          : DateTime.now(),
 
       checkIn:
-      data['checkIn'] != null
+      data['checkIn'] is Timestamp
           ? (data['checkIn']
       as Timestamp)
           .toDate()
           : null,
 
       checkOut:
-      data['checkOut'] != null
+      data['checkOut'] is Timestamp
           ? (data['checkOut']
       as Timestamp)
           .toDate()
@@ -125,9 +127,11 @@ class AttendanceModel {
       data['status'] ?? 'on_time',
 
       createdAt:
-      (data['createdAt']
+      data['createdAt'] is Timestamp
+          ? (data['createdAt']
       as Timestamp)
-          .toDate(),
+          .toDate()
+          : DateTime.now(),
     );
   }
 
