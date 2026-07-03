@@ -175,6 +175,8 @@ class AttendanceHistoryNotifier
   void setFilter(String filter) {
     state = state.copyWith(selectedFilter: filter);
   }
+
+  Future<void> refresh() => loadRecords();
 }
 
 final attendanceHistoryProvider =

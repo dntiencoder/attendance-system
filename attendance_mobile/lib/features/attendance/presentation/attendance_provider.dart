@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/attendance_repository.dart';
 import '../domain/attendance_model.dart';
@@ -11,12 +13,14 @@ final attendanceRepositoryProvider = Provider<AttendanceRepository>(
 class AttendanceState {
   final AttendanceModel? todayAttendance;
   final bool isLoading;
+  final bool isShiftEnded;
   final String? error;
   final String? successMessage;
 
   AttendanceState({
     this.todayAttendance,
     this.isLoading = false,
+    this.isShiftEnded = false,
     this.error,
     this.successMessage,
   });
@@ -24,12 +28,14 @@ class AttendanceState {
   AttendanceState copyWith({
     AttendanceModel? todayAttendance,
     bool? isLoading,
+    bool? isShiftEnded,
     String? error,
     String? successMessage,
   }) {
     return AttendanceState(
       todayAttendance: todayAttendance ?? this.todayAttendance,
       isLoading: isLoading ?? this.isLoading,
+      isShiftEnded: isShiftEnded ?? this.isShiftEnded,
       error: error,
       successMessage: successMessage,
     );
@@ -46,12 +52,35 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
 
   // Load trạng thái hôm nay khi vào màn hình
   Future<void> loadTodayAttendance() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, isShiftEnded: false);
     try {
       final attendance = await _repo.getTodayAttendance();
+      
+      // Kiểm tra nếu chưa chấm công thì xem đã hết ca chưa
+      bool shiftEnded = false;
+      if (attendance == null) {
+        final settings = await _repo.getCompanySettings();
+        final now = DateTime.now();
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).get();
+        final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
+        final currentShift = settings.getCurrentShift(shiftGroup: shiftGroup, today: now);
+        final endTime = settings.getShiftEndTime(currentShift);
+        final parts = endTime.split(':');
+        DateTime workEnd = DateTime(now.year, now.month, now.day, int.parse(parts[0]), int.parse(parts[1]));
+        
+        if (currentShift == 'night' && int.parse(parts[0]) < 12) {
+          workEnd = workEnd.add(const Duration(days: 1));
+        }
+        
+        if (now.isAfter(workEnd)) {
+          shiftEnded = true;
+        }
+      }
+
       state = state.copyWith(
         todayAttendance: attendance,
         isLoading: false,
+        isShiftEnded: shiftEnded,
       );
     } catch (e) {
       state = state.copyWith(
@@ -73,9 +102,11 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
         successMessage: 'Check In thành công!',
       );
     } catch (e) {
+      final isShiftEndedError = e.toString().contains('Ca làm việc đã kết thúc');
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: e.toString().replaceAll('Exception: ', ''),
+        isShiftEnded: isShiftEndedError,
       );
     }
   }

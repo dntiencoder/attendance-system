@@ -119,6 +119,32 @@ class AttendanceRepository {
       today: now,
     );
 
+    /// Kiểm tra xem đã quá giờ tan làm chưa
+    final endTime = settings.getShiftEndTime(currentShift);
+    final endParts = endTime.split(':');
+    DateTime workEnd = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      int.parse(endParts[0]),
+      int.parse(endParts[1]),
+    );
+
+    // Xử lý ca đêm (nếu giờ kết thúc < giờ bắt đầu thì cộng thêm 1 ngày cho workEnd nếu đang ở nửa đầu ca)
+    // Tuy nhiên, logic đơn giản nhất cho "vắng mặt" là nếu hiện tại đã quá workEnd của ngày hôm nay.
+    // Với ca đêm kết thúc lúc 08:00 sáng mai: 
+    // Nếu bây giờ là 21:00 (đang trong ca), workEnd phải là 08:00 sáng mai.
+    if (currentShift == 'night' && int.parse(endParts[0]) < 12) {
+       workEnd = workEnd.add(const Duration(days: 1));
+    }
+
+    if (now.isAfter(workEnd)) {
+      throw Exception(
+        'Ca làm việc đã kết thúc (${endTime}).\n'
+        'Ngày hôm nay được tính là vắng mặt.',
+      );
+    }
+
     /// Tính đi muộn
     final isLate =
     settings.calculateIsLate(

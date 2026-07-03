@@ -11,7 +11,8 @@ class CheckinCard extends StatelessWidget {
   final AttendanceModel? todayAttendance;
   final String selectedShift;
   final bool isLoading;
-  final bool isOffDay; // ← Thêm trường này
+  final bool isOffDay;
+  final bool isShiftEnded; // ← Thêm trường này
   final VoidCallback onCheckIn;
   final VoidCallback onCheckOut;
   final ValueChanged onShiftChanged;
@@ -21,7 +22,8 @@ class CheckinCard extends StatelessWidget {
     this.todayAttendance,
     required this.selectedShift,
     required this.isLoading,
-    this.isOffDay = false, // Mặc định là false
+    this.isOffDay = false,
+    this.isShiftEnded = false, // Mặc định là false
     required this.onCheckIn,
     required this.onCheckOut,
     required this.onShiftChanged,
@@ -97,12 +99,15 @@ class CheckinCard extends StatelessWidget {
 
                   subText: isOffDay 
                       ? 'Nghỉ bắt buộc'
-                      : hasCheckedIn
-                        ? 'Cách CT: ${todayAttendance!.distance.toStringAsFixed(0)}m'
-                        : 'Nhấn để check in',
+                      : isShiftEnded
+                        ? 'Đã hết ca (Vắng)'
+                        : hasCheckedIn
+                          ? 'Cách CT: ${todayAttendance!.distance.toStringAsFixed(0)}m'
+                          : 'Nhấn để check in',
 
                   canTap:
-                  !isOffDay && // Thêm điều kiện không phải ngày nghỉ
+                  !isOffDay &&
+                  !isShiftEnded && // Thêm điều kiện chưa hết ca
                   !hasCheckedIn &&
                       !isLoading,
 
@@ -113,7 +118,7 @@ class CheckinCard extends StatelessWidget {
                   onTap:
                   onCheckIn,
                   
-                  isDisabled: isOffDay, // Thêm flag để đổi màu xám
+                  isDisabled: isOffDay || isShiftEnded, // Thêm flag để đổi màu xám
                 ),
               ),
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import 'attendance_history_provider.dart';
+import 'attendance_provider.dart';
 import 'widgets/attendance_filter_chips.dart';
 import 'widgets/attendance_record_list.dart';
 
@@ -12,6 +13,16 @@ class AttendanceHistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(attendanceHistoryProvider);
+
+    // Lắng nghe sự thay đổi của attendanceProvider để refresh lịch sử
+    ref.listen<AttendanceState>(
+      attendanceProvider,
+      (previous, next) {
+        if (next.successMessage != null) {
+          ref.read(attendanceHistoryProvider.notifier).refresh();
+        }
+      },
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,

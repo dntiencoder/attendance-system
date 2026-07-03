@@ -15,7 +15,11 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
+  // Giữ lại bản ghi cấu hình mới nhất từ Firestore để round-trip các field
+  // không có ô nhập trên form (vd. rotationStartDate) khi lưu, tránh bị ghi đè thành null.
+  CompanySettingsModel? _currentSettings;
+
   late TextEditingController _companyNameController;
   late TextEditingController _latController;
   late TextEditingController _lngController;
@@ -74,6 +78,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       loading: () => const LoadingWidget(message: 'Đang tải cấu hình...'),
       error: (err, _) => Center(child: Text('Lỗi: $err')),
       data: (settings) {
+        _currentSettings = settings;
+
         // Cập nhật controller lần đầu hoặc khi có dữ liệu mới
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_companyNameController.text.isEmpty) {
@@ -215,6 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       nightShiftStart: _nightStartController.text,
       nightShiftEnd: _nightEndController.text,
       rotationDays: int.parse(_rotationDaysController.text),
+      rotationStartDate: _currentSettings?.rotationStartDate,
     );
 
     try {

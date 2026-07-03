@@ -76,7 +76,8 @@ class HomeScreen extends ConsumerWidget {
                       todayAttendance: attendanceState.todayAttendance,
                       selectedShift: homeState.selectedShift,
                       isLoading: attendanceState.isLoading,
-                      isOffDay: isOffDay, // ← Thêm tham số này
+                      isOffDay: isOffDay,
+                      isShiftEnded: attendanceState.isShiftEnded, // ← Thêm tham số này
                       onCheckIn: () async {
                         await ref.read(attendanceProvider.notifier).checkIn();
                       },
