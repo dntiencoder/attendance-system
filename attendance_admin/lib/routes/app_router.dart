@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -49,11 +50,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/settings',
             builder: (context, state) => const SettingsScreen(),
           ),
-          // Route ẩn để seed dữ liệu phòng ban
-          GoRoute(
-            path: '/dev/seed-departments',
-            builder: (context, state) => const DepartmentSeederScreen(),
-          ),
+          // Route ẩn để seed dữ liệu phòng ban — chỉ có trong debug build,
+          // không được đăng ký ở bản production (P1-06).
+          if (kDebugMode)
+            GoRoute(
+              path: '/dev/seed-departments',
+              builder: (context, state) => const DepartmentSeederScreen(),
+            ),
         ],
       ),
     ],
