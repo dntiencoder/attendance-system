@@ -61,12 +61,16 @@ service cloud.firestore {
         docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_' + request.auth.uid + '$')
       );
 
-      // list: đọc nhiều document qua query (vd lịch sử chấm công). Firestore chỉ
-      // cho phép list khi rule chứng minh được bằng chính cấu trúc query (không
-      // đọc dữ liệu thật của từng document) — vế isAdmin() (dùng get()) không thể
-      // chứng minh theo cách này nên bị bỏ khỏi rule list; các truy vấn admin cần
-      // lọc theo uid hoặc dùng cơ chế khác (xem docs/design/BUSINESS_DATE_DESIGN.md).
-      allow list: if isSignedIn() && request.auth.uid == resource.data.uid;
+      // list: đọc nhiều document qua query (vd lịch sử chấm công, dashboard admin).
+      // isAdmin() gọi get() trên đúng 1 document đã biết trước (users/{request.auth.uid}),
+      // không phụ thuộc dữ liệu các document mà query trả về, nên Firestore tính được
+      // ngay mà không cần "chứng minh qua cấu trúc query" — an toàn cho list.
+      // Nhánh còn lại (resource.data.uid == request.auth.uid) được chứng minh nhờ
+      // client luôn lọc .where('uid', isEqualTo: uid) trong các query của nhân viên.
+      allow list: if isSignedIn() && (
+        isAdmin() ||
+        request.auth.uid == resource.data.uid
+      );
 
       // Check-in: chỉ tạo được đúng doc của chính mình, đúng quy ước đặt tên
       // "<yyyy-MM-dd>_<uid>" (khớp AttendanceRepository.checkIn - mobile).
