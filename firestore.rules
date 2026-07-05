@@ -1,0 +1,122 @@
+rules_version = '2';
+
+// Firestore Security Rules cho project `attendance-management-sy-34105`.
+//
+// Phạm vi: chỉ enforce AUTHORIZATION (ai được đọc/ghi document nào), khớp với
+// cách attendance_mobile / attendance_admin đang thực sự đọc/ghi từng collection
+// (đối chiếu trực tiếp với code repository hiện tại, xem docs/reviews/ và
+// ROADMAP.md mục P1-05).
+//
+// Giới hạn đã biết (cố ý, đã ghi trong ROADMAP.md phần "Ngoài phạm vi"):
+// rules này KHÔNG xác minh tính trung thực của giá trị GPS
+// (latitude/longitude/distance/isLate...) do client tự tính rồi gửi lên —
+// việc đó cần Cloud Functions và nằm ngoài phạm vi P1-05.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Đọc hồ sơ chính chủ request để xác định role/isActive.
+    // Dùng get() vì dự án không dùng Firebase Auth Custom Claims.
+    function currentUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && currentUserData().role == 'admin'
+        && currentUserData().isActive == true;
+    }
+
+    // users/{uid} — hồ sơ nhân viên/admin, doc ID = Firebase Auth uid.
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Tạo/xoá hồ sơ: chỉ admin (khớp EmployeeRepository.addEmployee/deleteEmployee).
+      allow create, delete: if isAdmin();
+
+      // Cập nhật: admin sửa toàn quyền; chủ tài khoản chỉ tự sửa được field 'phone'
+      // (khớp AuthRepository.updatePhoneNumber - mobile). Không ai tự đổi được
+      // role/isActive/employeeCode/shiftGroup/departmentId của chính mình.
+      allow update: if isAdmin()
+        || (isOwner(uid)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['phone']));
+    }
+
+    // attendance/{docId} — docId dạng "<yyyy-MM-dd>_<uid>", 1 doc/người/ngày.
+    match /attendance/{docId} {
+      // get: đọc 1 document cụ thể (vd getTodayAttendance) — xét theo docId (đã
+      // gồm uid theo quy ước "<yyyy-MM-dd>_<uid>") thay vì resource.data.uid, để
+      // không phụ thuộc dữ liệu document (tránh permission-denied khi document
+      // chưa tồn tại, lúc đó resource == null và resource.data.uid gây lỗi).
+      allow get: if isSignedIn() && (
+        isAdmin() ||
+        docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_' + request.auth.uid + '$')
+      );
+
+      // list: đọc nhiều document qua query (vd lịch sử chấm công). Firestore chỉ
+      // cho phép list khi rule chứng minh được bằng chính cấu trúc query (không
+      // đọc dữ liệu thật của từng document) — vế isAdmin() (dùng get()) không thể
+      // chứng minh theo cách này nên bị bỏ khỏi rule list; các truy vấn admin cần
+      // lọc theo uid hoặc dùng cơ chế khác (xem docs/design/BUSINESS_DATE_DESIGN.md).
+      allow list: if isSignedIn() && request.auth.uid == resource.data.uid;
+
+      // Check-in: chỉ tạo được đúng doc của chính mình, đúng quy ước đặt tên
+      // "<yyyy-MM-dd>_<uid>" (khớp AttendanceRepository.checkIn - mobile).
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_' + request.auth.uid + '$');
+
+      // Check-out: chỉ chủ bản ghi được cập nhật, không đổi được uid sang người khác.
+      allow update: if isSignedIn()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid;
+
+      allow delete: if false;
+    }
+
+    // company_settings/main — cấu hình công ty dùng chung.
+    match /company_settings/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // departments/{id}
+    match /departments/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // leave_requests/{id}
+    match /leave_requests/{id} {
+      allow read: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+
+      // Nhân viên tự tạo đơn nghỉ phép của chính mình.
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+
+      // Duyệt/từ chối: chỉ admin (khớp LeaveRepository.updateLeaveStatus - admin).
+      allow update: if isAdmin();
+
+      allow delete: if false;
+    }
+
+    // notifications/{id} — chỉ admin gửi (khớp NotificationRepository.sendNotification).
+    match /notifications/{id} {
+      allow read: if isSignedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Mặc định chặn mọi collection khác không được khai báo tường minh ở trên.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
