@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/employee_model.dart';
 import 'employee_provider.dart';
@@ -6,6 +9,14 @@ import '../../department/domain/department_model.dart'; // Thêm model này
 import '../../department/presentation/department_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/loading_widget.dart';
+
+/// Sinh mật khẩu ngẫu nhiên đủ mạnh cho tài khoản nhân viên mới. Loại bỏ các
+/// ký tự dễ đọc nhầm (I/l/O/0/1) vì admin cần đọc/gõ lại để báo cho nhân viên.
+String _generateRandomPassword({int length = 10}) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  final random = Random.secure();
+  return List.generate(length, (_) => chars[random.nextInt(chars.length)]).join();
+}
 
 class EmployeeScreen extends ConsumerWidget {
   const EmployeeScreen({super.key});
@@ -17,7 +28,7 @@ class EmployeeScreen extends ConsumerWidget {
     final emailController = TextEditingController(text: employee?.email ?? '');
     final phoneController = TextEditingController(text: employee?.phone ?? '');
     final avatarController = TextEditingController(text: employee?.avatarUrl ?? '');
-    final passwordController = TextEditingController(text: '123456');
+    final passwordController = TextEditingController(text: _generateRandomPassword());
     
     // Lấy danh sách phòng ban từ Provider (lấy thông qua ref.read để tránh watch trong function)
     final departmentsAsync = ref.read(departmentsStreamProvider);
@@ -80,11 +91,18 @@ class EmployeeScreen extends ConsumerWidget {
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Mật khẩu đăng nhập',
-                              border: OutlineInputBorder(),
-                              hintText: 'Mặc định: 123456',
+                            obscureText: false,
+                            decoration: InputDecoration(
+                              labelText: 'Mật khẩu đăng nhập (đã sinh tự động, có thể sửa)',
+                              border: const OutlineInputBorder(),
+                              hintText: 'Hãy sao chép để gửi cho nhân viên',
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.refresh_rounded),
+                                tooltip: 'Sinh mật khẩu mới',
+                                onPressed: () => setState(
+                                  () => passwordController.text = _generateRandomPassword(),
+                                ),
+                              ),
                             ),
                             validator: (v) => v == null || v.length < 6 ? 'Tối thiểu 6 ký tự' : null,
                           ),
@@ -185,20 +203,39 @@ class EmployeeScreen extends ConsumerWidget {
                           createdAt: employee?.createdAt,
                         );
                         
+                        final createdPassword = passwordController.text;
+
                         if (isEditing) {
                           await ref.read(employeeRepositoryProvider).updateEmployee(updatedEmployee);
                         } else {
                           await ref.read(employeeRepositoryProvider).addEmployee(
-                            updatedEmployee, 
-                            passwordController.text
+                            updatedEmployee,
+                            createdPassword
                           );
                         }
-                        
+
                         if (context.mounted) {
                           Navigator.pop(context); // Tắt loading
                           Navigator.pop(context); // Tắt form
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(isEditing ? 'Cập nhật thành công!' : 'Đã tạo tài khoản nhân viên thành công!')),
+                            SnackBar(
+                              content: Text(
+                                isEditing
+                                    ? 'Cập nhật thành công!'
+                                    : 'Đã tạo tài khoản thành công! Mật khẩu: $createdPassword',
+                              ),
+                              duration: isEditing
+                                  ? const Duration(seconds: 4)
+                                  : const Duration(seconds: 15),
+                              action: isEditing
+                                  ? null
+                                  : SnackBarAction(
+                                      label: 'Sao chép',
+                                      onPressed: () => Clipboard.setData(
+                                        ClipboardData(text: createdPassword),
+                                      ),
+                                    ),
+                            ),
                           );
                         }
                       } catch (e) {
