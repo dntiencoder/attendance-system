@@ -34,10 +34,12 @@
 | **P1-03** | Bọc `double.parse`/`int.parse` trong `_saveSettings()` bằng try-catch; đổi validator các ô số (Latitude/Longitude/Radius/Rotation Days) sang kiểm tra định dạng số thay vì chỉ "không rỗng" | Critical | Thấp | 0.5 ngày | `features/settings/presentation/settings_screen.dart`, `core/utils/validators.dart` | Admin | ✅ Done |
 | **P1-04** | Thêm null-safety cho `attendanceDate`/các field Timestamp trong `AttendanceModel.fromFirestore` (mobile) — không ép kiểu cứng; bọc từng document trong try-catch khi `.map()` để 1 document lỗi không làm crash toàn bộ danh sách | Critical | Trung bình | 0.5-1 ngày | `features/attendance/domain/attendance_model.dart`, `features/attendance/data/attendance_repository.dart` | Mobile | ✅ Done |
 | **P1-05** | Viết và deploy `firestore.rules` cơ bản: xác thực `request.auth.uid`, kiểm tra `role`/`isActive` cho từng collection (`users`, `attendance`, `company_settings`, `departments`, `leave_requests`) thay vì chỉ dựa vào kiểm tra phía client | Critical | Trung bình | 1-2 ngày | file mới `firestore.rules` (cấu hình Firebase, không phải code app) | Không (Firebase config) | ✅ Done — đã deploy, phủ thêm `notifications` (vượt phạm vi gốc) |
-| **P1-06** | Gỡ route `/dev/seed-departments` khỏi router chính thức, hoặc bọc bằng `kDebugMode`/build flavor để không có mặt trong bản production | Critical | Thấp | 0.5 ngày | `routes/app_router.dart`, `dev/department_seeder.dart` | Admin | ❌ Chưa làm |
-| **P1-07** | Bỏ mật khẩu mặc định `123456` pre-fill sẵn khi tạo nhân viên mới; sinh mật khẩu ngẫu nhiên đủ mạnh (hoặc yêu cầu admin tự nhập, không gợi ý sẵn) | Critical | Thấp | 0.5 ngày | `features/employee/presentation/employee_screen.dart` | Admin | ❌ Chưa làm |
+| **P1-06** | Gỡ route `/dev/seed-departments` khỏi router chính thức, hoặc bọc bằng `kDebugMode`/build flavor để không có mặt trong bản production | Critical | Thấp | 0.5 ngày | `routes/app_router.dart`, `dev/department_seeder.dart` | Admin | ✅ Done (2026-07-05) — bọc route bằng `if (kDebugMode)`, không sửa `department_seeder.dart` |
+| **P1-07** | Bỏ mật khẩu mặc định `123456` pre-fill sẵn khi tạo nhân viên mới; sinh mật khẩu ngẫu nhiên đủ mạnh (hoặc yêu cầu admin tự nhập, không gợi ý sẵn) | Critical | Thấp | 0.5 ngày | `features/employee/presentation/employee_screen.dart` | Admin | ✅ Done (2026-07-05) — Phương án B: tự sinh mật khẩu ngẫu nhiên, hiện lại kèm nút sao chép sau khi tạo |
 
 **Tổng thời gian ước tính Phase 1:** ~4-6 ngày làm việc.
+
+**Trạng thái Phase 1 (cập nhật 2026-07-05): 7/7 ✅ Done — Phase 1 hoàn tất.**
 
 ---
 
