@@ -2,12 +2,21 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../features/settings/domain/company_settings_model.dart';
 
 class SeedFirestore {
+  // Giá trị mặc định chỉ là placeholder, không phải tài khoản Firebase Auth thật.
+  // Truyền UID/email tài khoản đăng nhập demo thật qua --dart-define khi chạy, ví dụ:
+  //   flutter run -t lib/main_dev.dart \
+  //     --dart-define=SEED_EMPLOYEE_UID=... --dart-define=SEED_EMPLOYEE_EMAIL=... \
+  //     --dart-define=SEED_ADMIN_UID=... --dart-define=SEED_ADMIN_EMAIL=...
+  static const _employeeUid = String.fromEnvironment('SEED_EMPLOYEE_UID', defaultValue: 'demo_uid_employee');
+  static const _employeeEmail = String.fromEnvironment('SEED_EMPLOYEE_EMAIL', defaultValue: 'employee@example.com');
+  static const _adminUid = String.fromEnvironment('SEED_ADMIN_UID', defaultValue: 'demo_uid_admin');
+  static const _adminEmail = String.fromEnvironment('SEED_ADMIN_EMAIL', defaultValue: 'admin@example.com');
+
   static Future<void> seed() async {
     final db = FirebaseFirestore.instance;
 
-    // UID của tài khoản bạn dùng để đăng nhập demo
-    const employeeUid = '7VtAl9r6rcRgBGLXcVTtUcNn05l2';
-    const adminUid = 'UqyJA2oAr6VzjrOeAUkZRJXRAgh2';
+    final employeeUid = _employeeUid;
+    final adminUid = _adminUid;
 
     print('Đang chuẩn bị dọn dẹp và nạp dữ liệu Demo chuẩn UMC...');
 
@@ -52,7 +61,7 @@ class SeedFirestore {
     batch.set(db.collection('users').doc(employeeUid), {
       'employeeCode': 'EMP001',
       'name': 'Danh Nhật Tiến',
-      'email': 'danhnhattien284@gmail.com',
+      'email': _employeeEmail,
       'role': 'employee',
       'shiftGroup': shiftGroup,
       'departmentId': 'dep001',
@@ -66,7 +75,7 @@ class SeedFirestore {
     batch.set(db.collection('users').doc(adminUid), {
       'employeeCode': 'ADMIN001',
       'name': 'Quản trị viên UMC',
-      'email': 'admin@gmail.com', // Thay bằng email admin thực tế của bạn
+      'email': _adminEmail,
       'role': 'admin',
       'shiftGroup': 'A',
       'departmentId': 'dep001',

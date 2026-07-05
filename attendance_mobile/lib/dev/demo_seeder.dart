@@ -3,6 +3,23 @@ import '../features/settings/domain/company_settings_model.dart';
 import 'dart:math';
 
 class DemoSeeder {
+  // Giá trị mặc định chỉ là placeholder, không phải tài khoản Firebase Auth thật.
+  // Để seeder nạp đúng dữ liệu cho tài khoản Auth thật bạn dùng để đăng nhập,
+  // truyền UID/email qua --dart-define khi chạy main_dev.dart, ví dụ:
+  //   flutter run -t lib/main_dev.dart \
+  //     --dart-define=DEMO_UID_1=... --dart-define=DEMO_EMAIL_1=... (tương tự cho 2/3/ADMIN)
+  static const _uid1 = String.fromEnvironment('DEMO_UID_1', defaultValue: 'demo_uid_employee_a');
+  static const _email1 = String.fromEnvironment('DEMO_EMAIL_1', defaultValue: 'employee.a@example.com');
+
+  static const _uid2 = String.fromEnvironment('DEMO_UID_2', defaultValue: 'demo_uid_employee_b');
+  static const _email2 = String.fromEnvironment('DEMO_EMAIL_2', defaultValue: 'employee.b@example.com');
+
+  static const _uid3 = String.fromEnvironment('DEMO_UID_3', defaultValue: 'demo_uid_employee_c');
+  static const _email3 = String.fromEnvironment('DEMO_EMAIL_3', defaultValue: 'employee.c@example.com');
+
+  static const _uidAdmin = String.fromEnvironment('DEMO_UID_ADMIN', defaultValue: 'demo_uid_admin');
+  static const _emailAdmin = String.fromEnvironment('DEMO_EMAIL_ADMIN', defaultValue: 'admin@example.com');
+
   static Future<void> cleanAndSeed() async {
     final db = FirebaseFirestore.instance;
     print('🚀 Bắt đầu dọn dẹp và nạp dữ liệu Demo sạch...');
@@ -10,32 +27,32 @@ class DemoSeeder {
     // 1. Thông tin tài khoản
     final users = [
       {
-        'uid': '4Znnqs0bxiXbFeYimTQ5znDL5dG3',
-        'email': 'shiroyasha284@gmail.com',
+        'uid': _uid1,
+        'email': _email1,
         'name': 'Trần Văn A',
         'role': 'employee',
         'shiftGroup': 'A',
         'employeeCode': 'EMP001',
       },
       {
-        'uid': 'Nuav1I87ZOg1M0AysReIoaeUv2C2',
-        'email': 'dntienktpm2211046@student.ctuet.edu.vn',
+        'uid': _uid2,
+        'email': _email2,
         'name': 'Lê Thị B',
         'role': 'employee',
         'shiftGroup': 'B',
         'employeeCode': 'EMP002',
       },
       {
-        'uid': '7VtAl9r6rcRgBGLXcVTtUcNn05l2',
-        'email': 'danhnhattien284@gmail.com',
+        'uid': _uid3,
+        'email': _email3,
         'name': 'Danh Nhật Tiến',
         'role': 'employee',
         'shiftGroup': 'B',
         'employeeCode': 'EMP003',
       },
       {
-        'uid': 'UqyJA2oAr6VzjrOeAUkZRJXRAgh2',
-        'email': 'admin@gmail.com',
+        'uid': _uidAdmin,
+        'email': _emailAdmin,
         'name': 'Quản trị viên UMC',
         'role': 'admin',
         'shiftGroup': 'A',
@@ -101,7 +118,7 @@ class DemoSeeder {
     // 3.1 Nạp Departments (để profile hiện tên phòng ban thay vì ID)
     batch.set(db.collection('departments').doc('dep001'), {
       'name': 'Phòng Kỹ thuật',
-      'managerUid': 'UqyJA2oAr6VzjrOeAUkZRJXRAgh2',
+      'managerUid': _uidAdmin,
       'createdAt': Timestamp.fromDate(DateTime(2025, 1, 1)),
     });
 
@@ -227,8 +244,8 @@ class DemoSeeder {
 
     await batch.commit();
     print('✅ Nạp dữ liệu Demo thành công cho 3 nhân viên!');
-    print('1. shiroyasha284@gmail.com (Nhóm A)');
-    print('2. dntienktpm2211046@student.ctuet.edu.vn (Nhóm B)');
-    print('3. danhnhattien284@gmail.com (Nhóm B - Danh Nhật Tiến)');
+    print('1. $_email1 (Nhóm A)');
+    print('2. $_email2 (Nhóm B)');
+    print('3. $_email3 (Nhóm B - Danh Nhật Tiến)');
   }
 }
