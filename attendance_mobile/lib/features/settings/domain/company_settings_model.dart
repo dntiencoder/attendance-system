@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../../core/utils/rotation_calculator.dart';
+
 class CompanySettingsModel {
   final String id;
 
@@ -112,30 +114,12 @@ class CompanySettingsModel {
     required String shiftGroup,
     required DateTime today,
   }) {
-    // 1. Chuẩn hóa ngày về 00:00:00
-    final normalizedStart = DateTime(rotationStartDate.year, rotationStartDate.month, rotationStartDate.day);
-    final normalizedToday = DateTime(today.year, today.month, today.day);
-    
-    // 2. Tính số ngày đã trôi qua
-    final daysPassed = normalizedToday.difference(normalizedStart).inDays;
-    
-    // 3. Logic 2 tuần (14 ngày) đổi 1 lần:
-    // rotationIndex: cho biết đang ở khối 14 ngày thứ mấy
-    // index 0 (ngày 0-13): Khối 1
-    // index 1 (ngày 14-27): Khối 2
-    final rotationIndex = (daysPassed / 14).floor();
-
-    // 4. Xác định trạng thái lật ca (Toggle)
-    final isFlipped = rotationIndex % 2 != 0;
-
-    // 5. Áp dụng quy tắc (Theo yêu cầu: Tuần này/trước (Khối 2) B làm Đêm)
-    // Khối 1 (0-13): B làm Ngày, A làm Đêm
-    // Khối 2 (14-27): B làm Đêm, A làm Ngày
-    if (shiftGroup == 'B') {
-      return isFlipped ? 'night' : 'day';
-    } else {
-      return isFlipped ? 'day' : 'night';
-    }
+    return RotationCalculator.getCurrentShift(
+      rotationStartDate: rotationStartDate,
+      rotationDays: rotationDays,
+      shiftGroup: shiftGroup,
+      date: today,
+    );
   }
 
   /// Lấy giờ bắt đầu ca
@@ -156,59 +140,24 @@ class CompanySettingsModel {
         : nightShiftEnd;
   }
 
-  /// Kiểm tra đi muộn
+  /// Kiểm tra đi muộn. [window] là Shift Window đã được resolve sẵn qua
+  /// BusinessDateHelper.resolveShiftWindow() — neo theo Business Date, không
+  /// phải theo ngày lịch của [checkInTime] (tránh sai lệch quanh nửa đêm với
+  /// ca đêm — xem docs/design/ATTENDANCE_BUSINESS_FLOW.md).
   bool calculateIsLate({
     required DateTime checkInTime,
-    required String shift,
+    required ({DateTime start, DateTime end}) window,
   }) {
-    final startTime =
-    getShiftStartTime(shift);
-
-    final parts = startTime.split(':');
-
-    final workStart = DateTime(
-      checkInTime.year,
-      checkInTime.month,
-      checkInTime.day,
-      int.parse(parts[0]),
-      int.parse(parts[1]),
-    );
-
-    return checkInTime.isAfter(workStart);
+    return checkInTime.isAfter(window.start);
   }
+
+  /// Kiểm tra về sớm. [window] là Shift Window đã được resolve sẵn (xem
+  /// calculateIsLate ở trên).
   bool calculateEarlyLeave({
     required DateTime checkOutTime,
-    required String shift,
+    required ({DateTime start, DateTime end}) window,
   }) {
-    final endTime = getShiftEndTime(shift);
-
-    final parts = endTime.split(':');
-    final endHour = int.parse(parts[0]);
-    final endMinute = int.parse(parts[1]);
-
-    DateTime workEnd = DateTime(
-      checkOutTime.year,
-      checkOutTime.month,
-      checkOutTime.day,
-      endHour,
-      endMinute,
-    );
-
-    if (shift == 'night') {
-      // Nếu check-out vào ban ngày (ví dụ 10:00) sau khi ca đêm kết thúc (08:00)
-      // thì chắc chắn không phải về sớm.
-      if (checkOutTime.hour >= 8 && checkOutTime.hour < 18) {
-        return false;
-      }
-
-      // Nếu check-out vào buổi tối (ví dụ 21:00) mà ca đêm kết thúc vào sáng hôm sau (08:00)
-      // thì workEnd phải là ngày hôm sau.
-      if (checkOutTime.hour >= 12 && endHour < 12) {
-        workEnd = workEnd.add(const Duration(days: 1));
-      }
-    }
-
-    return checkOutTime.isBefore(workEnd);
+    return checkOutTime.isBefore(window.end);
   }
 
   CompanySettingsModel copyWith({

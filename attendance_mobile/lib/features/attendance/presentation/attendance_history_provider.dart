@@ -5,6 +5,7 @@ import '../domain/attendance_model.dart';
 import '../../settings/domain/company_settings_model.dart';
 import '../../../core/constants/app_config.dart';
 import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
+import '../../../core/utils/business_date_helper.dart';
 
 class AttendanceHistoryState {
   final DateTime selectedMonth;
@@ -93,20 +94,24 @@ class AttendanceHistoryNotifier
           .map((doc) => AttendanceModel.fromFirestore(doc))
           .toList();
 
-      // Logic Tự động ghi nhận Vắng mặt (Absent Generation)
-      final List<AttendanceModel> allDaysRecords = [];
-      final now = DateTime.now();
-      final lastDayToFill = (month.year == now.year && month.month == now.month)
-          ? now.day
-          : end.day;
-
       // Lấy cấu hình công ty để xác định ca cho các ngày vắng
       final settingsDoc = await _db.collection('company_settings').doc(AppConfig.companySettingsDocId).get();
       final settings = CompanySettingsModel.fromFirestore(settingsDoc);
-      
+
       // Lấy nhóm ca của user
       final userDoc = await _db.collection('users').doc(uid).get();
       final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
+
+      // Logic Tự động ghi nhận Vắng mặt (Absent Generation)
+      final List<AttendanceModel> allDaysRecords = [];
+      final businessDate = BusinessDateHelper.resolveBusinessDate(
+        DateTime.now(),
+        settings,
+        shiftGroup,
+      );
+      final lastDayToFill = (month.year == businessDate.year && month.month == businessDate.month)
+          ? businessDate.day
+          : end.day;
 
       for (int day = 1; day <= lastDayToFill; day++) {
         final date = DateTime(month.year, month.month, day);

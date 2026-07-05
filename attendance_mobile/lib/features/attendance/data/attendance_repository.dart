@@ -7,6 +7,7 @@ import '../../../services/gps_service.dart';
 import '../../../features/settings/domain/company_settings_model.dart';
 import '../../../core/constants/app_config.dart';
 import '../../../core/utils/date_helper.dart';
+import '../../../core/utils/business_date_helper.dart';
 
 class AttendanceRepository {
   final FirebaseFirestore _db =
@@ -17,6 +18,13 @@ class AttendanceRepository {
 
   final GpsService _gpsService =
   GpsService();
+
+  /// Khung ân hạn Check Out muộn cho ca đêm (đã chốt ở
+  /// docs/design/ATTENDANCE_BUSINESS_FLOW.md).
+  static const _checkOutGracePeriod = Duration(hours: 2);
+
+  /// Cho phép Check In sớm tối đa bao lâu trước giờ bắt đầu ca (đã chốt).
+  static const _checkInEarlyWindow = Duration(minutes: 60);
 
   /// Đọc cài đặt công ty
   Future<CompanySettingsModel>
@@ -74,26 +82,7 @@ class AttendanceRepository {
       );
     }
 
-    final now = DateTime.now();
-
-    final today =
-    DateHelper.toDateString(now);
-
-    final docId =
-        '${today}_${user.uid}';
-
-    final existing = await _db
-        .collection('attendance')
-        .doc(docId)
-        .get();
-
-    if (existing.exists) {
-      throw Exception(
-        'Bạn đã Check In hôm nay rồi',
-      );
-    }
-
-    /// Lấy user info
+    /// Lấy user info (cần shiftGroup để xác định Business Date/Shift)
     final userDoc = await _db
         .collection('users')
         .doc(user.uid)
@@ -113,46 +102,70 @@ class AttendanceRepository {
     final shiftGroup =
         userData['shiftGroup'] ?? 'A';
 
-    /// Xác định ca hiện tại
-    final currentShift =
-    settings.getCurrentShift(
+    final now = DateTime.now();
+
+    /// Bước 1: Business Date
+    final businessDate = BusinessDateHelper.resolveBusinessDate(
+      now,
+      settings,
+      shiftGroup,
+    );
+
+    /// Bước 2: Shift (tính trên Business Date, không phải ngày lịch hiện tại)
+    final currentShift = settings.getCurrentShift(
       shiftGroup: shiftGroup,
-      today: now,
+      today: businessDate,
     );
 
-    /// Kiểm tra xem đã quá giờ tan làm chưa
-    final endTime = settings.getShiftEndTime(currentShift);
-    final endParts = endTime.split(':');
-    DateTime workEnd = DateTime(
-      now.year,
-      now.month,
-      now.day,
-      int.parse(endParts[0]),
-      int.parse(endParts[1]),
-    );
+    final docId =
+        '${DateHelper.toDateString(businessDate)}_${user.uid}';
 
-    // Xử lý ca đêm (nếu giờ kết thúc < giờ bắt đầu thì cộng thêm 1 ngày cho workEnd nếu đang ở nửa đầu ca)
-    // Tuy nhiên, logic đơn giản nhất cho "vắng mặt" là nếu hiện tại đã quá workEnd của ngày hôm nay.
-    // Với ca đêm kết thúc lúc 08:00 sáng mai: 
-    // Nếu bây giờ là 21:00 (đang trong ca), workEnd phải là 08:00 sáng mai.
-    if (currentShift == 'night' && int.parse(endParts[0]) < 12) {
-       workEnd = workEnd.add(const Duration(days: 1));
+    /// Đã Check In ngày làm việc này chưa (kiểm tra trước để trả lời đúng
+    /// trọng tâm nếu nhân viên bấm lại nút Check In khi đã chấm công rồi).
+    final existing = await _db
+        .collection('attendance')
+        .doc(docId)
+        .get();
+
+    if (existing.exists) {
+      throw Exception(
+        'Bạn đã Check In hôm nay rồi',
+      );
     }
 
-    if (now.isAfter(workEnd)) {
+    /// Bước 3: Shift Window
+    final window = BusinessDateHelper.resolveShiftWindow(
+      businessDate,
+      currentShift,
+      settings,
+    );
+
+    /// Bước 4: đã tới giờ Check In chưa (cho phép sớm tối đa 60 phút)
+    final earliestCheckIn = window.start.subtract(_checkInEarlyWindow);
+    if (now.isBefore(earliestCheckIn)) {
       throw Exception(
-        'Ca làm việc đã kết thúc (${endTime}).\n'
+        'Chưa tới giờ Check In.\n'
+        'Ca làm việc bắt đầu lúc ${DateHelper.toTimeString(window.start)}, '
+        'bạn có thể Check In sớm nhất từ '
+        '${DateHelper.toTimeString(earliestCheckIn)} (trước giờ vào ca 1 tiếng).',
+      );
+    }
+
+    /// Bước 5: đã quá giờ chưa (vắng mặt)
+    if (now.isAfter(window.end)) {
+      throw Exception(
+        'Ca làm việc đã kết thúc (${DateHelper.toTimeString(window.end)}).\n'
         'Ngày hôm nay được tính là vắng mặt.',
       );
     }
 
-    /// Tính đi muộn
-    final isLate =
-    settings.calculateIsLate(
+    /// Bước 7: Tính đi muộn
+    final isLate = settings.calculateIsLate(
       checkInTime: now,
-      shift: currentShift,
+      window: window,
     );
 
+    /// Bước 8/9: docId đã có ở trên, lưu Firestore
     await _db
         .collection('attendance')
         .doc(docId)
@@ -166,13 +179,7 @@ class AttendanceRepository {
       currentShift,
 
       'attendanceDate':
-      Timestamp.fromDate(
-        DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ),
-      ),
+      Timestamp.fromDate(businessDate),
 
       'checkIn':
       Timestamp.fromDate(now),
@@ -205,7 +212,8 @@ class AttendanceRepository {
     });
   }
 
-  /// Lấy attendance hôm nay
+  /// Lấy attendance của ngày làm việc hiện tại (Business Date, không phải
+  /// ngày lịch) cho user đang đăng nhập.
   Future<AttendanceModel?>
   getTodayAttendance() async {
     final user = _auth.currentUser;
@@ -214,13 +222,24 @@ class AttendanceRepository {
       return null;
     }
 
-    final today =
-    DateHelper.toDateString(
+    final settings = await getCompanySettings();
+
+    final userDoc = await _db
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    final shiftGroup =
+        userDoc.data()?['shiftGroup'] ?? 'A';
+
+    final businessDate = BusinessDateHelper.resolveBusinessDate(
       DateTime.now(),
+      settings,
+      shiftGroup,
     );
 
     final docId =
-        '${today}_${user.uid}';
+        '${DateHelper.toDateString(businessDate)}_${user.uid}';
 
     final doc = await _db
         .collection('attendance')
@@ -258,7 +277,8 @@ class AttendanceRepository {
     return records;
   }
 
-  /// Check Out
+  /// Check Out — tìm đúng document đã tạo lúc Check In (kể cả khi Check Out
+  /// muộn sau nửa đêm/qua giờ tan ca, trong khung ân hạn 2 giờ).
   Future<void> checkOut() async {
     final user = _auth.currentUser;
 
@@ -266,40 +286,95 @@ class AttendanceRepository {
       throw Exception('Chưa đăng nhập');
     }
 
-    final today =
-    DateHelper.toDateString(
-      DateTime.now(),
-    );
+    final settings = await getCompanySettings();
 
-    final docId =
-        '${today}_${user.uid}';
-
-    final existing = await _db
-        .collection('attendance')
-        .doc(docId)
+    final userDoc = await _db
+        .collection('users')
+        .doc(user.uid)
         .get();
 
-    if (!existing.exists) {
-      throw Exception(
-        'Bạn chưa Check In hôm nay',
-      );
+    final shiftGroup =
+        userDoc.data()?['shiftGroup'] ?? 'A';
+
+    final now = DateTime.now();
+
+    /// Bước 1: Business Date candidate (giống hệt CheckIn/Home)
+    final candidate = BusinessDateHelper.resolveBusinessDate(
+      now,
+      settings,
+      shiftGroup,
+    );
+
+    String? targetDocId;
+    Map<String, dynamic>? targetData;
+
+    final candidateDocId =
+        '${DateHelper.toDateString(candidate)}_${user.uid}';
+
+    final candidateDoc = await _db
+        .collection('attendance')
+        .doc(candidateDocId)
+        .get();
+
+    if (candidateDoc.exists) {
+      final data = candidateDoc.data()!;
+      if (data['checkOut'] != null) {
+        throw Exception(
+          'Bạn đã Check Out hôm nay rồi',
+        );
+      }
+      targetDocId = candidateDocId;
+      targetData = data;
+    } else {
+      /// Business Date không rollback (candidate == hôm nay theo lịch) ->
+      /// thử document của HÔM QUA, trong khung ân hạn 2 giờ sau giờ tan ca
+      /// (Check Out muộn cho ca đêm — xem ATTENDANCE_BUSINESS_FLOW.md mục 2).
+      final today = DateTime(now.year, now.month, now.day);
+
+      if (candidate == today) {
+        final yesterday = today.subtract(const Duration(days: 1));
+
+        final yesterdayDocId =
+            '${DateHelper.toDateString(yesterday)}_${user.uid}';
+
+        final yesterdayDoc = await _db
+            .collection('attendance')
+            .doc(yesterdayDocId)
+            .get();
+
+        if (yesterdayDoc.exists) {
+          final data = yesterdayDoc.data()!;
+          final shift = data['shift'] ?? 'day';
+
+          if (data['checkOut'] == null && shift == 'night') {
+            final yesterdayWindow = BusinessDateHelper.resolveShiftWindow(
+              yesterday,
+              shift,
+              settings,
+            );
+
+            final graceDeadline =
+                yesterdayWindow.end.add(_checkOutGracePeriod);
+
+            if (!now.isAfter(graceDeadline)) {
+              targetDocId = yesterdayDocId;
+              targetData = data;
+            }
+          }
+        }
+      }
     }
 
-    final data =
-    existing.data()!;
-
-    if (data['checkOut'] != null) {
+    if (targetDocId == null || targetData == null) {
       throw Exception(
-        'Bạn đã Check Out hôm nay rồi',
+        'Không tìm thấy ca làm việc cần Check Out hợp lệ.\n'
+        'Vui lòng liên hệ quản lý/admin để được hỗ trợ điều chỉnh chấm công.',
       );
     }
 
     final position =
     await _gpsService
         .getCurrentPosition();
-
-    final settings =
-    await getCompanySettings();
 
     final distance =
     _gpsService.calculateDistance(
@@ -322,10 +397,8 @@ class AttendanceRepository {
       );
     }
 
-    final now = DateTime.now();
-
     final checkIn =
-    (data['checkIn']
+    (targetData['checkIn']
     as Timestamp)
         .toDate();
 
@@ -335,20 +408,31 @@ class AttendanceRepository {
             .inMinutes /
             60;
 
-// Lấy ca hiện tại
-    final shift =
-        data['shift'] ?? 'day';
+    final attendanceDate =
+    (targetData['attendanceDate']
+    as Timestamp)
+        .toDate();
 
-// Kiểm tra về sớm
+    final shift =
+        targetData['shift'] ?? 'day';
+
+    /// Shift Window của đúng document tìm được (dùng attendanceDate + shift
+    /// đã lưu sẵn, không tính lại theo ngày hiện tại).
+    final window = BusinessDateHelper.resolveShiftWindow(
+      attendanceDate,
+      shift,
+      settings,
+    );
+
     final isEarlyLeave =
     settings.calculateEarlyLeave(
       checkOutTime: now,
-      shift: shift,
+      window: window,
     );
 
     await _db
         .collection('attendance')
-        .doc(docId)
+        .doc(targetDocId)
         .update({
       'checkOut':
       Timestamp.fromDate(now),

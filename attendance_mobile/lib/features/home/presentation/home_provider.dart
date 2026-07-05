@@ -5,6 +5,7 @@ import '../../attendance/domain/attendance_model.dart';
 import '../../auth/domain/user_model.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
+import '../../../core/utils/business_date_helper.dart';
 
 // ===== STATE =====
 class HomeState {
@@ -103,9 +104,14 @@ class HomeNotifier extends StateNotifier<HomeState> {
 
     try {
       final settings = await _attendanceRepo.getCompanySettings();
+      final businessDate = BusinessDateHelper.resolveBusinessDate(
+        DateTime.now(),
+        settings,
+        user.shiftGroup,
+      );
       final currentShift = settings.getCurrentShift(
         shiftGroup: user.shiftGroup,
-        today: DateTime.now(),
+        today: businessDate,
       );
       state = state.copyWith(selectedShift: currentShift);
     } catch (e) {
@@ -150,6 +156,10 @@ class HomeNotifier extends StateNotifier<HomeState> {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 
+    final settings = await _attendanceRepo.getCompanySettings();
+    final userDoc = await _db.collection('users').doc(uid).get();
+    final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
+
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
     final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
@@ -176,6 +186,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
     final absentDays = WorkScheduleHelper.countAbsentDays(
       month: now,
       attendanceDates: attendanceDates,
+      shiftGroup: shiftGroup,
+      settings: settings,
     );
 
     // Đi làm vào ngày thường (không tính tăng ca vào tổng công)

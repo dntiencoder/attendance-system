@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/attendance_repository.dart';
 import '../domain/attendance_model.dart';
+import '../../../core/utils/business_date_helper.dart';
 
 // Provider cho repository
 final attendanceRepositoryProvider = Provider<AttendanceRepository>(
@@ -60,21 +61,15 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       bool shiftEnded = false;
       if (attendance == null) {
         final settings = await _repo.getCompanySettings();
-        final now = DateTime.now();
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).get();
         final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
-        final currentShift = settings.getCurrentShift(shiftGroup: shiftGroup, today: now);
-        final endTime = settings.getShiftEndTime(currentShift);
-        final parts = endTime.split(':');
-        DateTime workEnd = DateTime(now.year, now.month, now.day, int.parse(parts[0]), int.parse(parts[1]));
-        
-        if (currentShift == 'night' && int.parse(parts[0]) < 12) {
-          workEnd = workEnd.add(const Duration(days: 1));
-        }
-        
-        if (now.isAfter(workEnd)) {
-          shiftEnded = true;
-        }
+
+        final now = DateTime.now();
+        final businessDate = BusinessDateHelper.resolveBusinessDate(now, settings, shiftGroup);
+        final currentShift = settings.getCurrentShift(shiftGroup: shiftGroup, today: businessDate);
+        final window = BusinessDateHelper.resolveShiftWindow(businessDate, currentShift, settings);
+
+        shiftEnded = now.isAfter(window.end);
       }
 
       state = state.copyWith(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../features/settings/domain/company_settings_model.dart';
+import 'business_date_helper.dart';
+
 class WorkScheduleHelper {
   WorkScheduleHelper._();
 
@@ -68,8 +71,14 @@ class WorkScheduleHelper {
   static int countAbsentDays({
     required DateTime month,
     required List<DateTime> attendanceDates,
+    required String shiftGroup,
+    required CompanySettingsModel settings,
   }) {
-    final now = DateTime.now();
+    final now = BusinessDateHelper.resolveBusinessDate(
+      DateTime.now(),
+      settings,
+      shiftGroup,
+    );
     final lastDay = DateTime(month.year, month.month + 1, 0).day;
     int absent = 0;
 
