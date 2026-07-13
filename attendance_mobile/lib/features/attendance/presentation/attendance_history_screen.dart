@@ -6,6 +6,7 @@ import 'attendance_history_provider.dart';
 import 'attendance_provider.dart';
 import 'widgets/attendance_filter_chips.dart';
 import 'widgets/attendance_record_list.dart';
+import '../../dev_tools/presentation/widgets/demo_mode_banner.dart';
 
 class AttendanceHistoryScreen extends ConsumerWidget {
   const AttendanceHistoryScreen({super.key});
@@ -28,6 +29,7 @@ class AttendanceHistoryScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
+          const DemoModeBanner(),
           // Header
           _AttendanceHeader(
             month: state.selectedMonth,

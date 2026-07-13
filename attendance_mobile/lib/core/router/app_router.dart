@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,6 +10,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/main_shell_screen.dart';
 import '../../features/attendance/presentation/attendance_history_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/dev_tools/presentation/demo_center_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -48,6 +50,14 @@ class AppRouter {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ChangePasswordPage(),
       ),
+      // Route ẩn để chỉnh giờ demo — chỉ có trong debug build,
+      // không được đăng ký ở bản production (BUG-013).
+      if (kDebugMode)
+        GoRoute(
+          path: '/demo-center',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => const DemoCenterScreen(),
+        ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainShellScreen(navigationShell: navigationShell);

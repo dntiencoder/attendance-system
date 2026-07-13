@@ -4,6 +4,7 @@ import '../../../../core/utils/date_helper.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/widgets/attendance_status_badges.dart';
 import '../../../../shared/widgets/shift_chip.dart';
+import '../../../../core/services/clock_service.dart';
 
 class AttendanceRecordList extends StatelessWidget {
   final List<AttendanceModel> records;
@@ -45,7 +46,7 @@ class AttendanceRecordList extends StatelessWidget {
   }
 
   String _weekLabel(DateTime date) {
-    final now = DateTime.now();
+    final now = ClockService.now();
     final startOfThisWeek = now.subtract(Duration(days: now.weekday - 1));
     final startOfLastWeek = startOfThisWeek.subtract(const Duration(days: 7));
 

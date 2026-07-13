@@ -6,6 +6,7 @@ import '../../settings/domain/company_settings_model.dart';
 import '../../../core/constants/app_config.dart';
 import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
 import '../../../core/utils/business_date_helper.dart';
+import '../../../core/services/clock_service.dart';
 
 class AttendanceHistoryState {
   final DateTime selectedMonth;
@@ -65,7 +66,7 @@ class AttendanceHistoryNotifier
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   AttendanceHistoryNotifier()
-      : super(AttendanceHistoryState(selectedMonth: DateTime.now())) {
+      : super(AttendanceHistoryState(selectedMonth: ClockService.now())) {
     loadRecords();
   }
 
@@ -105,7 +106,7 @@ class AttendanceHistoryNotifier
       // Logic Tự động ghi nhận Vắng mặt (Absent Generation)
       final List<AttendanceModel> allDaysRecords = [];
       final businessDate = BusinessDateHelper.resolveBusinessDate(
-        DateTime.now(),
+        ClockService.now(),
         settings,
         shiftGroup,
       );
@@ -169,7 +170,7 @@ class AttendanceHistoryNotifier
   void nextMonth() {
     final m = state.selectedMonth;
     // Không cho chọn tháng tương lai
-    final now = DateTime.now();
+    final now = ClockService.now();
     if (m.year == now.year && m.month == now.month) return;
     state = state.copyWith(
       selectedMonth: DateTime(m.year, m.month + 1),

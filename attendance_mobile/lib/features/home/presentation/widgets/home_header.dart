@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../features/auth/domain/user_model.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
+import '../../../../core/services/clock_service.dart';
 
 class HomeHeader extends StatelessWidget {
   final UserModel? user;
@@ -15,7 +16,7 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
+    final now = ClockService.now();
     final weekdays = ['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy','Chủ Nhật'];
     final weekday = weekdays[now.weekday - 1];
     final dateStr = '$weekday, ${now.day.toString().padLeft(2,'0')}/${now.month.toString().padLeft(2,'0')}/${now.year}';

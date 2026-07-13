@@ -8,6 +8,7 @@ import '../../../features/settings/domain/company_settings_model.dart';
 import '../../../core/constants/app_config.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/business_date_helper.dart';
+import '../../../core/services/clock_service.dart';
 
 class AttendanceRepository {
   final FirebaseFirestore _db =
@@ -102,7 +103,7 @@ class AttendanceRepository {
     final shiftGroup =
         userData['shiftGroup'] ?? 'A';
 
-    final now = DateTime.now();
+    final now = ClockService.now();
 
     /// Bước 1: Business Date
     final businessDate = BusinessDateHelper.resolveBusinessDate(
@@ -233,7 +234,7 @@ class AttendanceRepository {
         userDoc.data()?['shiftGroup'] ?? 'A';
 
     final businessDate = BusinessDateHelper.resolveBusinessDate(
-      DateTime.now(),
+      ClockService.now(),
       settings,
       shiftGroup,
     );
@@ -296,7 +297,7 @@ class AttendanceRepository {
     final shiftGroup =
         userDoc.data()?['shiftGroup'] ?? 'A';
 
-    final now = DateTime.now();
+    final now = ClockService.now();
 
     /// Bước 1: Business Date candidate (giống hệt CheckIn/Home)
     final candidate = BusinessDateHelper.resolveBusinessDate(

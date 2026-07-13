@@ -15,6 +15,8 @@ import 'widgets/home_skeleton.dart';
 import '../../../shared/utils/snackbar_utils.dart';
 
 import '../../../core/utils/work_schedule_helper.dart';
+import '../../../core/services/clock_service.dart';
+import '../../dev_tools/presentation/widgets/demo_mode_banner.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -25,7 +27,7 @@ class HomeScreen extends ConsumerWidget {
     final attendanceState = ref.watch(attendanceProvider);
 
     // Kiểm tra xem hôm nay có phải ngày nghỉ bắt buộc không
-    final isOffDay = WorkScheduleHelper.isOffDay(DateTime.now());
+    final isOffDay = WorkScheduleHelper.isOffDay(ClockService.now());
 
     ref.listen<AttendanceState>(
       attendanceProvider,
@@ -56,7 +58,11 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: RefreshIndicator(
+      body: Column(
+        children: [
+          const DemoModeBanner(),
+          Expanded(
+            child: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: () => ref.read(homeProvider.notifier).refresh(),
         child: CustomScrollView(
@@ -94,7 +100,7 @@ class HomeScreen extends ConsumerWidget {
                       earlyDays: homeState.monthlyEarly,
                       lateDays: homeState.monthlyLate,
                       absentDays: homeState.monthlyAbsent,
-                      month: DateTime.now(),
+                      month: ClockService.now(),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     RecentAttendance(
@@ -107,6 +113,9 @@ class HomeScreen extends ConsumerWidget {
             ),
           ],
         ),
+            ),
+          ),
+        ],
       ),
     );
   }

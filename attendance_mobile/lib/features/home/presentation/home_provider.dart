@@ -6,6 +6,7 @@ import '../../auth/domain/user_model.dart';
 import '../../attendance/data/attendance_repository.dart';
 import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
 import '../../../core/utils/business_date_helper.dart';
+import '../../../core/services/clock_service.dart';
 
 // ===== STATE =====
 class HomeState {
@@ -105,7 +106,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
     try {
       final settings = await _attendanceRepo.getCompanySettings();
       final businessDate = BusinessDateHelper.resolveBusinessDate(
-        DateTime.now(),
+        ClockService.now(),
         settings,
         user.shiftGroup,
       );
@@ -160,7 +161,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
     final userDoc = await _db.collection('users').doc(uid).get();
     final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
 
-    final now = DateTime.now();
+    final now = ClockService.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
     final endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
 

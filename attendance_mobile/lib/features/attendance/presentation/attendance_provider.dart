@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/attendance_repository.dart';
 import '../domain/attendance_model.dart';
 import '../../../core/utils/business_date_helper.dart';
+import '../../../core/services/clock_service.dart';
 
 // Provider cho repository
 final attendanceRepositoryProvider = Provider<AttendanceRepository>(
@@ -61,10 +62,11 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       bool shiftEnded = false;
       if (attendance == null) {
         final settings = await _repo.getCompanySettings();
-        final userDoc = await FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser?.uid).get();
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(
+            FirebaseAuth.instance.currentUser?.uid).get();
         final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
 
-        final now = DateTime.now();
+        final now = ClockService.now();
         final businessDate = BusinessDateHelper.resolveBusinessDate(now, settings, shiftGroup);
         final currentShift = settings.getCurrentShift(shiftGroup: shiftGroup, today: businessDate);
         final window = BusinessDateHelper.resolveShiftWindow(businessDate, currentShift, settings);

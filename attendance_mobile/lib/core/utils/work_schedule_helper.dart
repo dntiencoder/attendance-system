@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/settings/domain/company_settings_model.dart';
 import 'business_date_helper.dart';
+import '../services/clock_service.dart';
 
 class WorkScheduleHelper {
   WorkScheduleHelper._();
@@ -75,7 +76,7 @@ class WorkScheduleHelper {
     required CompanySettingsModel settings,
   }) {
     final now = BusinessDateHelper.resolveBusinessDate(
-      DateTime.now(),
+      ClockService.now(),
       settings,
       shiftGroup,
     );
