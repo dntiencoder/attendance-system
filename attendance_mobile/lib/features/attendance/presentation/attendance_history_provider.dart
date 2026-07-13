@@ -141,7 +141,7 @@ class AttendanceHistoryNotifier
         // NẾU LÀ RECORD VIRTUAL (không đi làm), 
         // CHỈ ADD VÀO LIST NẾU ĐÓ LÀ NGÀY BẮT BUỘC ĐI LÀM (Work Day)
         if (existing.id.startsWith('virtual_')) {
-           if (WorkScheduleHelper.isMandatoryWorkDay(date)) {
+           if (WorkScheduleHelper.isMandatoryWorkDay(date, settings.rotationStartDate)) {
              allDaysRecords.add(existing);
            }
         } else {

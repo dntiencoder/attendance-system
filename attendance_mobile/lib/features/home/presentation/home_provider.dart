@@ -25,6 +25,13 @@ class HomeState {
   final bool isLoading;
   final String? error;
 
+  /// Mốc ngày gốc chu kỳ xoay ca — lấy từ CompanySettingsModel.rotationStartDate
+  /// (nguồn duy nhất, xem docs/decision/01_DECISION_LOG.md), cần giữ lại ở
+  /// đây vì HomeScreen cần nó để gọi WorkScheduleHelper mà không có sẵn
+  /// CompanySettingsModel trong tay. null trước khi _loadMonthlyStats() chạy
+  /// xong lần đầu.
+  final DateTime? rotationStartDate;
+
   HomeState({
     this.user,
     this.departmentName,
@@ -37,6 +44,7 @@ class HomeState {
     this.recentAttendance = const [],
     this.isLoading = false,
     this.error,
+    this.rotationStartDate,
   });
 
   HomeState copyWith({
@@ -51,6 +59,7 @@ class HomeState {
     List<AttendanceModel>? recentAttendance,
     bool? isLoading,
     String? error,
+    DateTime? rotationStartDate,
   }) {
     return HomeState(
       user: user ?? this.user,
@@ -64,6 +73,7 @@ class HomeState {
       recentAttendance: recentAttendance ?? this.recentAttendance,
       isLoading: isLoading ?? this.isLoading,
       error: error,
+      rotationStartDate: rotationStartDate ?? this.rotationStartDate,
     );
   }
 }
@@ -192,8 +202,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
     );
 
     // Đi làm vào ngày thường (không tính tăng ca vào tổng công)
-    final onTimeDays = records.where((r) => 
-        WorkScheduleHelper.isMandatoryWorkDay(r.attendanceDate) &&
+    final onTimeDays = records.where((r) =>
+        WorkScheduleHelper.isMandatoryWorkDay(r.attendanceDate, settings.rotationStartDate) &&
         r.checkIn != null && !r.isLate && !r.isEarlyLeave && r.hasCheckedOut).length;
 
     state = state.copyWith(
@@ -201,6 +211,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
       monthlyEarly: records.where((r) => r.isEarlyLeave).length,
       monthlyLate: records.where((r) => r.isLate).length,
       monthlyAbsent: absentDays,
+      rotationStartDate: settings.rotationStartDate,
     );
   }
 

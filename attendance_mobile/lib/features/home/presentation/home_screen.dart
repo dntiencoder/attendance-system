@@ -26,8 +26,14 @@ class HomeScreen extends ConsumerWidget {
     final homeState = ref.watch(homeProvider);
     final attendanceState = ref.watch(attendanceProvider);
 
-    // Kiểm tra xem hôm nay có phải ngày nghỉ bắt buộc không
-    final isOffDay = WorkScheduleHelper.isOffDay(ClockService.now());
+    // Kiểm tra xem hôm nay có phải ngày nghỉ bắt buộc không. Fallback
+    // DateTime.now() chỉ áp dụng cho khung hình đầu tiên trước khi
+    // _loadMonthlyStats() nạp xong rotationStartDate — không ảnh hưởng vì
+    // homeState.isLoading vẫn true lúc đó (return HomeSkeleton() bên dưới).
+    final isOffDay = WorkScheduleHelper.isOffDay(
+      ClockService.now(),
+      homeState.rotationStartDate ?? DateTime.now(),
+    );
 
     ref.listen<AttendanceState>(
       attendanceProvider,
