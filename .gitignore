@@ -27,3 +27,8 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Kết quả backup Firestore (tools/firestore_backup) — chứa dữ liệu thật
+# (email nhân viên, v.v.), không được commit. BACKUP_SUMMARY.md không chứa
+# PII nên vẫn được commit bình thường.
+/backup_firestore.json

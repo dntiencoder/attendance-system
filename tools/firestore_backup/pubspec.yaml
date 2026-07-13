@@ -1,0 +1,13 @@
+name: firestore_backup
+description: >
+  Công cụ dòng lệnh độc lập để backup toàn bộ dữ liệu Firestore của dự án
+  attendance-system phục vụ demo. Không dùng Firebase Export/gcloud export,
+  không cần Cloud Storage, không cần Billing — chỉ gọi Firestore REST API
+  bằng chính tài khoản admin đã có.
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  http: ^1.2.0
