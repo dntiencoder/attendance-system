@@ -1,0 +1,94 @@
+# 03_PROGRESS.md
+
+**Mục tiêu:** Nhật ký tiến độ theo thời gian — khác với `PROJECT_MASTER_PLAN.md` (mô tả trạng thái tĩnh "nên làm gì theo Phase nào"), tài liệu này là **nhật ký** ghi lại "đã làm gì, khi nào" để nhìn lại lịch sử tiến độ thực tế, đặc biệt hữu ích khi viết Chương 3/4 (Phase G) cần kể lại quá trình phát triển.
+
+**Phạm vi:** Một entry mỗi khi đóng 1 sprint (`02_SPRINT.md`) hoặc đạt 1 milestone, không cần ghi hàng ngày.
+
+**Khi nào dùng:** Cuối mỗi sprint; ngay sau khi đạt bất kỳ Milestone M0-M7 nào (`PROJECT_MASTER_PLAN.md` §4).
+
+**Liên kết:** Milestone tham chiếu `PROJECT_MASTER_PLAN.md` §4; Task tham chiếu ID ở `01_BACKLOG.md`; Risk tham chiếu `PROJECT_MASTER_PLAN.md` §7 hoặc bổ sung mới nếu phát sinh.
+
+---
+
+## Cách ghi 1 entry
+
+```
+## <YYYY-MM-DD>
+
+- **Milestone:** <milestone gần nhất đã đạt hoặc đang hướng tới>
+- **Phase hiện tại:** <A-H theo PROJECT_MASTER_PLAN.md>
+- **Task Completed:** <danh sách ID từ 01_BACKLOG.md hoặc mô tả ngắn>
+- **Task Remaining:** <danh sách ID còn lại của sprint hiện tại>
+- **Risk nổi bật:** <rủi ro mới phát sinh hoặc rủi ro cũ cần nhắc lại — tham chiếu PROJECT_MASTER_PLAN.md §7 nếu đã có>
+```
+
+---
+
+## 2026-07-13
+
+- **Milestone:** chuẩn bị M0; đã hoàn thành việc thiết lập toàn bộ hệ thống tài liệu quản lý dự án.
+- **Phase hiện tại:** chuyển tiếp từ `ROADMAP.md` Phase 1 (đã xong 7/7) sang `PROJECT_MASTER_PLAN.md` Phase A.
+- **Task Completed:**
+  - `PROJECT_MASTER_PLAN.md` hoàn thành, tự rà soát bởi Technical Lead (tách Phase D thành D.1/D.2, thêm Milestone M0 — xem D-011 ở `docs/decision/01_DECISION_LOG.md`).
+  - Toàn bộ hệ thống tài liệu quản lý (`docs/project/`, `docs/testing/`, `docs/release/`, `docs/decision/`) khởi tạo lần đầu.
+  - Baseline `flutter analyze`: 23 issue (mobile), 13 issue (admin) — toàn bộ warning/info, không có lỗi.
+- **Task Remaining:** toàn bộ checklist Sprint 0 (D.1) và Sprint 1 trở đi — xem `02_SPRINT.md`.
+- **Risk nổi bật:** Demo Time System (12 file) vẫn chưa commit trong working tree — rủi ro cao nhất hiện tại, xem `PROJECT_MASTER_PLAN.md` §7 rủi ro #1, task FEAT-04 ở `01_BACKLOG.md`.
+
+## 2026-07-13 (cùng ngày, sau khi hoàn thành FEAT-04)
+
+- **Milestone:** rủi ro #1 (Demo Time System chưa commit) đã được xử lý — chưa đạt trọn M0 (còn 4 việc data/thủ công khác của Sprint 0 chưa làm), chưa đạt M1 (còn TD-01/02/03 và FEAT-01/02/03 của Phase A).
+- **Phase hiện tại:** A.
+- **Task Completed:**
+  - FEAT-04 hoàn thành: `flutter analyze` sạch (23 issue baseline, không phát sinh mới), MT-18→MT-22 Pass (test tay trên thiết bị thật `RMX3491`), MT-23 ban đầu Fail → phát hiện BUG-013 (route `/demo-center` không bọc `kDebugMode`, chỉ ẩn UI entry) → sửa ngay trong cùng task (mirror pattern P1-06) → MT-23 Pass sau khi sửa.
+  - Commit `9a2623e` — "feat: add demo time system for simulating clock during demos" (17 file dự kiến; phát hiện thêm 1 file `.idea/caches/deviceStreaming.xml` bị cuốn theo do đã staged sẵn từ trước phiên làm việc này — đã báo cáo minh bạch, tác động không đáng kể).
+  - `docs/testing/01_TEST_PLAN.md`, `docs/testing/02_BUG_TRACKER.md` cập nhật kết quả test/bug (bản thân 2 file này vẫn chưa commit — nằm trong khối tài liệu quản lý dự án chưa commit, ngoài phạm vi FEAT-04).
+- **Task Remaining:** TD-01, TD-02, TD-03 (nốt Sprint 1); 4 việc còn lại của Sprint 0 (D.1); FEAT-01/02/03 (chờ xác nhận ưu tiên).
+- **Risk nổi bật:** rủi ro #1 đã đóng. Rủi ro còn lại đáng chú ý nhất hiện tại: toàn bộ hệ thống tài liệu quản lý (`docs/project/`, `docs/testing/`, `docs/release/`, `docs/decision/`) và một khối công việc khác (`tools/firestore_backup/`, `docs/demo/`, `docs/report/`, `docs/review/`) vẫn chưa commit — cùng loại rủi ro như FEAT-04 trước khi xử lý, chưa có task nào trong backlog theo dõi việc này.
+
+## 2026-07-13 (cùng ngày, sau khi hoàn thành TD-01)
+
+- **Milestone:** vẫn đang trong Sprint 1, chưa đạt M1 — còn TD-02, TD-03.
+- **Phase hiện tại:** A.
+- **Task Completed:**
+  - TD-01 hoàn thành: `checkIn()` đổi sang `runTransaction()`, bọc `FirebaseException` (theo `e.code`, không so khớp chuỗi) cho toàn bộ phần thân từ GPS tới transaction để hiện đúng thông báo "Không có kết nối Internet..." dù lỗi xảy ra ở bước nào. Commit `2da7827`.
+  - `flutter analyze` sạch (baseline không đổi), `git diff --stat` xác nhận đúng 1 file thay đổi trước khi commit.
+  - TD01-01 (Check In bình thường) Pass trên thiết bị thật.
+  - Phát hiện **BUG-014** trong lúc test tay: `GpsService.getCurrentPosition()` (`gps_service.dart`, ngoài phạm vi TD-01) ném `TimeoutException` thô sau 15s — chặn TD01-02/03/04/08, khiến các test này không chạm tới được đoạn code TD-01 sửa. Đã ghi nhận vào `docs/testing/02_BUG_TRACKER.md`, không tự ý sửa (ngoài phạm vi file được duyệt).
+  - Quyết định đóng TD-01 dựa trên review code + TD01-01 Pass, để TD01-02/03/04/08 lại làm việc tồn đọng chờ BUG-014 (không chặn TD-01) — quyết định của bạn, không phải tự ý của tôi.
+- **Task Remaining:** TD-02 (ràng buộc xoá nhân viên theo `isActive`), TD-03 (đồng bộ nguồn mốc rotation); BUG-014 chưa có task backlog theo dõi việc sửa (mới chỉ ghi nhận).
+- **Risk nổi bật:** BUG-014 (GPS timeout không xử lý thân thiện, có thể ảnh hưởng Check In thật ở nơi tín hiệu yếu) — mức Medium, chưa vào Sprint nào; nên cân nhắc thêm vào `01_BACKLOG.md` mục B ở lượt cập nhật tiếp theo nếu muốn ưu tiên xử lý trước Phase E.
+
+## 2026-07-13 (cùng ngày, sau khi hoàn thành TD-02)
+
+- **Milestone:** Sprint 1 gần xong — chỉ còn TD-03. Chưa đạt M1.
+- **Phase hiện tại:** A.
+- **Task Completed:**
+  - Trong lúc làm TD-02, phát hiện thiết kế ban đầu (bắt `isActive = false` trước khi xoá) dùng sai tiêu chí — dừng lại, không code ngay, viết tài liệu thiết kế `docs/design/EMPLOYEE_LIFECYCLE.md` để chốt lại toàn bộ vòng đời nhân viên (Active/Inactive/Delete) trước khi tiếp tục. Đã duyệt, ghi nhận thành quyết định D-012 ở `docs/decision/01_DECISION_LOG.md`.
+  - TD-02 đổi tên + thiết kế lại: Delete chỉ bị chặn khi nhân viên đã có dữ liệu Attendance/Leave Request (không phải theo `isActive`); Notification cố ý không tính vào điều kiện chặn.
+  - Implementation: thêm `EmployeeRepository.hasBusinessData()`, viết lại `_showDeleteConfirm()`. Commit `7f17397`, chỉ đúng 2 file liên quan (tách riêng khỏi 1 dòng sửa label không liên quan vẫn còn nằm ngoài staged, bằng patch thủ công thay vì `git add` cả file).
+  - `flutter analyze` + `flutter build web` sạch. TD02-04/05/06 Pass trên bản Web thật.
+- **Task Remaining:** TD-03 (đồng bộ nguồn mốc rotation) — task cuối cùng của Sprint 1.
+- **Risk nổi bật:** không phát sinh rủi ro mới. Bài học quy trình đáng ghi nhận: việc dừng lại để làm rõ nghiệp vụ trước khi code (thay vì implement ngay theo phân tích ban đầu) đã tránh được một thiết kế sai tiêu chí — nên tiếp tục ưu tiên "chốt nghiệp vụ trước, code sau" cho các task còn lại nếu có dấu hiệu mơ hồ tương tự.
+
+## 2026-07-13 (cùng ngày, sau khi hoàn thành TD-03 — đóng Sprint 1)
+
+- **Milestone:** **Sprint 1 DONE.** Đạt điều kiện M1 (Core Complete) **một phần** — xem đánh giá đầy đủ ở Sprint Review bên dưới, còn nhiều mục Phase A khác (FEAT-01/02/03) chưa làm nên chưa thể coi M1 đã đạt trọn vẹn.
+- **Phase hiện tại:** A.
+- **Task Completed:**
+  - TD-03 hoàn thành: `WorkScheduleHelper` không còn hardcode mốc ngày gốc, toàn bộ đọc từ `CompanySettingsModel.rotationStartDate`. Không gộp chung logic "ca A/B" và "ngày làm bắt buộc" thành 1 hàm (2 quy tắc nghiệp vụ khác nhau, chỉ đồng bộ nguồn mốc ngày) — quyết định rõ trong phần phân tích trước khi code.
+  - `flutter analyze` + `flutter build web` (mobile) sạch. 6 mục regression Pass trên thiết bị thật (Day/Night Shift, Rotation, Business Date, Demo Time, Attendance History, Thống kê tháng).
+  - Commit `5d829ae`, đúng 4 file dự kiến, không lẫn thay đổi ngoài phạm vi.
+
+### Sprint Review — Sprint 1
+
+| Task | Trạng thái | Cần Regression Fix? | Bug mới phát sinh? |
+|---|---|---|---|
+| FEAT-04 — Demo Time System | Done (`9a2623e`) | Không | BUG-013 (route `/demo-center` thiếu `kDebugMode`) — phát hiện và **sửa ngay trong cùng task**, đã đóng |
+| TD-01 — Transaction cho Check In | Done (`2da7827`) | Không | **BUG-014** (GPS `getCurrentPosition()` timeout thô, không thân thiện) — phát hiện lúc test, **chưa sửa**, đang Open trong `docs/testing/02_BUG_TRACKER.md` và đã vào `01_BACKLOG.md` (mục B, chưa vào Sprint nào) |
+| TD-02 — Chặn xoá nhân viên có Business Data | Done (`7f17397`) | Không | Không — nhưng dẫn tới việc viết lại thiết kế nghiệp vụ (`docs/design/EMPLOYEE_LIFECYCLE.md`, quyết định D-012) trước khi code, không phải bug, là cải thiện thiết kế giữa chừng |
+| TD-03 — Đồng bộ nguồn mốc rotation | Done (`5d829ae`) | Không | Không |
+
+**Tổng kết:** 4/4 task Done, đúng phạm vi từng task (không có commit nào lẫn file ngoài phạm vi). 1 bug phát hiện-và-sửa-ngay (BUG-013), 1 bug phát hiện-còn-mở (BUG-014, Medium, không chặn Sprint 1 vì nằm ngoài phạm vi từng task cụ thể — thuộc `gps_service.dart`, chưa file nào trong Sprint 1 được duyệt sửa). Không cần Regression Fix bổ sung nào cho 4 task đã đóng.
+- **Task Remaining:** BUG-014 (Open, chưa vào Sprint nào); toàn bộ Sprint 2 trở đi (chưa mở).
+- **Risk nổi bật:** không có rủi ro mới phát sinh từ việc đóng Sprint 1. Rủi ro tồn đọng duy nhất là BUG-014, mức Medium, đã có trong backlog chờ ưu tiên.
