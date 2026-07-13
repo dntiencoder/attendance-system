@@ -56,6 +56,25 @@ class EmployeeRepository {
     await _db.collection('users').doc(id).delete();
   }
 
+  /// Nhân viên đã từng phát sinh dữ liệu nghiệp vụ (chấm công hoặc đơn nghỉ
+  /// phép) hay chưa — quyết định hồ sơ có được phép xoá hay không, độc lập
+  /// với isActive. Xem docs/design/EMPLOYEE_LIFECYCLE.md.
+  Future<bool> hasBusinessData(String uid) async {
+    final attendance = await _db
+        .collection('attendance')
+        .where('uid', isEqualTo: uid)
+        .limit(1)
+        .get();
+    if (attendance.docs.isNotEmpty) return true;
+
+    final leaveRequests = await _db
+        .collection('leave_requests')
+        .where('uid', isEqualTo: uid)
+        .limit(1)
+        .get();
+    return leaveRequests.docs.isNotEmpty;
+  }
+
   // Cập nhật trạng thái hoạt động
   Future<void> toggleStatus(String id, bool currentStatus) async {
     await _db.collection('users').doc(id).update({'isActive': !currentStatus});

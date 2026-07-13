@@ -375,12 +375,48 @@ class EmployeeScreen extends ConsumerWidget {
     );
   }
 
-  void _showDeleteConfirm(BuildContext context, WidgetRef ref, EmployeeModel emp) {
+  Future<void> _showDeleteConfirm(BuildContext context, WidgetRef ref, EmployeeModel emp) async {
+    // Chỉ cho phép xoá hồ sơ nhân viên CHƯA từng phát sinh dữ liệu nghiệp vụ
+    // (Attendance/Leave Request) — độc lập với isActive. Xem thiết kế đầy đủ ở
+    // docs/design/EMPLOYEE_LIFECYCLE.md và quyết định D-012 ở
+    // docs/decision/01_DECISION_LOG.md. Xoá vẫn không xoá được tài khoản
+    // Firebase Auth tương ứng (cần Admin SDK/Cloud Function, ngoài phạm vi —
+    // xem OOS-07 ở docs/project/01_BACKLOG.md), nhưng đây không còn là rủi ro
+    // chính cần chặn — rủi ro chính là phá dữ liệu chấm công/nghỉ phép thật.
+    final hasBusinessData =
+        await ref.read(employeeRepositoryProvider).hasBusinessData(emp.id);
+
+    if (!context.mounted) return;
+
+    if (hasBusinessData) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Không thể xoá'),
+          content: const Text(
+            'Không thể xoá nhân viên đã có dữ liệu chấm công hoặc đơn nghỉ phép.\n'
+            'Nếu nhân viên đã nghỉ việc, hãy vô hiệu hoá tài khoản (nút bật/tắt) '
+            'thay vì xoá — dữ liệu chấm công/lương của họ vẫn cần được giữ lại.',
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Đóng')),
+          ],
+        ),
+      );
+      return;
+    }
+
+    if (!context.mounted) return;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Xác nhận xóa'),
-        content: Text('Bạn có chắc chắn muốn xóa nhân viên ${emp.name}?'),
+        content: Text(
+          'Bạn có chắc chắn muốn xóa nhân viên ${emp.name}?\n\n'
+          'Xoá hồ sơ này sẽ không thể hoàn tác. Email "${emp.email}" đã dùng cho '
+          'tài khoản này sẽ không thể dùng lại để tạo nhân viên mới sau khi xoá.',
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Hủy')),
           TextButton(
