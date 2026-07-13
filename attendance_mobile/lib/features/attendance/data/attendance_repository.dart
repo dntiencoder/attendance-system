@@ -55,6 +55,15 @@ class AttendanceRepository {
       throw Exception('Chưa đăng nhập');
     }
 
+    /// Toàn bộ phần thân bên dưới (GPS, đọc company_settings/users, và
+    /// transaction) được bọc chung 1 try/catch cho FirebaseException — mất
+    /// mạng có thể khiến BẤT KỲ lượt đọc/ghi Firestore nào ở đây thất bại,
+    /// không chỉ riêng transaction, nên cần bắt ở phạm vi đủ rộng để luôn
+    /// hiện đúng 1 thông báo nghiệp vụ nhất quán thay vì lộ lỗi kỹ thuật thô
+    /// tuỳ theo bước nào thất bại trước. Các exception nghiệp vụ khác (ngoài
+    /// bán kính, chưa tới giờ, đã Check In rồi...) đều là Exception thường,
+    /// không phải FirebaseException, nên không bị ảnh hưởng bởi khối này.
+    try {
     final position =
     await _gpsService
         .getCurrentPosition();
@@ -121,19 +130,6 @@ class AttendanceRepository {
     final docId =
         '${DateHelper.toDateString(businessDate)}_${user.uid}';
 
-    /// Đã Check In ngày làm việc này chưa (kiểm tra trước để trả lời đúng
-    /// trọng tâm nếu nhân viên bấm lại nút Check In khi đã chấm công rồi).
-    final existing = await _db
-        .collection('attendance')
-        .doc(docId)
-        .get();
-
-    if (existing.exists) {
-      throw Exception(
-        'Bạn đã Check In hôm nay rồi',
-      );
-    }
-
     /// Bước 3: Shift Window
     final window = BusinessDateHelper.resolveShiftWindow(
       businessDate,
@@ -166,51 +162,55 @@ class AttendanceRepository {
       window: window,
     );
 
-    /// Bước 8/9: docId đã có ở trên, lưu Firestore
-    await _db
-        .collection('attendance')
-        .doc(docId)
-        .set({
-      'uid': user.uid,
+    /// Bước 8/9: đọc "đã Check In chưa" + ghi document trong cùng 1
+    /// transaction, để tránh race condition khi checkIn() bị gọi trùng lặp
+    /// gần như đồng thời (double tap, 2 phiên cùng lúc...) — xem
+    /// docs/decision/01_DECISION_LOG.md. Firestore sẽ tự động retry lại hàm
+    /// transaction khi phát hiện xung đột ghi, nên đúng 1 trong các lần gọi
+    /// trùng sẽ thắng; các lần còn lại đọc lại thấy document đã tồn tại và
+    /// nhận đúng lỗi nghiệp vụ bên dưới thay vì âm thầm ghi đè dữ liệu.
+    final docRef = _db.collection('attendance').doc(docId);
 
-      'employeeCode':
-      employeeCode,
+    await _db.runTransaction((transaction) async {
+      final existing = await transaction.get(docRef);
 
-      'shift':
-      currentShift,
+      if (existing.exists) {
+        throw Exception(
+          'Bạn đã Check In hôm nay rồi',
+        );
+      }
 
-      'attendanceDate':
-      Timestamp.fromDate(businessDate),
-
-      'checkIn':
-      Timestamp.fromDate(now),
-
-      'checkOut': null,
-
-      'latitude':
-      position.latitude,
-
-      'longitude':
-      position.longitude,
-
-      'distance': distance,
-
-      'checkOutLatitude': null,
-
-      'checkOutLongitude': null,
-
-      'workHours': null,
-
-      'isLate': isLate,
-
-      'status':
-      isLate
-          ? 'late'
-          : 'on_time',
-
-      'createdAt':
-      Timestamp.fromDate(now),
+      transaction.set(docRef, {
+        'uid': user.uid,
+        'employeeCode': employeeCode,
+        'shift': currentShift,
+        'attendanceDate': Timestamp.fromDate(businessDate),
+        'checkIn': Timestamp.fromDate(now),
+        'checkOut': null,
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'distance': distance,
+        'checkOutLatitude': null,
+        'checkOutLongitude': null,
+        'workHours': null,
+        'isLate': isLate,
+        'status': isLate ? 'late' : 'on_time',
+        'createdAt': Timestamp.fromDate(now),
+      });
     });
+    } on FirebaseException catch (e) {
+      /// Transaction/đọc Firestore không dùng được hàng đợi ghi khi offline
+      /// (khác set()/update() thường) — cố ý, để không chốt giờ Check In tại
+      /// một thời điểm rồi ghi lên server ở một thời điểm khác. `e.code` là
+      /// mã lỗi có cấu trúc do Firebase SDK định nghĩa, không phải so khớp
+      /// chuỗi lỗi hiển thị (khác cách làm đã bị REVIEW.md mục 8.2 phê bình).
+      if (e.code == 'unavailable') {
+        throw Exception(
+          'Không có kết nối Internet. Vui lòng kết nối mạng trước khi Check In.',
+        );
+      }
+      rethrow;
+    }
   }
 
   /// Lấy attendance của ngày làm việc hiện tại (Business Date, không phải
