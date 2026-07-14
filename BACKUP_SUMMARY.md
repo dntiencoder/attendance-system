@@ -2,7 +2,7 @@
 
 Tự động sinh bởi `tools/firestore_backup`. Không sửa tay file này — chạy lại tool để cập nhật.
 
-- **Thời điểm backup:** 2026-07-14T11:36:39.736642Z
+- **Thời điểm backup:** 2026-07-14T11:42:05.504894Z
 - **Tổng số collection gốc:** 7
 - **Tổng số subcollection:** 0
 - **Tổng số document (gồm cả subcollection):** 63

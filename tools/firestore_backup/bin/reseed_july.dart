@@ -177,6 +177,11 @@ Future<void> main() async {
   stdout.writeln();
 
   // ---- Phase B: từng nhân viên tự đăng nhập, tự tạo attendance của mình ----
+  // Random() không seed cố định -> mỗi lần chạy script cho kết quả khác nhau,
+  // và mỗi nhân viên/mỗi ngày cũng không lặp lại cùng 1 khuôn mẫu như trước
+  // (trước đây dùng Random(day) — cùng ngày thì mọi nhân viên ra y hệt nhau).
+  final random = Random();
+
   for (final emp in _employees) {
     final password = readCredential(emp.passwordEnvVar, '${emp.employeeCode} password');
     stdout.writeln('Đăng nhập ${emp.employeeCode} (${emp.email})...');
@@ -200,17 +205,19 @@ Future<void> main() async {
       final endHour = isDay ? 20 : 8;
       final isToday = day == _targetMonthDays; // 14/7 — bản ghi "đang làm việc"
 
-      // 0: đúng giờ, 1: muộn, 2: về sớm, 3: vừa muộn vừa về sớm,
-      // 4: vắng (ngày làm/tăng ca nhưng không có bản ghi — bỏ qua bên dưới,
-      // trừ hôm nay vì hôm nay luôn cần thể hiện trạng thái "đang làm việc").
-      final scenario = day % 5;
-      if (scenario == 4 && !isToday) continue;
+      // Random có trọng số thay vì lặp cứng theo day % n — các khoảng roll
+      // không chồng nhau: [0,45) đúng giờ, [45,65) muộn, [65,80) về sớm,
+      // [80,90) vừa muộn vừa về sớm, [90,100) vắng.
+      final roll = random.nextInt(100);
+      final isAbsent = roll >= 90;
+      if (isAbsent && !isToday) continue;
 
-      final isLate = scenario == 1 || scenario == 3;
+      final isLate = (roll >= 45 && roll < 65) || (roll >= 80 && roll < 90);
+      final wantsEarlyLeave = roll >= 65 && roll < 90;
 
       final checkIn = isLate
-          ? DateTime(date.year, date.month, date.day, startHour, 15 + Random(day).nextInt(20))
-          : DateTime(date.year, date.month, date.day, startHour - 1, 45 + Random(day).nextInt(14));
+          ? DateTime(date.year, date.month, date.day, startHour, 15 + random.nextInt(20))
+          : DateTime(date.year, date.month, date.day, startHour - 1, 45 + random.nextInt(14));
 
       DateTime? checkOut;
       bool isEarlyLeave = false;
@@ -220,11 +227,11 @@ Future<void> main() async {
         status = isLate ? 'late' : 'on_time';
       } else {
         final checkoutDate = !isDay ? date.add(const Duration(days: 1)) : date;
-        isEarlyLeave = scenario == 2 || scenario == 3;
+        isEarlyLeave = wantsEarlyLeave;
         if (isEarlyLeave) {
-          checkOut = DateTime(checkoutDate.year, checkoutDate.month, checkoutDate.day, endHour - 1, 20 + Random(day + 1).nextInt(30));
+          checkOut = DateTime(checkoutDate.year, checkoutDate.month, checkoutDate.day, endHour - 1, 20 + random.nextInt(30));
         } else {
-          checkOut = DateTime(checkoutDate.year, checkoutDate.month, checkoutDate.day, endHour, Random(day + 2).nextInt(10));
+          checkOut = DateTime(checkoutDate.year, checkoutDate.month, checkoutDate.day, endHour, random.nextInt(10));
         }
         status = isLate ? 'late' : (isEarlyLeave ? 'early_leave' : 'completed');
       }
@@ -242,9 +249,9 @@ Future<void> main() async {
           'attendanceDate': date,
           'checkIn': checkIn,
           'checkOut': checkOut,
-          'latitude': latitude + (Random(day).nextDouble() - 0.5) * 0.0006,
-          'longitude': longitude + (Random(day + 3).nextDouble() - 0.5) * 0.0006,
-          'distance': 10.0 + Random(day).nextDouble() * 30,
+          'latitude': latitude + (random.nextDouble() - 0.5) * 0.0006,
+          'longitude': longitude + (random.nextDouble() - 0.5) * 0.0006,
+          'distance': 10.0 + random.nextDouble() * 30,
           'workHours': checkOut != null ? checkOut.difference(checkIn).inMinutes / 60.0 : 0.0,
           'isLate': isLate,
           'isEarlyLeave': isEarlyLeave,

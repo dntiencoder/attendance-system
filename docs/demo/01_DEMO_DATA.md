@@ -23,7 +23,7 @@
 |---|---|---|
 | `users` | 5 (4 nhân viên + 1 admin) | ✅ Đủ |
 | `departments` | 13 | ✅ Đủ, thậm chí dư |
-| `attendance` | 44 (1-14/7/2026, 11 bản ghi/người × 4 nhân viên, 2 ngày vắng/người không có bản ghi) | ✅ Đủ, đã có đầy đủ biến thể cần thiết |
+| `attendance` | 44 (1-14/7/2026, số bản ghi/người dao động do random có trọng số — xem mục 4) | ✅ Đủ, đã có đầy đủ biến thể cần thiết |
 | `leave_requests` | 0 | 🟡 Trống có chủ đích — hoãn theo quyết định 2026-07-14, chưa cần cho demo hiện tại |
 | `notifications` | 0 | 🟡 Trống nhưng không cần bổ sung (chưa có UI hiển thị) |
 | `company_settings` | 1 (`main`) | ✅ Đủ, `radius` đã chỉnh về giá trị thực tế (xem mục 7) |
@@ -63,7 +63,7 @@
 
 ## 4. Attendance
 
-**Cập nhật 2026-07-14:** toàn bộ 38 bản ghi tháng 6 cũ (mô tả ở các mục dưới đây trong bản đánh giá gốc) đã bị xoá và thay bằng **44 bản ghi mới cho 1-14/7/2026** (11 bản ghi/người × 4 nhân viên, đúng số ngày làm/tăng ca thực tế trừ 2 ngày vắng/người — bỏ qua 1 ngày nghỉ tuyệt đối 12/7), sinh bởi `tools/firestore_backup/bin/reseed_july.dart`, dùng đúng logic rotation/mandatory-workday thật (port từ `rotation_calculator.dart`/`work_schedule_helper.dart`), không phải random tuỳ tiện.
+**Cập nhật 2026-07-14:** toàn bộ 38 bản ghi tháng 6 cũ (mô tả ở các mục dưới đây trong bản đánh giá gốc) đã bị xoá và thay bằng **44 bản ghi mới cho 1-14/7/2026** (dao động 10-12 bản ghi/người tuỳ random — mỗi ngày làm/tăng ca có 10% khả năng "vắng" không có bản ghi, ngoài ra vẫn luôn bỏ qua 1 ngày nghỉ tuyệt đối 12/7), sinh bởi `tools/firestore_backup/bin/reseed_july.dart`, dùng đúng logic rotation/mandatory-workday thật (port từ `rotation_calculator.dart`/`work_schedule_helper.dart`) cho phần ngày làm/ca, còn biến thể đúng giờ/muộn/về sớm/vắng chọn ngẫu nhiên có trọng số (không seed cố định — mỗi lần chạy lại script cho kết quả khác nhau).
 
 ### Đối chiếu biến thể yêu cầu
 
