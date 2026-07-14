@@ -85,3 +85,19 @@ Sống tại **`docs/testing/02_BUG_TRACKER.md`** — không liệt kê lại �
 | Tổng | 14 |
 
 Xem chi tiết từng bug tại `docs/testing/02_BUG_TRACKER.md`.
+
+## E. Sprint 0 (D.1 — Demo Ready) Progress
+
+Checklist đầy đủ sống ở `PROJECT_MASTER_PLAN.md` §D.1 — không lặp lại ở đây, chỉ tóm tắt trạng thái.
+
+| # | Việc | Status | Ghi chú |
+|---|---|---|---|
+| 1 | Seed 3 `leave_requests` mẫu | Deferred | Tạm hoãn theo yêu cầu — chưa cần cho buổi demo lần này |
+| 2 | `company_settings.radius` | **Done** (2026-07-14) | `9999999999` → `500`m, qua `tools/firestore_backup/bin/seed_sprint0.dart` |
+| 3 | Sửa `departmentId` tài khoản admin | **Done** (2026-07-14) | `dep001` (không tồn tại) → `dept_ga`, cùng script trên |
+| 4 | Test tay Check In/Check Out ca ngày + ca đêm | Backlog | Cần thiết bị thật, trong bán kính 500m quanh toạ độ công ty (21.0285, 105.7848) |
+| 5 | Dry-run Demo Center | Backlog | Cần thiết bị thật |
+
+**Làm sạch + tạo lại toàn bộ dữ liệu (2026-07-14, ngoài checklist D.1 gốc, theo yêu cầu riêng):** xoá vĩnh viễn `users`/`departments`/`attendance`/`leave_requests`/`notifications` (giữ nguyên `company_settings`), backup trước khi xoá (`backup_firestore.json`, không commit — chứa PII), tạo lại bằng `tools/firestore_backup/bin/reseed_july.dart`: 5 hồ sơ (1 admin + 4 nhân viên, đúng UID Auth thật), 13 phòng ban, 52 bản ghi attendance cho 1-14/7/2026 (theo đúng logic rotation/mandatory-workday thật, không phải dữ liệu random tuỳ tiện). `leave_requests`/`notifications` để trống theo đúng mục (1) ở trên. Phát hiện phụ trong lúc này: tài khoản `EMP001 (Trần Văn Ab)` từng bị xoá khỏi `users` trước khi có rule TD-02 dù còn dữ liệu attendance (dữ liệu mồ côi) — đã được giải quyết tự nhiên qua lần làm sạch này, không cần xử lý thêm. Xem lại `docs/demo/01_DEMO_DATA.md` — tài liệu đó mô tả dữ liệu tháng 6 cũ, đã lỗi thời sau thao tác này.
+
+Sprint 0 dừng ở đây theo quyết định 2026-07-14 — đủ cho buổi demo hiện tại, mục (4)/(5) chưa cần gấp.

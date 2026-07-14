@@ -1,7 +1,7 @@
 # 01 — Review Dữ liệu Demo
 
-**Ngày đánh giá:** 2026-07-06
-**Nguồn dữ liệu:** `backup_firestore.json` / `BACKUP_SUMMARY.md` sinh bởi `tools/firestore_backup` (chạy 2026-07-05).
+**Ngày đánh giá:** 2026-07-06, **cập nhật lại 2026-07-14** sau khi làm sạch và tạo lại toàn bộ dữ liệu nghiệp vụ cho tháng 7/2026 (xem `docs/project/01_BACKLOG.md` mục E) — nội dung bên dưới đã thay thế hoàn toàn bản đánh giá dữ liệu tháng 6 cũ.
+**Nguồn dữ liệu:** `backup_firestore.json` / `BACKUP_SUMMARY.md` sinh bởi `tools/firestore_backup` (chạy 2026-07-14, sau khi reseed).
 **Nguyên tắc:** Chỉ đánh giá dữ liệu **thật** đang có. Không tạo lại dữ liệu đã có, không tạo dữ liệu trùng, không đổi schema.
 
 ## Mục lục
@@ -23,10 +23,10 @@
 |---|---|---|
 | `users` | 5 (4 nhân viên + 1 admin) | ✅ Đủ |
 | `departments` | 13 | ✅ Đủ, thậm chí dư |
-| `attendance` | 38 | ✅ Đủ, đã có đầy đủ biến thể cần thiết |
-| `leave_requests` | 0 | ❌ Trống — cần bổ sung |
+| `attendance` | 52 (1-14/7/2026, 13 ngày × 4 nhân viên) | ✅ Đủ, đã có đầy đủ biến thể cần thiết |
+| `leave_requests` | 0 | 🟡 Trống có chủ đích — hoãn theo quyết định 2026-07-14, chưa cần cho demo hiện tại |
 | `notifications` | 0 | 🟡 Trống nhưng không cần bổ sung (chưa có UI hiển thị) |
-| `company_settings` | 1 (`main`) | 🟡 Có đủ, nhưng 1 giá trị cần bạn quyết định lại (xem mục 7) |
+| `company_settings` | 1 (`main`) | ✅ Đủ, `radius` đã chỉnh về giá trị thực tế (xem mục 7) |
 | `dev_metadata` | 0 (bị permission-denied khi backup) | Không liên quan tới demo — bỏ qua |
 
 ---
@@ -39,15 +39,15 @@
 |---|---|---|---|---|---|---|---|
 | `4Znn...dG3` | EMP001 | Trần Văn Ab | shiroyasha284@gmail.com | dept_ga (Phòng Hành chính – Nhân sự) | A | employee | isActive: true |
 | `7VtAl...05l2` | EMP003 | Danh Nhật Tiến | danhnhattien284@gmail.com | dept_pe (Phòng Kỹ thuật sản xuất) | B | employee | isActive: true |
-| `CDjUg...JXv2` | EMP004 | Tạ Đình Trí | tadinhtri2004@gmail.com | dept_te (Phòng Kỹ thuật) | A | employee | isActive: true, tạo ngày 2026-06-29 (mới nhất) |
+| `CDjUg...JXv2` | EMP004 | Tạ Đình Trí | tadinhtri2004@gmail.com | dept_te (Phòng Kỹ thuật) | A | employee | isActive: true |
 | `Nuav1...C2` | EMP002 | Lê Thị B | dntienktpm2211046@student.ctuet.edu.vn | dept_dx (Phòng Chuyển đổi số) | B | employee | isActive: true |
-| `UqyJA...Agh2` | ADMIN001 | Quản trị viên UMC | admin@gmail.com | ⚠️ `dep001` (xem cảnh báo dưới) | A | admin | isActive: true |
+| `UqyJA...Agh2` | ADMIN001 | Quản trị viên UMC | admin@gmail.com | dept_ga (Phòng Hành chính – Nhân sự) | A | admin | isActive: true |
 
-**Đánh giá:** Đủ demo. Có cả 2 nhóm A/B, có nhân viên mới thêm gần đây (EMP004) và nhân viên "cũ" (EMP001-003), đủ cho câu chuyện "công ty đã vận hành một thời gian, thêm nhân viên mới".
+**Đánh giá:** Đủ demo. Có cả 2 nhóm A/B, đủ cho câu chuyện rotation.
 
-**Phát hiện cần lưu ý (dữ liệu, không phải bug code):**
-- Tài khoản admin (`UqyJA...`) có `departmentId: "dep001"` — giá trị này **không khớp bất kỳ department nào thực sự tồn tại** (tất cả 13 phòng ban thật đều có ID dạng `dept_xxx`, ví dụ `dept_ga`, không có `dep001`). Khi mở màn Nhân viên/Hồ sơ của tài khoản admin, tên phòng ban có thể hiển thị trống hoặc lỗi nhẹ. **Không cần sửa code** — chỉ cần vào màn "Quản Lý Nhân Viên", sửa hồ sơ admin, chọn lại đúng 1 phòng ban có thật trong dropdown (thao tác dữ liệu thuần, 30 giây).
-- `Tạ Đình Trí` (EMP004) dùng `avatarUrl` trỏ tới ảnh từ `thanhnien.mediacdn.vn` (ảnh báo, không phải ảnh đại diện thật) — nếu mạng demo chặn hotlink ảnh từ domain lạ, ảnh đại diện có thể không hiển thị (icon vỡ). Rủi ro thấp, chỉ ảnh hưởng thẩm mỹ.
+**Cập nhật 2026-07-14 (đã xử lý, không còn là vấn đề):**
+- `departmentId` của admin trước đây trỏ `dep001` (không tồn tại) — đã sửa thành `dept_ga`, một phòng ban thật.
+- `avatarUrl` của tất cả 5 tài khoản hiện để trống (`""`) sau khi tạo lại — không còn rủi ro hotlink ảnh ngoài như trước (EMP004 từng dùng ảnh từ `thanhnien.mediacdn.vn`). Đánh đổi: không có ảnh đại diện demo sẵn, chỉ hiển thị icon mặc định — nếu cần ảnh đẹp hơn, tự upload qua màn Hồ sơ trước buổi demo.
 
 **Không cần bổ sung thêm user nào** — 5 tài khoản hiện có đã đủ minh hoạ mọi vai trò cần thiết.
 
@@ -63,44 +63,46 @@
 
 ## 4. Attendance
 
-Đây là phần dữ liệu quan trọng nhất — và **tin tốt: dữ liệu hiện có đã phủ đủ toàn bộ biến thể được yêu cầu**, không cần seed thêm nhiều.
+**Cập nhật 2026-07-14:** toàn bộ 38 bản ghi tháng 6 cũ (mô tả ở các mục dưới đây trong bản đánh giá gốc) đã bị xoá và thay bằng **52 bản ghi mới cho 1-14/7/2026** (13 ngày × 4 nhân viên, đúng số ngày làm/tăng ca thực tế — bỏ qua 1 ngày nghỉ tuyệt đối 12/7), sinh bởi `tools/firestore_backup/bin/reseed_july.dart`, dùng đúng logic rotation/mandatory-workday thật (port từ `rotation_calculator.dart`/`work_schedule_helper.dart`), không phải random tuỳ tiện.
 
 ### Đối chiếu biến thể yêu cầu
 
-| Biến thể yêu cầu | Có trong dữ liệu hiện tại? | Ví dụ |
-|---|---|---|
-| Đúng giờ (`isLate: false`, `status: completed`) | ✅ Có nhiều | `2026-06-17_4Znn...` |
-| Đi muộn (`isLate: true`, `status: late`) | ✅ Có nhiều | `2026-06-18_4Znn...` |
-| Về sớm (`isEarlyLeave: true`, `status: early_leave`) | ✅ Có nhiều | `2026-06-16_4Znn...` |
-| Đã Check Out | ✅ Có (đa số bản ghi) | — |
-| Chưa Check Out (`checkOut: null`) | ✅ Có 3 bản ghi | `2026-06-29_4Znn...`, `2026-06-29_Nuav1...`, `2026-07-02_CDjUg...` |
-| Ca ngày (`shift: day`) | ✅ Có | EMP001 (nhóm A) trong khối đầu, EMP002 (nhóm B) sau khi đổi ca |
-| Ca đêm (`shift: night`) | ✅ Có | EMP002/EMP003 (nhóm B) trong khối đầu, EMP001 (nhóm A) sau khi đổi ca |
-| Nhóm A | ✅ Có | EMP001, EMP004 |
-| Nhóm B | ✅ Có | EMP002, EMP003 |
+| Biến thể yêu cầu | Có trong dữ liệu hiện tại? |
+|---|---|
+| Đúng giờ (`status: on_time`/`completed`) | ✅ Có nhiều (scenario mặc định mỗi 4 ngày) |
+| Đi muộn (`isLate: true`, `status: late`) | ✅ Có (1/4 số ngày mỗi nhân viên) |
+| Về sớm (`isEarlyLeave: true`, `status: early_leave`) | ✅ Có (1/4 số ngày mỗi nhân viên) |
+| Đã Check Out | ✅ Có (12/13 ngày mỗi nhân viên) |
+| Chưa Check Out (`checkOut: null`, "đang làm việc") | ✅ Có đúng 1 bản ghi/người — ngày 14/7 (hôm nay) |
+| Ca ngày / Ca đêm | ✅ Có cả hai, đổi ca giữa 12/7 và 13/7 (xem bằng chứng rotation dưới) |
+| Nhóm A | ✅ EMP001, EMP004 |
+| Nhóm B | ✅ EMP002, EMP003 |
+| Ngày nghỉ tuyệt đối (không có bản ghi) | ✅ 12/7/2026 (Chủ Nhật, tuần rotation) |
 
 ### Bằng chứng rotation hoạt động đúng (đáng để trình bày khi demo)
 
-Dữ liệu cho thấy rõ **đúng 1 lần đổi ca** trùng khớp hoàn toàn với logic 14 ngày (`rotationStartDate = 2026-06-01`, `rotationDays = 14`):
+Dữ liệu cho thấy rõ **đúng 1 lần đổi ca** trùng khớp hoàn toàn với logic 14 ngày (`rotationStartDate = 2026-06-01`, `rotationDays = 14`, không đổi):
 
-- Từ 2026-06-16 đến 2026-06-27 (thuộc khối rotation thứ 2, ngày thứ 14-27 kể từ mốc gốc): nhóm A làm **ca ngày**, nhóm B làm **ca đêm**.
-- Từ 2026-06-29 (bắt đầu khối rotation thứ 3, ngày thứ 28 trở đi): nhóm A chuyển sang **ca đêm**, nhóm B chuyển sang **ca ngày**.
+- Từ 2026-07-01 đến 2026-07-12 (thuộc khối rotation thứ 3 kể từ mốc gốc): nhóm A làm **ca đêm**, nhóm B làm **ca ngày**.
+- Từ 2026-07-13 (bắt đầu khối rotation thứ 4): nhóm A chuyển sang **ca ngày**, nhóm B chuyển sang **ca đêm**.
 
-→ Đây là bằng chứng thực nghiệm rất thuyết phục để trình bày trực tiếp trong buổi báo cáo ("dữ liệu thật cho thấy đúng ngày dự kiến, hệ thống tự đổi ca giữa 2 nhóm").
+→ Vẫn là bằng chứng thực nghiệm thuyết phục để trình bày trực tiếp trong buổi báo cáo, y hệt tinh thần bản đánh giá gốc — chỉ khác mốc ngày cụ thể (giờ rơi vào 12/13 tháng 7 thay vì 27/29 tháng 6).
 
-### Một bản ghi cần bạn lưu ý riêng
+### Bản ghi bất thường (46.6km, `on_time` sai) đã không còn tồn tại
 
-`2026-07-02_CDjUg3doU1XNqolc4peROxLnJXv2` (EMP004): check-in lúc 07:36 sáng giờ Việt Nam, cách công ty **46.6 km**, vẫn được ghi nhận `on_time`, chưa Check Out. Đối chiếu thời điểm (2026-07-02, trước khi đợt sửa Business Date được thực hiện), bản ghi này gần như chắc chắn được tạo bằng **code cũ trước khi sửa bug** — chính là ví dụ thật của loại lỗi đã được phân tích và sửa (tính "on_time" sai cho check-in bất thường giờ, và khoảng cách 46km chỉ "lọt" được vì `radius` đang được đặt rất lớn — xem mục 7). Không phải dữ liệu hỏng cần xoá gấp, nhưng **không nên vô tình demo đúng bản ghi này** như thể nó bình thường — nếu giảng viên hỏi, có thể dùng chính nó làm ví dụ "đây là dữ liệu trước khi sửa bug, minh hoạ tại sao cần Business Date".
+Bản ghi `2026-07-02_CDjUg...` từng được ghi nhận ở bản đánh giá gốc (check-in cách công ty 46.6km vẫn `on_time`, do `radius` cũ bị đặt 9999999999m) đã bị xoá cùng đợt làm sạch dữ liệu — không còn là rủi ro khi demo.
 
 ### Kết luận
 
-**Không cần seed thêm dữ liệu attendance mới cho phần lịch sử.** Dữ liệu hiện tại (38 bản ghi) đã kể một câu chuyện mạch lạc và đúng logic nghiệp vụ. Việc duy nhất cần làm thêm là **thực hiện 1 lượt Check In/Check Out thật trong lúc demo** (dữ liệu "hôm nay", không phải seed trước) — đúng như đã thống nhất ở phần chuẩn bị demo trước đó.
+**Không cần seed thêm dữ liệu attendance cho phần lịch sử tháng 7.** Việc duy nhất cần làm thêm là **thực hiện 1 lượt Check In/Check Out thật trong lúc demo** (dữ liệu "hôm nay", không phải seed trước) — đúng như đã thống nhất ở phần chuẩn bị demo trước đó, và đúng mục (4) còn lại ở `docs/project/01_BACKLOG.md` mục E.
 
 ---
 
 ## 5. Leave Requests
 
 **Hiện tại: 0 document — trống hoàn toàn.** Vì mobile chưa có màn tạo đơn nghỉ phép thật (chỉ là placeholder), collection này sẽ mãi trống nếu không bổ sung thủ công qua Firestore Console.
+
+**Quyết định 2026-07-14:** tạm **hoãn** việc seed 3 document mẫu bên dưới — chưa cần cho buổi demo hiện tại (xem `docs/project/01_BACKLOG.md` mục E, mục 1 = Deferred). Nội dung đề xuất dưới đây vẫn giữ nguyên để dùng khi cần.
 
 ### Đề xuất bổ sung (đúng schema hiện tại — `LeaveRequestModel`, xem `attendance_admin/lib/features/leave/domain/leave_request_model.dart`)
 
@@ -141,23 +143,19 @@ updatedAt: Timestamp
 
 ## 7. Company Settings
 
-Document `main` hiện tại:
+Document `main` hiện tại (đã cập nhật 2026-07-14):
 
 | Field | Giá trị |
 |---|---|
 | companyName | "UMC VIỆT NAM" |
 | latitude / longitude | 21.0285 / 105.7848 |
-| radius | **9999999999** ⚠️ |
+| radius | **500** (mét) — đã sửa, xem bên dưới |
 | dayShiftStart / dayShiftEnd | 08:00 / 20:00 |
 | nightShiftStart / nightShiftEnd | 20:00 / 08:00 |
 | rotationDays | 14 |
-| rotationStartDate | 2026-06-01 (giờ VN) |
+| rotationStartDate | 2026-06-01 (giờ VN, không đổi) |
 
-**Phát hiện quan trọng cần bạn quyết định:** `radius` đang được đặt **9999999999 mét** — tức là kiểm tra "trong bán kính công ty" gần như bị vô hiệu hoá hoàn toàn (bất kỳ vị trí nào trên Trái Đất cũng "trong bán kính"). Bằng chứng: bản ghi `2026-07-02_CDjUg...` (mục 4) check-in thành công dù cách công ty 46.6km.
-
-Đây là **thông tin quan trọng thay đổi đánh giá rủi ro GPS đã nêu ở các tài liệu trước** — với giá trị này, buổi demo **không bị ràng buộc phải diễn ra đúng tại vị trí công ty**, Check In sẽ luôn thành công bất kể demo ở đâu (miễn thiết bị có bật GPS thật, không dùng vị trí giả — hàm `isMocked` vẫn hoạt động độc lập với `radius`).
-
-**Cần bạn quyết định:** giữ nguyên `radius` lớn này (an toàn, không lo về vị trí demo, nhưng nếu giảng viên hỏi trực tiếp "thử đứng xa xem có bị chặn không" thì tính năng sẽ không thể hiện đúng), hay đổi tạm về một giá trị thực tế (ví dụ 500m) trước ngày demo để tính năng "giới hạn theo bán kính" chứng minh được đúng như thiết kế. Đây là thay đổi dữ liệu (không phải code) — có thể đổi qua màn Settings (admin) bất kỳ lúc nào.
+**Đã xử lý (trước đây `radius = 9999999999` — vô hiệu hoá kiểm tra bán kính):** quyết định 2026-07-14 chọn đổi về giá trị thực tế **500m** để tính năng "giới hạn theo bán kính" chứng minh đúng như thiết kế nếu giảng viên hỏi trực tiếp. **Hệ quả bắt buộc:** buổi demo (và mọi lượt test tay Check In/Check Out — mục 4 ở `docs/project/01_BACKLOG.md` mục E) **phải diễn ra trong vòng 500m quanh toạ độ công ty** (21.0285, 105.7848), khác với trước đây (radius lớn cho phép demo ở bất kỳ đâu). Đây là điểm cần nhớ trước khi ra khỏi phạm vi công ty để test.
 
 **Các field còn lại:** hợp lý, không cần đổi.
 
@@ -165,12 +163,12 @@ Document `main` hiện tại:
 
 ## 8. Tổng hợp việc cần bổ sung
 
-| # | Việc | Loại | Bắt buộc? |
-|---|---|---|---|
-| 1 | Thêm 3 document vào `leave_requests` (mục 5) | Bổ sung dữ liệu qua Console | Có — nếu không, màn "Duyệt Nghỉ Phép" sẽ trống khi demo |
-| 2 | Quyết định giữ hay đổi `company_settings.radius` (mục 7) | Quyết định + có thể sửa dữ liệu qua Settings | Nên quyết định trước, không bắt buộc đổi |
-| 3 | Sửa lại `departmentId` của tài khoản admin cho khớp 1 phòng ban thật (mục 2) | Sửa dữ liệu qua màn Nhân viên | Nên làm, tránh hiển thị lỗi/trống khi demo hồ sơ admin |
-| 4 | Không cần seed thêm `users`, `departments`, `attendance` | — | Không cần làm gì |
-| 5 | Không cần tạo dữ liệu cho `notifications` | — | Không cần làm gì |
+| # | Việc | Trạng thái (2026-07-14) |
+|---|---|---|
+| 1 | Thêm 3 document vào `leave_requests` (mục 5) | **Deferred** — chưa cần cho demo hiện tại |
+| 2 | Quyết định giữ hay đổi `company_settings.radius` (mục 7) | **Done** — đổi về 500m |
+| 3 | Sửa lại `departmentId` của tài khoản admin cho khớp 1 phòng ban thật (mục 2) | **Done** — `dept_ga` |
+| 4 | Không cần seed thêm `users`, `departments`, `attendance` | Đã **làm sạch + tạo lại toàn bộ** cho tháng 7/2026 (ngoài phạm vi ban đầu của review này — theo yêu cầu riêng 2026-07-14, xem `docs/project/01_BACKLOG.md` mục E) |
+| 5 | Không cần tạo dữ liệu cho `notifications` | Không cần làm gì |
 
-Không có việc nào trong danh sách này là sửa code hay đổi schema — toàn bộ đều là thao tác dữ liệu qua UI có sẵn (Console/Settings/Employee).
+Việc (2)/(3)/(4) đều là thao tác dữ liệu qua script (`tools/firestore_backup/bin/`), không sửa schema/rules; không có thay đổi nào trong `lib/` của 2 app.
