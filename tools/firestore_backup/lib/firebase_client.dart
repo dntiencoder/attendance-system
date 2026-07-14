@@ -62,5 +62,5 @@ Future<String> signIn(String email, String password) async {
 /// hiện hành lúc gọi `dart run`.
 Directory findRepoRoot() {
   final scriptDir = File(Platform.script.toFilePath()).parent; // .../tools/firestore_backup/bin
-  return scriptDir.parent.parent; // bin -> firestore_backup -> tools -> repo root
+  return scriptDir.parent.parent.parent; // bin -> firestore_backup -> tools -> repo root
 }
