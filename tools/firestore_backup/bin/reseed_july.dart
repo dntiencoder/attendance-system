@@ -200,16 +200,17 @@ Future<void> main() async {
       final endHour = isDay ? 20 : 8;
       final isToday = day == _targetMonthDays; // 14/7 — bản ghi "đang làm việc"
 
-      final scenario = day % 4; // 0: đúng giờ, 1: muộn, 2: về sớm, 3: đúng giờ
+      // 0: đúng giờ, 1: muộn, 2: về sớm, 3: vừa muộn vừa về sớm,
+      // 4: vắng (ngày làm/tăng ca nhưng không có bản ghi — bỏ qua bên dưới,
+      // trừ hôm nay vì hôm nay luôn cần thể hiện trạng thái "đang làm việc").
+      final scenario = day % 5;
+      if (scenario == 4 && !isToday) continue;
 
-      DateTime checkIn;
-      bool isLate = false;
-      if (scenario == 1) {
-        checkIn = DateTime(date.year, date.month, date.day, startHour, 15 + Random(day).nextInt(20));
-        isLate = true;
-      } else {
-        checkIn = DateTime(date.year, date.month, date.day, startHour - 1, 45 + Random(day).nextInt(14));
-      }
+      final isLate = scenario == 1 || scenario == 3;
+
+      final checkIn = isLate
+          ? DateTime(date.year, date.month, date.day, startHour, 15 + Random(day).nextInt(20))
+          : DateTime(date.year, date.month, date.day, startHour - 1, 45 + Random(day).nextInt(14));
 
       DateTime? checkOut;
       bool isEarlyLeave = false;
@@ -219,14 +220,13 @@ Future<void> main() async {
         status = isLate ? 'late' : 'on_time';
       } else {
         final checkoutDate = !isDay ? date.add(const Duration(days: 1)) : date;
-        if (scenario == 2) {
+        isEarlyLeave = scenario == 2 || scenario == 3;
+        if (isEarlyLeave) {
           checkOut = DateTime(checkoutDate.year, checkoutDate.month, checkoutDate.day, endHour - 1, 20 + Random(day + 1).nextInt(30));
-          isEarlyLeave = true;
-          status = 'early_leave';
         } else {
           checkOut = DateTime(checkoutDate.year, checkoutDate.month, checkoutDate.day, endHour, Random(day + 2).nextInt(10));
-          status = isLate ? 'late' : 'completed';
         }
+        status = isLate ? 'late' : (isEarlyLeave ? 'early_leave' : 'completed');
       }
 
       final docId =

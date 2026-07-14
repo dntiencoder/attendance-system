@@ -23,7 +23,7 @@
 |---|---|---|
 | `users` | 5 (4 nhân viên + 1 admin) | ✅ Đủ |
 | `departments` | 13 | ✅ Đủ, thậm chí dư |
-| `attendance` | 52 (1-14/7/2026, 13 ngày × 4 nhân viên) | ✅ Đủ, đã có đầy đủ biến thể cần thiết |
+| `attendance` | 44 (1-14/7/2026, 11 bản ghi/người × 4 nhân viên, 2 ngày vắng/người không có bản ghi) | ✅ Đủ, đã có đầy đủ biến thể cần thiết |
 | `leave_requests` | 0 | 🟡 Trống có chủ đích — hoãn theo quyết định 2026-07-14, chưa cần cho demo hiện tại |
 | `notifications` | 0 | 🟡 Trống nhưng không cần bổ sung (chưa có UI hiển thị) |
 | `company_settings` | 1 (`main`) | ✅ Đủ, `radius` đã chỉnh về giá trị thực tế (xem mục 7) |
@@ -63,21 +63,23 @@
 
 ## 4. Attendance
 
-**Cập nhật 2026-07-14:** toàn bộ 38 bản ghi tháng 6 cũ (mô tả ở các mục dưới đây trong bản đánh giá gốc) đã bị xoá và thay bằng **52 bản ghi mới cho 1-14/7/2026** (13 ngày × 4 nhân viên, đúng số ngày làm/tăng ca thực tế — bỏ qua 1 ngày nghỉ tuyệt đối 12/7), sinh bởi `tools/firestore_backup/bin/reseed_july.dart`, dùng đúng logic rotation/mandatory-workday thật (port từ `rotation_calculator.dart`/`work_schedule_helper.dart`), không phải random tuỳ tiện.
+**Cập nhật 2026-07-14:** toàn bộ 38 bản ghi tháng 6 cũ (mô tả ở các mục dưới đây trong bản đánh giá gốc) đã bị xoá và thay bằng **44 bản ghi mới cho 1-14/7/2026** (11 bản ghi/người × 4 nhân viên, đúng số ngày làm/tăng ca thực tế trừ 2 ngày vắng/người — bỏ qua 1 ngày nghỉ tuyệt đối 12/7), sinh bởi `tools/firestore_backup/bin/reseed_july.dart`, dùng đúng logic rotation/mandatory-workday thật (port từ `rotation_calculator.dart`/`work_schedule_helper.dart`), không phải random tuỳ tiện.
 
 ### Đối chiếu biến thể yêu cầu
 
 | Biến thể yêu cầu | Có trong dữ liệu hiện tại? |
 |---|---|
-| Đúng giờ (`status: on_time`/`completed`) | ✅ Có nhiều (scenario mặc định mỗi 4 ngày) |
-| Đi muộn (`isLate: true`, `status: late`) | ✅ Có (1/4 số ngày mỗi nhân viên) |
-| Về sớm (`isEarlyLeave: true`, `status: early_leave`) | ✅ Có (1/4 số ngày mỗi nhân viên) |
-| Đã Check Out | ✅ Có (12/13 ngày mỗi nhân viên) |
+| Đúng giờ (`status: on_time`/`completed`) | ✅ Có (8 completed + 4 on_time "đang làm việc") |
+| Đi muộn (`isLate: true`, `status: late`) | ✅ Có (24 bản ghi, gồm cả muộn thuần và muộn+về sớm) |
+| Về sớm (`isEarlyLeave: true`, `status: early_leave`) | ✅ Có (8 bản ghi về sớm thuần) |
+| **Vừa đi muộn vừa về sớm** (`isLate` và `isEarlyLeave` cùng `true`) | ✅ Có (12 bản ghi) |
+| **Ngày vắng** (ngày làm bắt buộc, không có bản ghi nào) | ✅ Có (2 ngày/người, không tính hôm nay) |
+| Đã Check Out | ✅ Có (10/11 ngày mỗi nhân viên) |
 | Chưa Check Out (`checkOut: null`, "đang làm việc") | ✅ Có đúng 1 bản ghi/người — ngày 14/7 (hôm nay) |
 | Ca ngày / Ca đêm | ✅ Có cả hai, đổi ca giữa 12/7 và 13/7 (xem bằng chứng rotation dưới) |
 | Nhóm A | ✅ EMP001, EMP004 |
 | Nhóm B | ✅ EMP002, EMP003 |
-| Ngày nghỉ tuyệt đối (không có bản ghi) | ✅ 12/7/2026 (Chủ Nhật, tuần rotation) |
+| Ngày nghỉ tuyệt đối (không có bản ghi, khác với "vắng") | ✅ 12/7/2026 (Chủ Nhật, tuần rotation) |
 
 ### Bằng chứng rotation hoạt động đúng (đáng để trình bày khi demo)
 
