@@ -5,6 +5,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/utils/snackbar_utils.dart';
+import '../../../core/utils/app_logger.dart';
 import '../data/auth_repository.dart';
 
 class ForgotPasswordPage extends ConsumerStatefulWidget {
@@ -35,9 +36,10 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
         SnackBarUtils.showSuccess(context, 'Link khôi phục mật khẩu đã được gửi đến email của bạn.');
         context.pop();
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('ForgotPasswordPage.resetPassword', e, st);
       if (mounted) {
-        SnackBarUtils.showError(context, 'Lỗi: ${e.toString()}');
+        SnackBarUtils.showError(context, 'Không thể gửi email khôi phục mật khẩu. Vui lòng kiểm tra lại email hoặc thử lại sau.');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

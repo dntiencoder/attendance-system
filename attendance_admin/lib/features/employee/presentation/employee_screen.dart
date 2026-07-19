@@ -247,7 +247,7 @@ class EmployeeScreen extends ConsumerWidget {
                         if (context.mounted) {
                           Navigator.pop(context); // Tắt loading
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Lỗi: $e'), backgroundColor: Colors.red),
+                            const SnackBar(content: Text('Không thể lưu thông tin nhân viên. Vui lòng thử lại.'), backgroundColor: Colors.red),
                           );
                         }
                       }
@@ -310,7 +310,10 @@ class EmployeeScreen extends ConsumerWidget {
             ),
             child: employeesAsync.when(
               loading: () => const LoadingWidget(message: 'Đang tải danh sách...'),
-              error: (err, _) => Center(child: Text('Lỗi: $err')),
+              error: (err, st) {
+                AppLogger.error('EmployeeScreen.load', err, st);
+                return const Center(child: Text('Không thể tải danh sách nhân viên. Vui lòng thử lại.'));
+              },
               data: (employees) => SingleChildScrollView(
                 child: DataTable(
                   columns: const [

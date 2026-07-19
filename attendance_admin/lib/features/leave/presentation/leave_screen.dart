@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'leave_provider.dart';
 import '../domain/leave_request_model.dart';
 import '../../../core/utils/date_helper.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../shared/widgets/loading_widget.dart';
 
 class LeaveScreen extends ConsumerWidget {
@@ -36,7 +37,10 @@ class LeaveScreen extends ConsumerWidget {
                 side: const BorderSide(color: Color(0xFFE2E8F0))),
             child: leaveRequestsAsync.when(
               loading: () => const LoadingWidget(message: 'Đang tải danh sách...'),
-              error: (err, _) => Center(child: Text('Lỗi: $err')),
+              error: (err, st) {
+                AppLogger.error('LeaveScreen.load', err, st);
+                return const Center(child: Text('Không thể tải danh sách đơn nghỉ phép. Vui lòng thử lại.'));
+              },
               data: (requests) => requests.isEmpty
                   ? const Center(child: Text('Không có yêu cầu nghỉ phép nào.'))
                   : SingleChildScrollView(

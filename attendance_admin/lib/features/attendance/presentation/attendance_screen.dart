@@ -4,6 +4,7 @@ import 'attendance_provider.dart';
 import '../domain/attendance_model.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../core/utils/date_helper.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../shared/widgets/loading_widget.dart';
 import '../../../core/services/export_service.dart';
 
@@ -112,7 +113,10 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
             ),
             child: attendanceAsync.when(
               loading: () => const LoadingWidget(message: 'Đang tải nhật ký...'),
-              error: (err, _) => Center(child: Text('Lỗi: $err')),
+              error: (err, st) {
+                AppLogger.error('AttendanceScreen.load', err, st);
+                return const Center(child: Text('Không thể tải nhật ký chấm công. Vui lòng thử lại.'));
+              },
               data: (logs) {
                 final filteredLogs = logs.where((log) {
                   final matchesSearch = log.employeeCode.toLowerCase().contains(_searchQuery.toLowerCase());

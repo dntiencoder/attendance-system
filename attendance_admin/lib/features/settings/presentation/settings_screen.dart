@@ -78,7 +78,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return settingsAsync.when(
       loading: () => const LoadingWidget(message: 'Đang tải cấu hình...'),
-      error: (err, _) => Center(child: Text('Lỗi: $err')),
+      error: (err, st) {
+        AppLogger.error('SettingsScreen.load', err, st);
+        return const Center(child: Text('Không thể tải cấu hình công ty. Vui lòng thử lại.'));
+      },
       data: (settings) {
         _currentSettings = settings;
 

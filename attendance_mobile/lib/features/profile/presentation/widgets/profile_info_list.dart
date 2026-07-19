@@ -6,6 +6,7 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../auth/domain/user_model.dart';
 import '../../../auth/data/auth_repository.dart';
 import '../../../home/presentation/home_provider.dart';
+import '../../../../core/utils/app_logger.dart';
 
 class ProfileInfoList extends ConsumerStatefulWidget {
   final UserModel user;
@@ -65,10 +66,11 @@ class _ProfileInfoListState extends ConsumerState<ProfileInfoList> {
                       const SnackBar(content: Text('Cập nhật thành công'), backgroundColor: AppColors.success),
                     );
                   }
-                } catch (e) {
+                } catch (e, st) {
+                  AppLogger.error('ProfileInfoList.updatePhone', e, st);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppColors.error),
+                      const SnackBar(content: Text('Không thể cập nhật số điện thoại. Vui lòng thử lại.'), backgroundColor: AppColors.error),
                     );
                   }
                 }
