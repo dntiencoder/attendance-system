@@ -222,7 +222,7 @@ class _TappableTimeBox
               ? const Color(
             0xFFFFF4F4,
           )
-              : (isDisabled ? const Color(0xFFF5F5F5) : AppColors.background),
+              : AppColors.background,
           borderRadius:
           BorderRadius.circular(
             10,

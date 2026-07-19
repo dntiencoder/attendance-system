@@ -80,7 +80,7 @@ class AttendanceModel {
 
   String get shiftLabel {
     switch (shift) {
-      case 'day': return 'Ca sáng';
+      case 'day': return 'Ca ngày';
       case 'night': return 'Ca đêm';
       default: return shift;
     }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_spacing.dart';
 import '../../../../shared/widgets/skeleton_container.dart';
 
@@ -14,7 +15,7 @@ class HomeSkeleton extends StatelessWidget {
         children: [
           // Header Skeleton
           Container(
-            color: const Color(0xFFC8102E),
+            color: AppColors.primary,
             padding: const EdgeInsets.fromLTRB(AppSpacing.md, 52, AppSpacing.md, 28),
             child: Row(
               children: [
