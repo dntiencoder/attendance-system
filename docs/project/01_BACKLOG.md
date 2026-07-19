@@ -25,12 +25,12 @@ Tính năng còn thiếu hoặc dở dang — nguồn: `PROJECT_MASTER_PLAN.md` 
 
 | ID | Hạng mục | Priority | Status | Estimate | Dependency | Phase |
 |---|---|---|---|---|---|---|
-| FEAT-01 | Nghỉ phép (mobile): repository + provider + UI tạo đơn + xem đơn của chính mình | Medium ⚠️ cần xác nhận | Backlog | 2-3 ngày | none | A |
-| FEAT-02 | Notification: màn hiển thị danh sách thông báo (tối thiểu 1 app) | Medium ⚠️ cần xác nhận | Backlog | 1-2 ngày | none | A |
-| FEAT-03 | Phòng ban (admin): màn quản lý CRUD riêng thay vì chỉ seed qua route dev ẩn | Low-Medium | Backlog | 1-2 ngày | none | A |
+| FEAT-01 | Nghỉ phép (mobile): repository + provider + UI tạo đơn + xem đơn của chính mình | Medium | **Ready** (xác nhận 2026-07-20 — xem D-013, `docs/decision/01_DECISION_LOG.md`) | 2-3 ngày | none | A |
+| FEAT-02 | Notification: màn hiển thị danh sách thông báo (tối thiểu 1 app) | Medium | **Ready** (xác nhận 2026-07-20 — xem D-013) | 1-2 ngày | none | A |
+| FEAT-03 | Phòng ban (admin): màn quản lý CRUD riêng thay vì chỉ seed qua route dev ẩn | Low-Medium | **Deferred** (từ chối 2026-07-20 — xem D-013) | 1-2 ngày | none | A |
 | FEAT-04 | Demo Time System: commit thay đổi hiện có + kiểm thử tay trên thiết bị thật | **Critical** (rủi ro mất công sức) | **Done** (2026-07-13, commit `9a2623e`) | 0.5-1 ngày | none | A |
 
-⚠️ FEAT-01/FEAT-02 là tính năng mới ngoài phạm vi `ROADMAP.md` gốc — xem cảnh báo ở `PROJECT_MASTER_PLAN.md` Phase A trước khi chuyển sang `Ready`.
+FEAT-01/FEAT-02 là tính năng mới ngoài phạm vi `ROADMAP.md` gốc, đã được xác nhận rõ ràng 2026-07-20 (D-013) — không còn cảnh báo treo. FEAT-03 bị hoãn có chủ đích.
 
 ## B. Technical Debt Backlog
 
@@ -52,7 +52,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-12 | Đồng bộ nhãn hiển thị ca ("Ca ngày" vs "Ca sáng") (P3-07) | Medium | **Done** (2026-07-20, commit `6f34a9e`) | <0.25 ngày | none | B |
 | TD-13 | Thay hex màu hardcode bằng `AppColors.primary` (P3-08) | Medium | **Done** (2026-07-20, commit `6f34a9e`) — chỉ 2 chỗ trùng khớp chính xác ở mobile; 6 chỗ `0xFFB91C1C` ở admin (khác `AppColors.primary`) cố ý chưa đụng, cần bạn quyết định riêng | <0.25 ngày | none | B |
 | TD-14 | Xoá dead code (`admin_model.dart`, `checkin_screen.dart`, `gps_test_screen.dart`, `gps_provider.dart`) (P4-01) | Low | **Done** (2026-07-20, commit `bcaa2c0`) — `auth_gate.dart` đã không còn tồn tại từ trước, không cần xoá | 0.5 ngày | none | B |
-| TD-15 | Thay placeholder "Nghỉ phép" bằng màn tử tế hơn (P4-02) | Low | Backlog | 0.5 ngày | **Có thể huỷ nếu FEAT-01 hoàn thành trước** | B |
+| TD-15 | Thay placeholder "Nghỉ phép" bằng màn tử tế hơn (P4-02) | Low | **Cancelled** (2026-07-20) — FEAT-01 đã xác nhận làm, sẽ thay thế hẳn placeholder này bằng UI thật, không cần bản "tử tế hơn" tạm thời | 0.5 ngày | ~~none~~ | B |
 | TD-16 | Xoá `?.` thừa trên `startDate` không nullable (P4-03) | Low | **Won't Fix** (2026-07-20) — tiền đề sai: `LeaveRequestModel.startDate` thực sự là `DateTime?` (nullable), `?.` là đúng và cần thiết, không phải thừa. Xoá sẽ vỡ build. Ghi chú gốc ở `REVIEW.md` 15.4 đã sai hoặc model đã đổi từ lúc đó | <0.25 ngày | none | B |
 | TD-17 | Set màu tường minh cho `CircularProgressIndicator` (P4-04) | Low | **Done** (2026-07-20, commit `73ce3bb`) — chỉ cần sửa ở mobile, admin đã tự set màu sẵn | <0.25 ngày | none | B |
 | TD-18 | Exception class thay so khớp chuỗi lỗi (P4-05) | Low | **Done** (2026-07-20, commit `ab5b04f`) — `ShiftEndedException` mới + `reauthenticate()` dùng `e.code` thay dò chuỗi `wrong-password` | 0.5-1 ngày | none | B |

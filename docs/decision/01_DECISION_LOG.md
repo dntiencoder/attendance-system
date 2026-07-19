@@ -124,6 +124,15 @@ Mỗi entry gồm: **Ngày**, **Bối cảnh**, **Lý do**, **Ưu điểm**, **N
 **Nhược điểm:** Không giải quyết vấn đề tài khoản Firebase Auth mồ côi (vẫn cần Admin SDK/Cloud Function, ngoài phạm vi — xem OOS-07); hồ sơ nhân viên đã có dữ liệu sẽ tồn tại vĩnh viễn trong hệ thống, không có cách dọn dẹp (chấp nhận được, đây là hành vi đúng theo tiền lệ ERP và quy định lưu trữ hồ sơ lao động).
 **Ảnh hưởng:** `docs/design/EMPLOYEE_LIFECYCLE.md` (tài liệu thiết kế chính thức); TD-02 đổi tên và thiết kế lại theo quy tắc mới — xem `docs/project/01_BACKLOG.md`, `docs/project/02_SPRINT.md`.
 
+### D-013 — Xác nhận phạm vi mở rộng Phase A: làm FEAT-01/FEAT-02, hoãn FEAT-03
+
+**Ngày:** 2026-07-20
+**Bối cảnh:** `PROJECT_MASTER_PLAN.md` Phase A liệt kê 3 tính năng mới (Nghỉ phép mobile, Notification UI, Phòng ban CRUD admin) nằm ngoài phạm vi `ROADMAP.md` gốc, đã gắn cờ cảnh báo yêu cầu xác nhận rõ ràng trước khi bắt đầu vì đây là phần tốn thời gian nhất còn lại của Phase A. Sau khi Sprint 4 (Code Quality) và phần lớn Sprint 6 (dọn dẹp) đã đóng, cần chốt hướng đi trước khi tiếp tục.
+**Lý do:** Hỏi trực tiếp từng mục — FEAT-01 (Nghỉ phép mobile) và FEAT-02 (Notification UI) được xác nhận làm; FEAT-03 (Phòng ban CRUD admin) bị từ chối vì 13 phòng ban đã có sẵn qua dropdown, màn quản lý riêng không ảnh hưởng vận hành/demo hiện tại.
+**Ưu điểm:** Phạm vi Phase A giờ rõ ràng, không còn mục nào "chờ xác nhận" treo lơ lửng; TD-15 (thay placeholder Nghỉ phép tạm thời) trở thành thừa và được Cancelled thay vì làm 2 lần (làm tạm rồi làm lại thật).
+**Nhược điểm:** Thêm ~3-5 ngày công trước khi có thể chuyển sang Phase B/C/E — trì hoãn mốc Release Candidate/Source Freeze so với kịch bản bỏ qua cả 3.
+**Ảnh hưởng:** `docs/project/01_BACKLOG.md` (FEAT-01/02 → Ready, FEAT-03 → Deferred, TD-15 → Cancelled), `docs/project/02_SPRINT.md` (Sprint 2/3 sẵn sàng bắt đầu, bỏ điều kiện "chờ xác nhận").
+
 ---
 
 ## Mẫu thêm quyết định mới

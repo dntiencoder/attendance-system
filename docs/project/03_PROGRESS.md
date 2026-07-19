@@ -284,3 +284,14 @@
   - `flutter analyze` (admin) 0 issue cả 2 lần; `flutter build web` thành công.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-15 (chờ quyết định ưu tiên FEAT-01); `widget_test.dart` Fail; BUG-014 (Open, duy nhất còn lại); FEAT-01/02/03 (chờ xác nhận ưu tiên).
 - **Risk nổi bật:** không có rủi ro mới. Toàn bộ Sprint 6 (trừ TD-15) và các việc tồn đọng nhỏ đã dọn xong — điểm quyết định lớn tiếp theo là FEAT-01/02/03 (ảnh hưởng hướng đi toàn bộ phần còn lại của Phase A) và kết quả Sprint 5 từ bạn.
+
+## 2026-07-20 (cùng ngày) — Chốt phạm vi Phase A (D-013)
+
+- **Milestone:** Sprint 2 (Nghỉ phép mobile) và Sprint 3 (Notification UI) sẵn sàng bắt đầu — không còn điều kiện "chờ xác nhận" nào.
+- **Phase hiện tại:** A (mở rộng tính năng mới).
+- **Task Completed:**
+  - Xác nhận với bạn: **làm FEAT-01** (Nghỉ phép mobile), **làm FEAT-02** (Notification UI), **hoãn FEAT-03** (Phòng ban CRUD admin). Ghi thành quyết định D-013 ở `docs/decision/01_DECISION_LOG.md`.
+  - `01_BACKLOG.md`: FEAT-01/02 → Ready, FEAT-03 → Deferred, TD-15 → Cancelled (thừa vì FEAT-01 sẽ thay hẳn placeholder, không cần bản "tử tế hơn" tạm).
+  - `02_SPRINT.md`: Sprint 2 (chỉ FEAT-01) và Sprint 3 (chỉ FEAT-02, FEAT-03 tách khỏi sprint) bỏ điều kiện tiên quyết "chờ xác nhận".
+- **Task Remaining:** Sprint 2 (FEAT-01) — chưa bắt đầu code; Sprint 3 (FEAT-02) sau đó; Sprint 5 (chờ bạn báo kết quả); `widget_test.dart` Fail; BUG-014.
+- **Risk nổi bật:** không có rủi ro mới. Phạm vi Phase A giờ đã rõ ràng hoàn toàn — không còn mục nào mơ hồ chờ quyết định.

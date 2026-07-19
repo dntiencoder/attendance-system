@@ -38,27 +38,27 @@
 
 ---
 
-## Sprint 2 — Nghỉ phép (mobile) ⚠️ cần xác nhận trước khi bắt đầu
+## Sprint 2 — Nghỉ phép (mobile) — ✅ Sẵn sàng bắt đầu
 
-**Điều kiện tiên quyết:** đã xác nhận với chính bạn rằng đây là ưu tiên thực sự (xem cảnh báo FEAT-01 ở `01_BACKLOG.md`) — nếu không, bỏ qua sprint này và nhảy thẳng sang Sprint 4.
+**Điều kiện tiên quyết:** đã xác nhận 2026-07-20 (D-013, `docs/decision/01_DECISION_LOG.md`) — không còn chờ gì thêm.
 
 **Mục tiêu:** Nhân viên tự tạo và xem đơn nghỉ phép từ app mobile.
-**Task:** FEAT-01.
+**Task:** FEAT-01. TD-15 (thay placeholder) đã Cancelled — FEAT-01 tự thay thế hẳn màn placeholder, không cần làm riêng.
 **Estimate:** ~2-3 ngày công.
 **Deliverable:** `LeaveRepository`/`leave_provider.dart`/UI tạo đơn + danh sách đơn ở mobile.
 **Definition of Done:** tạo đơn từ mobile → hiện đúng ở màn Duyệt Nghỉ Phép (admin) → duyệt/từ chối → trạng thái cập nhật lại đúng ở mobile.
 
 ---
 
-## Sprint 3 — Notification UI + Department UI ⚠️ cần xác nhận trước khi bắt đầu
+## Sprint 3 — Notification UI — ✅ Sẵn sàng bắt đầu
 
-**Điều kiện tiên quyết:** tương tự Sprint 2 — xác nhận ưu tiên FEAT-02 trước khi bắt đầu.
+**Điều kiện tiên quyết:** đã xác nhận 2026-07-20 (D-013) — FEAT-02 làm, FEAT-03 hoãn (không nằm trong sprint này nữa).
 
-**Mục tiêu:** Hoàn tất Phase A — không còn tính năng "chưa làm" nào theo `PROJECT_MASTER_PLAN.md` §1.3.
-**Task:** FEAT-02, FEAT-03.
-**Estimate:** ~2-4 ngày công.
-**Deliverable:** màn hiển thị thông báo (tối thiểu 1 app); màn quản lý Phòng ban (admin).
-**Definition of Done:** Phase A của `PROJECT_MASTER_PLAN.md` — toàn bộ checklist đã tick → đạt **Milestone M1**.
+**Mục tiêu:** Có màn hiển thị thông báo cho nhân viên (tối thiểu 1 app).
+**Task:** FEAT-02. (FEAT-03 chuyển sang Deferred ở `01_BACKLOG.md` mục C, không thuộc sprint nào.)
+**Estimate:** ~1-2 ngày công.
+**Deliverable:** màn hiển thị thông báo (tối thiểu 1 app).
+**Definition of Done:** Phase A của `PROJECT_MASTER_PLAN.md` — checklist đã tick (trừ FEAT-03 hoãn có chủ đích) → đạt **Milestone M1**.
 
 ---
 
