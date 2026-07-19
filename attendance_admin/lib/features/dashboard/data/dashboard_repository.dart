@@ -69,21 +69,24 @@ class DashboardRepository {
     );
   }
 
-  /// Đếm số lượt chấm công của 7 ngày gần nhất (tính cả hôm nay) để vẽ biểu đồ
+  /// Đếm số lượt chấm công của 7 ngày gần nhất (tính cả hôm nay) để vẽ biểu đồ.
+  /// 7 ngày độc lập với nhau nên chạy song song bằng Future.wait() thay vì
+  /// await tuần tự từng ngày một (TD-07).
   Future<List<DailyAttendanceCount>> _getWeeklyAttendance() async {
     final now = DateTime.now();
-    final results = <DailyAttendanceCount>[];
+    final days = List.generate(7, (i) => now.subtract(Duration(days: 6 - i)));
 
-    for (int i = 6; i >= 0; i--) {
-      final day = now.subtract(Duration(days: i));
+    final snapshots = await Future.wait(days.map((day) {
       final startOfDay = Timestamp.fromDate(DateTime(day.year, day.month, day.day));
-      final snap = await _db
+      return _db
           .collection('attendance')
           .where('attendanceDate', isEqualTo: startOfDay)
           .get();
-      results.add(DailyAttendanceCount(date: day, count: snap.docs.length));
-    }
+    }));
 
-    return results;
+    return List.generate(
+      7,
+      (i) => DailyAttendanceCount(date: days[i], count: snapshots[i].docs.length),
+    );
   }
 }
