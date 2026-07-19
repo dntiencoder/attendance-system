@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
 import '../domain/attendance_model.dart';
+import '../domain/attendance_exceptions.dart';
 import '../../../services/gps_service.dart';
 import '../../../features/settings/domain/company_settings_model.dart';
 import '../../../core/constants/app_config.dart';
@@ -151,7 +152,7 @@ class AttendanceRepository {
 
     /// Bước 5: đã quá giờ chưa (vắng mặt)
     if (now.isAfter(window.end)) {
-      throw Exception(
+      throw ShiftEndedException(
         'Ca làm việc đã kết thúc (${DateHelper.toTimeString(window.end)}).\n'
         'Ngày hôm nay được tính là vắng mặt.',
       );

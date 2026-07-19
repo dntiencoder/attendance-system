@@ -130,7 +130,16 @@ class AuthRepository {
       email: email,
       password: currentPassword,
     );
-    await user.reauthenticateWithCredential(credential);
+
+    try {
+      await user.reauthenticateWithCredential(credential);
+    } on FirebaseAuthException catch (e, st) {
+      AppLogger.error('AuthRepository.reauthenticate', e, st);
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        throw Exception('Mật khẩu hiện tại không chính xác');
+      }
+      rethrow;
+    }
   }
 
   Future<void> updatePassword(String newPassword) async {

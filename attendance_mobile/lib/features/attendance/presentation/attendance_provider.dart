@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/attendance_repository.dart';
 import '../domain/attendance_model.dart';
+import '../domain/attendance_exceptions.dart';
 import '../../../core/utils/business_date_helper.dart';
 import '../../../core/services/clock_service.dart';
 import '../../../core/utils/app_logger.dart';
@@ -102,7 +103,7 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       );
     } catch (e, st) {
       AppLogger.error('AttendanceNotifier.checkIn', e, st);
-      final isShiftEndedError = e.toString().contains('Ca làm việc đã kết thúc');
+      final isShiftEndedError = e is ShiftEndedException;
       state = state.copyWith(
         isLoading: false,
         error: e.toString().replaceAll('Exception: ', ''),

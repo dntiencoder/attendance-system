@@ -49,10 +49,7 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
       }
     } catch (e) {
       if (mounted) {
-        String errorMsg = e.toString().replaceAll('Exception: ', '');
-        if (errorMsg.contains('wrong-password')) {
-          errorMsg = 'Mật khẩu hiện tại không chính xác';
-        }
+        final errorMsg = e.toString().replaceAll('Exception: ', '');
         SnackBarUtils.showError(context, errorMsg);
       }
     } finally {
