@@ -251,3 +251,14 @@
   - `01_BACKLOG.md` (TD-08 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
 - **Risk nổi bật:** không có rủi ro mới. Bài học quy trình bổ sung: luôn gộp `cd` + lệnh kiểm tra trong cùng 1 lời gọi Bash, không tách rời và giả định thư mục làm việc còn đúng từ lệnh trước.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-18)
+
+- **Milestone:** Sprint 6 gần xong — chỉ còn TD-06 (phức tạp hơn) và TD-15 (cần xác nhận ưu tiên FEAT-01 trước).
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-18 hoàn thành: thêm `ShiftEndedException` (`attendance/domain/attendance_exceptions.dart`), `attendance_repository.dart` ném đúng kiểu này thay `Exception` thô, `attendance_provider.dart` kiểm tra bằng `e is ShiftEndedException` thay `.toString().contains(...)`. `AuthRepository.reauthenticate()` bắt `FirebaseAuthException` theo `e.code` (giống pattern `login()` đã có), ném sẵn thông điệp thân thiện — `change_password_page.dart` bỏ hẳn việc dò chuỗi `'wrong-password'`.
+  - `flutter analyze` (mobile) 0 issue (xác nhận đúng thư mục qua `pwd` trước). `flutter test`: 19/19 Pass. Commit `ab5b04f`.
+  - `01_BACKLOG.md` (TD-18 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06 (giới hạn/lọc `getAttendanceLogs()`, phức tạp hơn — sửa logic query + có thể đụng UI phân trang); TD-15 (cần xác nhận ưu tiên FEAT-01 trước, có thể huỷ nếu FEAT-01 làm trước); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
+- **Risk nổi bật:** không có rủi ro mới.

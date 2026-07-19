@@ -55,7 +55,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-15 | Thay placeholder "Nghỉ phép" bằng màn tử tế hơn (P4-02) | Low | Backlog | 0.5 ngày | **Có thể huỷ nếu FEAT-01 hoàn thành trước** | B |
 | TD-16 | Xoá `?.` thừa trên `startDate` không nullable (P4-03) | Low | **Won't Fix** (2026-07-20) — tiền đề sai: `LeaveRequestModel.startDate` thực sự là `DateTime?` (nullable), `?.` là đúng và cần thiết, không phải thừa. Xoá sẽ vỡ build. Ghi chú gốc ở `REVIEW.md` 15.4 đã sai hoặc model đã đổi từ lúc đó | <0.25 ngày | none | B |
 | TD-17 | Set màu tường minh cho `CircularProgressIndicator` (P4-04) | Low | **Done** (2026-07-20, commit `73ce3bb`) — chỉ cần sửa ở mobile, admin đã tự set màu sẵn | <0.25 ngày | none | B |
-| TD-18 | Exception class thay so khớp chuỗi lỗi (P4-05) | Low | Backlog | 0.5-1 ngày | none | B |
+| TD-18 | Exception class thay so khớp chuỗi lỗi (P4-05) | Low | **Done** (2026-07-20, commit `ab5b04f`) — `ShiftEndedException` mới + `reauthenticate()` dùng `e.code` thay dò chuỗi `wrong-password` | 0.5-1 ngày | none | B |
 | TD-19 | Dọn 23+13 warning/info còn lại từ `flutter analyze` (baseline 2026-07-13) | Medium | **Done** (2026-07-20, commit `00fd541`) — mobile 23→1 (còn lại cố ý ở `checkin_screen.dart`, chờ TD-14), admin 13→0 | 0.5-1 ngày | none | B |
 | TD-20 | Gỡ dependency `firebase_storage` không dùng thực tế (cả 2 `pubspec.yaml`) | Low | **Done** (2026-07-20, commit `4cbfe08`) | <0.25 ngày | none | B |
 | BUG-014 | `GpsService.getCurrentPosition()` (`gps_service.dart`) ném `TimeoutException` thô sau 15s, không có thông báo thân thiện — xem chi tiết `docs/testing/02_BUG_TRACKER.md` | Medium | Backlog | 0.5-1 ngày (cần điều tra thêm trước khi ước lượng chắc) | none | B |
