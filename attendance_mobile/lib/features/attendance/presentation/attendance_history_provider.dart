@@ -66,9 +66,32 @@ class AttendanceHistoryNotifier
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Cache company_settings/shiftGroup trong suốt vòng đời notifier này (TD-08)
+  // — không đổi giữa các lần chuyển tháng, chỉ đọc lại Firestore khi refresh().
+  CompanySettingsModel? _cachedSettings;
+  String? _cachedShiftGroup;
+
   AttendanceHistoryNotifier()
       : super(AttendanceHistoryState(selectedMonth: ClockService.now())) {
     loadRecords();
+  }
+
+  Future<(CompanySettingsModel, String)> _getSettingsAndShiftGroup(String uid) async {
+    if (_cachedSettings != null && _cachedShiftGroup != null) {
+      return (_cachedSettings!, _cachedShiftGroup!);
+    }
+
+    // Lấy cấu hình công ty để xác định ca cho các ngày vắng
+    final settingsDoc = await _db.collection('company_settings').doc(AppConfig.companySettingsDocId).get();
+    final settings = CompanySettingsModel.fromFirestore(settingsDoc);
+
+    // Lấy nhóm ca của user
+    final userDoc = await _db.collection('users').doc(uid).get();
+    final shiftGroup = (userDoc.data()?['shiftGroup'] as String?) ?? 'A';
+
+    _cachedSettings = settings;
+    _cachedShiftGroup = shiftGroup;
+    return (settings, shiftGroup);
   }
 
   Future<void> loadRecords() async {
@@ -96,13 +119,7 @@ class AttendanceHistoryNotifier
           .map((doc) => AttendanceModel.fromFirestore(doc))
           .toList();
 
-      // Lấy cấu hình công ty để xác định ca cho các ngày vắng
-      final settingsDoc = await _db.collection('company_settings').doc(AppConfig.companySettingsDocId).get();
-      final settings = CompanySettingsModel.fromFirestore(settingsDoc);
-
-      // Lấy nhóm ca của user
-      final userDoc = await _db.collection('users').doc(uid).get();
-      final shiftGroup = userDoc.data()?['shiftGroup'] ?? 'A';
+      final (settings, shiftGroup) = await _getSettingsAndShiftGroup(uid);
 
       // Logic Tự động ghi nhận Vắng mặt (Absent Generation)
       final List<AttendanceModel> allDaysRecords = [];
@@ -184,7 +201,11 @@ class AttendanceHistoryNotifier
     state = state.copyWith(selectedFilter: filter);
   }
 
-  Future<void> refresh() => loadRecords();
+  Future<void> refresh() {
+    _cachedSettings = null;
+    _cachedShiftGroup = null;
+    return loadRecords();
+  }
 }
 
 final attendanceHistoryProvider =
