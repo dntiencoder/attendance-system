@@ -92,3 +92,15 @@
 **Tổng kết:** 4/4 task Done, đúng phạm vi từng task (không có commit nào lẫn file ngoài phạm vi). 1 bug phát hiện-và-sửa-ngay (BUG-013), 1 bug phát hiện-còn-mở (BUG-014, Medium, không chặn Sprint 1 vì nằm ngoài phạm vi từng task cụ thể — thuộc `gps_service.dart`, chưa file nào trong Sprint 1 được duyệt sửa). Không cần Regression Fix bổ sung nào cho 4 task đã đóng.
 - **Task Remaining:** BUG-014 (Open, chưa vào Sprint nào); toàn bộ Sprint 2 trở đi (chưa mở).
 - **Risk nổi bật:** không có rủi ro mới phát sinh từ việc đóng Sprint 1. Rủi ro tồn đọng duy nhất là BUG-014, mức Medium, đã có trong backlog chờ ưu tiên.
+
+## 2026-07-20 — Sau buổi demo báo cáo tiến độ, quay lại Phase A/Sprint 4
+
+- **Milestone:** buổi demo báo cáo tiến độ đã diễn ra và kết thúc; mục tiêu chuyển hẳn sang Complete Project → Release Candidate → Source Freeze → Báo cáo → Bảo vệ. Chưa đạt M1 (còn FEAT-01/02/03 chờ xác nhận ưu tiên).
+- **Phase hiện tại:** A/B (bắt đầu Sprint 4 — Code Quality bắt buộc).
+- **Task Completed:**
+  - Review toàn diện trạng thái dự án sau đợt demo: xác nhận Sprint 1 vẫn đóng hợp lệ (đã đóng 2026-07-13, trước demo); phát hiện 2 file có thay đổi lạ chưa commit không gắn task nào (`employee_screen.dart`, `attendance_repository.dart`) — đã xác nhận với bạn và `git checkout --` khôi phục về bản `HEAD`, không có gì cần commit thêm.
+  - Phát hiện lệch tài liệu: `docs/testing/02_BUG_TRACKER.md` có 4 dòng (BUG-008/009/010/013) vẫn ghi `Open` dù fix tương ứng (TD-01/02/03, và fix inline của BUG-013) đã Done từ Sprint 1 — **chưa sửa**, để lại cho lượt cập nhật tài liệu tiếp theo.
+  - TD-05 hoàn thành: xoá `.toUpperCase()` thừa trên email đăng nhập (`login_form.dart:32`), khớp cách `attendance_admin` xử lý. `flutter analyze` sạch (baseline 23 issue không đổi). Commit `bf64a9e`. Test tay bị bỏ qua có chủ đích theo yêu cầu (thay đổi 1 dòng, rủi ro thấp).
+  - `01_BACKLOG.md` (TD-05 → Done), `02_BUG_TRACKER.md` (BUG-011 → Fixed) cập nhật theo.
+- **Task Remaining:** TD-04 (logging/crash reporting, High, tiếp theo trong Sprint 4); BUG-014 (Open); TD-06 → TD-20 (Medium/Low); FEAT-01/02/03 (chờ xác nhận ưu tiên); 14 unit test (UT-01→14) + manual test suite (Sprint 5) chưa chạy lần nào; sửa lệch BUG-008/009/010/013 trong Bug Tracker (chưa làm).
+- **Risk nổi bật:** không có rủi ro mới. `docs/demo/DEMO_GUIDE.md`/`01_DEMO_DATA.md` từ nay đóng vai trò tư liệu lịch sử cho D.2 (demo bảo vệ), không còn là mục tiêu vận hành trước mắt.

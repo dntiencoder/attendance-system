@@ -42,7 +42,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-02 | **[Đổi tên 2026-07-13]** Chặn xoá nhân viên đã phát sinh dữ liệu nghiệp vụ (Attendance/Leave Request) — tách rời hoàn toàn khỏi `isActive` (P2-04, thiết kế lại theo `docs/design/EMPLOYEE_LIFECYCLE.md`, xem `docs/decision/01_DECISION_LOG.md` D-012) | High | **Done** (2026-07-13, commit `7f17397`) — TD02-04/05/06 Pass trên bản Web thật | 0.5-1 ngày (tăng nhẹ so với ước lượng gốc — cần kiểm tra tồn tại dữ liệu ở 2 nguồn thay vì đọc 1 cờ) | none | A |
 | TD-03 | Đồng bộ nguồn mốc ngày `WorkScheduleHelper` ↔ `rotationStartDate` (P2-06) | High | **Done** (2026-07-13, commit `5d829ae`) — flutter analyze + build web sạch, 6 mục regression Pass trên thiết bị thật | 1 ngày | none | A |
 | TD-04 | Logging/crash reporting tối thiểu ở các nhánh `catch` quan trọng (P2-02) | High | Backlog | 1-2 ngày | none | B |
-| TD-05 | Xoá `.toUpperCase()` thừa khi đăng nhập email (P2-05) | High | Backlog | <0.25 ngày | none | B |
+| TD-05 | Xoá `.toUpperCase()` thừa khi đăng nhập email (P2-05) | High | **Done** (2026-07-20, commit `bf64a9e`) | <0.25 ngày | none | B |
 | TD-06 | Giới hạn/lọc theo ngày cho `getAttendanceLogs()` (P3-01) | Medium | Backlog | 1 ngày | none | B |
 | TD-07 | Song song hoá 7 query tuần tự ở Dashboard (P3-02) | Medium | Backlog | 0.5 ngày | none | B |
 | TD-08 | Cache `company_settings`/`users` trong lịch sử chấm công (P3-03) | Medium | Backlog | 0.5 ngày | none | B |
