@@ -78,10 +78,11 @@ Từ `REVIEW.md`, bị `ROADMAP.md` loại khỏi phạm vi ổn định hoá �
 
 Sống tại **`docs/testing/02_BUG_TRACKER.md`** — không liệt kê lại ở đây theo đúng yêu cầu "không copy lại, chỉ tham chiếu". Tóm tắt nhanh (cập nhật thủ công khi bug tracker đổi):
 
-| Trạng thái | Số lượng (tại 2026-07-13, sau TD-01) |
+| Trạng thái | Số lượng (tại 2026-07-20, sau khi sửa lệch trạng thái BUG-008/009/010/013) |
 |---|---|
-| Fixed | 8 |
-| Open | 6 (mới: BUG-014, phát hiện lúc test TD-01) |
+| Fixed | 12 |
+| Open | 1 (BUG-014) |
+| Won't Fix | 1 (BUG-012 — tiền đề sai, xem TD-16) |
 | Tổng | 14 |
 
 Xem chi tiết từng bug tại `docs/testing/02_BUG_TRACKER.md`.
