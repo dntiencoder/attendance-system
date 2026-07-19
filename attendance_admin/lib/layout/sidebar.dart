@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../shared/theme/app_colors.dart';
 
 class Sidebar extends ConsumerWidget {
   const Sidebar({super.key});
@@ -60,7 +61,7 @@ class _SidebarTile extends StatelessWidget {
       child: ListTile(
         leading: Icon(
           isActive ? item.activeIcon : item.icon,
-          color: isActive ? const Color(0xFFB91C1C) : const Color(0xFF64748B),
+          color: isActive ? AppColors.sidebarAccent : const Color(0xFF64748B),
           size: 24,
         ),
         title: Text(
@@ -68,7 +69,7 @@ class _SidebarTile extends StatelessWidget {
           style: TextStyle(
             fontSize: 15,
             fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-            color: isActive ? const Color(0xFFB91C1C) : const Color(0xFF64748B),
+            color: isActive ? AppColors.sidebarAccent : const Color(0xFF64748B),
           ),
         ),
         selected: isActive,
@@ -76,7 +77,7 @@ class _SidebarTile extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        tileColor: isActive ? const Color(0xFFB91C1C).withValues(alpha: 0.08) : null,
+        tileColor: isActive ? AppColors.sidebarAccent.withValues(alpha: 0.08) : null,
       ),
     );
   }

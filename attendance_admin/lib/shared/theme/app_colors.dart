@@ -4,6 +4,11 @@ class AppColors {
   AppColors._();
 
   static const primary = Color(0xFFC8102E); // Red UMC
+
+  /// Đỏ đậm dùng riêng cho sidebar/header layout — khác `primary`, có chủ
+  /// đích (không phải hardcode nhầm), tách thành hằng số để hết lặp lại
+  /// 6 chỗ dạng `Color(0xFFB91C1C)` (TD-13 phát hiện phụ).
+  static const sidebarAccent = Color(0xFFB91C1C);
   static const white = Color(0xFFFFFFFF);
   static const background = Color(0xFFF5F5F5); // Light Gray background
   static const backgroundTertiary = Color(0xFFF9FAFB);

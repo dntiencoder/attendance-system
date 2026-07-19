@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import '../shared/theme/app_colors.dart';
 import 'sidebar.dart';
 
 class MainLayout extends StatelessWidget {
@@ -19,7 +20,7 @@ class MainLayout extends StatelessWidget {
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(appBarHeight),
         child: AppBar(
-          backgroundColor: const Color(0xFFB91C1C), // Màu Đỏ UMC chủ đạo
+          backgroundColor: AppColors.sidebarAccent, // Màu Đỏ UMC chủ đạo
           elevation: 3,
           centerTitle: false,
           flexibleSpace: SafeArea(
@@ -46,7 +47,7 @@ class MainLayout extends StatelessWidget {
                           'assets/logo_umc.jpg',
                           width: 85, 
                           fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, size: 85, color: Color(0xFFB91C1C)),
+                          errorBuilder: (context, error, stackTrace) => const Icon(Icons.business, size: 85, color: AppColors.sidebarAccent),
                         ),
                       ),
                       const SizedBox(width: 24),

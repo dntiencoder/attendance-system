@@ -4,6 +4,7 @@ import 'leave_provider.dart';
 import '../domain/leave_request_model.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/app_logger.dart';
+import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/loading_widget.dart';
 
 class LeaveScreen extends ConsumerWidget {
@@ -18,7 +19,7 @@ class LeaveScreen extends ConsumerWidget {
       children: [
         Row(
           children: const [
-            Icon(Icons.rate_review_rounded, color: Color(0xFFB91C1C)),
+            Icon(Icons.rate_review_rounded, color: AppColors.sidebarAccent),
             SizedBox(width: 8),
             Text('Phê Duyệt Đơn Xin Nghỉ Phép',
                 style: TextStyle(
