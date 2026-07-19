@@ -7,6 +7,7 @@ import '../domain/employee_model.dart';
 import 'employee_provider.dart';
 import '../../department/domain/department_model.dart'; // Thêm model này
 import '../../department/presentation/department_provider.dart';
+import '../../../core/utils/validators.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/loading_widget.dart';
 import '../../../core/utils/app_logger.dart';
@@ -85,7 +86,7 @@ class EmployeeScreen extends ConsumerWidget {
                         TextFormField(
                           controller: emailController,
                           decoration: const InputDecoration(labelText: 'Địa chỉ Email', border: OutlineInputBorder()),
-                          validator: (v) => v == null || v.isEmpty ? 'Bắt buộc' : null,
+                          validator: Validators.email,
                           enabled: !isEditing, 
                         ),
                         if (!isEditing) ...[
@@ -115,6 +116,7 @@ class EmployeeScreen extends ConsumerWidget {
                               child: TextFormField(
                                 controller: phoneController,
                                 decoration: const InputDecoration(labelText: 'Số điện thoại', border: OutlineInputBorder()),
+                                validator: (v) => (v == null || v.trim().isEmpty) ? null : Validators.phone(v),
                               ),
                             ),
                             const SizedBox(width: 16),
