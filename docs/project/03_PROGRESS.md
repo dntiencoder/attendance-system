@@ -215,3 +215,15 @@
   - `01_BACKLOG.md` (TD-10 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08, TD-09, TD-11, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-09)
+
+- **Milestone:** Sprint 6 tiếp tục.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-09 hoàn thành: `ConfirmDialog.show()` (admin) trước đó có 0 call site nào — rà 4 chỗ `AlertDialog` tự dựng, chỉ đúng 1 chỗ khớp hình dạng (title+message+confirm/cancel tĩnh): dialog "Xác nhận xóa nhân viên" (`employee_screen.dart`), đổi sang `ConfirmDialog.show(isDanger: true)`. 3 chỗ còn lại không đụng vì không hợp: form thêm/sửa nhân viên (là form nhập liệu, không phải confirm đơn giản), dialog "Không thể xoá" (chỉ 1 nút Đóng, `ConfirmDialog` luôn có 2 nút), dialog duyệt/từ chối nghỉ phép (có `TextField` nhúng, `ConfirmDialog.message` chỉ nhận `String` tĩnh).
+  - Tự phát hiện và sửa 1 lỗi cú pháp phát sinh khi edit (dấu `);` thừa sót lại từ cấu trúc `AlertDialog` cũ) — bắt được ngay qua `flutter analyze` trước khi commit.
+  - `flutter analyze` (admin) 0 issue; `flutter build web` thành công. Commit `0ea3030`.
+  - `01_BACKLOG.md` (TD-09 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08, TD-11, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
+- **Risk nổi bật:** không có rủi ro mới.
