@@ -9,6 +9,7 @@ import '../../department/domain/department_model.dart'; // Thêm model này
 import '../../department/presentation/department_provider.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/theme/app_colors.dart';
+import '../../../shared/widgets/confirm_dialog.dart';
 import '../../../shared/widgets/loading_widget.dart';
 import '../../../core/utils/app_logger.dart';
 
@@ -412,26 +413,19 @@ class EmployeeScreen extends ConsumerWidget {
 
     if (!context.mounted) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
-        content: Text(
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: 'Xác nhận xóa',
+      message:
           'Bạn có chắc chắn muốn xóa nhân viên ${emp.name}?\n\n'
           'Xoá hồ sơ này sẽ không thể hoàn tác. Email "${emp.email}" đã dùng cho '
           'tài khoản này sẽ không thể dùng lại để tạo nhân viên mới sau khi xoá.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Hủy')),
-          TextButton(
-            onPressed: () async {
-              await ref.read(employeeRepositoryProvider).deleteEmployee(emp.id);
-              if (context.mounted) Navigator.pop(context);
-            },
-            child: const Text('Xóa', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      confirmLabel: 'Xóa',
+      isDanger: true,
     );
+
+    if (confirmed && context.mounted) {
+      await ref.read(employeeRepositoryProvider).deleteEmployee(emp.id);
+    }
   }
 }
