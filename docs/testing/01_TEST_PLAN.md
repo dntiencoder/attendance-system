@@ -22,20 +22,20 @@ Khả thi vì đây là các hàm thuần Dart, không đụng `cloud_firestore`
 
 | ID | Hàm kiểm thử | Test case | Expected | Status |
 |---|---|---|---|---|
-| UT-01 | `Haversine.calculateDistance()` | Khoảng cách = 0 (cùng toạ độ) | trả về 0 | Chưa chạy |
-| UT-02 | `Haversine.calculateDistance()` | Khoảng cách đúng bằng bán kính cho phép (biên) | so sánh `<=` đúng như code dùng | Chưa chạy |
-| UT-03 | `Haversine.calculateDistance()` | Khoảng cách rất lớn (khác lục địa) | không lỗi tràn số, trả về giá trị hợp lý (km) | Chưa chạy |
-| UT-04 | `CompanySettingsModel.getCurrentShift()` | Đúng ngày đổi ca (biên `daysPassed % rotationDays == 0`) | nhóm A/B đổi vai trò đúng dự kiến | Chưa chạy |
-| UT-05 | `CompanySettingsModel.getCurrentShift()` | 1 ngày trước/sau mốc đổi ca | ca giữ nguyên, không đổi sớm/muộn 1 ngày | Chưa chạy |
-| UT-06 | `calculateIsLate()` | Check-in đúng giờ bắt đầu ca | `isLate = false` | Chưa chạy |
-| UT-07 | `calculateIsLate()` | Check-in trễ 1 phút / trễ nhiều | `isLate = true` | Chưa chạy |
-| UT-08 | `calculateIsLate()` | Ca đêm, check-in ngay trước nửa đêm | tính đúng theo giờ ca đêm, không lệch ngày | Chưa chạy |
-| UT-09 | `calculateEarlyLeave()` | Check-out đúng giờ / sau giờ kết thúc ca | `isEarlyLeave = false` | Chưa chạy |
-| UT-10 | `calculateEarlyLeave()` | Check-out sớm | `isEarlyLeave = true` | Chưa chạy |
-| UT-11 | `calculateEarlyLeave()` | Ca đêm, check-out sau khi qua nửa đêm (thuộc "ngày hôm sau" theo đồng hồ) | vẫn tính đúng cho ca làm đêm hôm trước | Chưa chạy |
-| UT-12 | `BusinessDateHelper.resolveBusinessDate()` | Sự kiện lúc 23:59 | resolve đúng ngày làm việc hiện tại | Chưa chạy |
-| UT-13 | `BusinessDateHelper.resolveBusinessDate()` | Sự kiện lúc 00:00 | resolve đúng ranh giới (kiểm tra nhóm có làm đêm "hôm qua" không) | Chưa chạy |
-| UT-14 | `BusinessDateHelper.resolveBusinessDate()` | Sự kiện lúc 00:15 (đúng mốc trong `docs/demo/DEMO_GUIDE.md`) | khớp với hành vi đã ghi trong Demo Guide | Chưa chạy |
+| UT-01 | `Haversine.calculateDistance()` | Khoảng cách = 0 (cùng toạ độ) | trả về 0 | **Pass** (2026-07-20, `test/core/utils/haversine_test.dart`) |
+| UT-02 | `Haversine.calculateDistance()` | Khoảng cách đúng bằng bán kính cho phép (biên) | so sánh `<=` đúng như code dùng | **Pass** (2026-07-20) — test qua `isWithinRadius()`, đúng hàm biên thực tế dùng trong code |
+| UT-03 | `Haversine.calculateDistance()` | Khoảng cách rất lớn (khác lục địa) | không lỗi tràn số, trả về giá trị hợp lý (km) | **Pass** (2026-07-20) |
+| UT-04 | `CompanySettingsModel.getCurrentShift()` | Đúng ngày đổi ca (biên `daysPassed % rotationDays == 0`) | nhóm A/B đổi vai trò đúng dự kiến | **Pass** (2026-07-20, `test/core/utils/rotation_calculator_test.dart`) — test trực tiếp qua `RotationCalculator.getCurrentShift()` |
+| UT-05 | `CompanySettingsModel.getCurrentShift()` | 1 ngày trước/sau mốc đổi ca | ca giữ nguyên, không đổi sớm/muộn 1 ngày | **Pass** (2026-07-20) |
+| UT-06 | `calculateIsLate()` | Check-in đúng giờ bắt đầu ca | `isLate = false` | **Pass** (2026-07-20, `test/features/settings/company_settings_model_test.dart`) |
+| UT-07 | `calculateIsLate()` | Check-in trễ 1 phút / trễ nhiều | `isLate = true` | **Pass** (2026-07-20) |
+| UT-08 | `calculateIsLate()` | Ca đêm, check-in ngay trước nửa đêm | tính đúng theo giờ ca đêm, không lệch ngày | **Pass** (2026-07-20) |
+| UT-09 | `calculateEarlyLeave()` | Check-out đúng giờ / sau giờ kết thúc ca | `isEarlyLeave = false` | **Pass** (2026-07-20) |
+| UT-10 | `calculateEarlyLeave()` | Check-out sớm | `isEarlyLeave = true` | **Pass** (2026-07-20) |
+| UT-11 | `calculateEarlyLeave()` | Ca đêm, check-out sau khi qua nửa đêm (thuộc "ngày hôm sau" theo đồng hồ) | vẫn tính đúng cho ca làm đêm hôm trước | **Pass** (2026-07-20) |
+| UT-12 | `BusinessDateHelper.resolveBusinessDate()` | Sự kiện lúc 23:59 | resolve đúng ngày làm việc hiện tại | **Pass** (2026-07-20, `test/core/utils/business_date_helper_test.dart`) |
+| UT-13 | `BusinessDateHelper.resolveBusinessDate()` | Sự kiện lúc 00:00 | resolve đúng ranh giới (kiểm tra nhóm có làm đêm "hôm qua" không) | **Pass** (2026-07-20) |
+| UT-14 | `BusinessDateHelper.resolveBusinessDate()` | Sự kiện lúc 00:15 (đúng mốc trong `docs/demo/DEMO_GUIDE.md`) | khớp với hành vi đã ghi trong Demo Guide | **Pass** (2026-07-20) — có thêm 1 test đối chứng (nhóm làm ngày hôm qua thì không lùi ngày) |
 
 ## B. Manual Test — Check In / Check Out
 

@@ -116,3 +116,14 @@
   - `01_BACKLOG.md` (TD-04 → Done) cập nhật theo.
 - **Task Remaining:** BUG-014 (Open); TD-06 → TD-20 (Medium/Low, Sprint 6); FEAT-01/02/03 (chờ xác nhận ưu tiên); 14 unit test (UT-01→14, Sprint 4) + manual test suite (Sprint 5) chưa chạy; sửa lệch BUG-008/009/010/013 trong Bug Tracker (chưa làm).
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành 14 unit test đầu tiên)
+
+- **Milestone:** Sprint 4 gần xong (còn TD-19 — dọn warning/info). `flutter test` (mobile) lần đầu tiên có test thật ngoài widget test mặc định.
+- **Phase hiện tại:** B/C (unit test thuộc Phase C nhưng gộp vào Sprint 4 theo `02_SPRINT.md`).
+- **Task Completed:**
+  - Viết đủ 14 unit test (UT-01→UT-14) cho các hàm thuần Dart: `Haversine` (`test/core/utils/haversine_test.dart`), `RotationCalculator` (`test/core/utils/rotation_calculator_test.dart`), `CompanySettingsModel.calculateIsLate/calculateEarlyLeave` (`test/features/settings/company_settings_model_test.dart`), `BusinessDateHelper.resolveBusinessDate` (`test/core/utils/business_date_helper_test.dart`, gồm cả 1 test đối chứng thêm ngoài yêu cầu gốc để củng cố UT-14).
+  - `flutter test`: 19/19 test mới Pass. Phát hiện phụ: `test/widget_test.dart` (bài test mặc định "Counter increments", chưa từng khớp với app thực tế) đang Fail — lỗi có sẵn từ trước, không liên quan tới thay đổi lần này, **chưa sửa** (ngoài phạm vi UT-01→14, để lại quyết định cho lượt sau: sửa thành smoke test thật hoặc xoá).
+  - `docs/testing/01_TEST_PLAN.md` (UT-01→14 → Pass) cập nhật theo.
+- **Task Remaining:** `test/widget_test.dart` Fail (mới phát hiện, chưa vào backlog); TD-19 (Sprint 4, dọn warning/info); BUG-014 (Open); TD-06→TD-20, TD-14/17/18/20 (Sprint 6); FEAT-01/02/03 (chờ xác nhận); manual test suite Sprint 5 chưa chạy; sửa lệch BUG-008/009/010/013.
+- **Risk nổi bật:** `test/widget_test.dart` Fail có thể khiến CI/`flutter test` báo đỏ toàn bộ nếu sau này thêm CI — nên quyết định sửa/xoá trước Phase E (Release Candidate), vì `01_RELEASE_CHECKLIST.md` yêu cầu `flutter test` pass 100%.
