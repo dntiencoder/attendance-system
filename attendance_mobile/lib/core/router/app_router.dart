@@ -11,6 +11,7 @@ import '../../features/home/presentation/main_shell_screen.dart';
 import '../../features/attendance/presentation/attendance_history_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/leave/presentation/leave_screen.dart';
+import '../../features/notification/presentation/notification_screen.dart';
 import '../../features/dev_tools/presentation/demo_center_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -50,6 +51,11 @@ class AppRouter {
         path: '/change-password',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ChangePasswordPage(),
+      ),
+      GoRoute(
+        path: '/notifications',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const NotificationScreen(),
       ),
       // Route ẩn để chỉnh giờ demo — chỉ có trong debug build,
       // không được đăng ký ở bản production (BUG-013).
