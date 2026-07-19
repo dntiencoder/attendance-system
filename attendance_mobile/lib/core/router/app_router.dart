@@ -10,6 +10,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/main_shell_screen.dart';
 import '../../features/attendance/presentation/attendance_history_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/leave/presentation/leave_screen.dart';
 import '../../features/dev_tools/presentation/demo_center_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -83,9 +84,7 @@ class AppRouter {
             routes: [
               GoRoute(
                 path: '/leave',
-                builder: (context, state) => const Scaffold(
-                  body: Center(child: Text('Nghỉ phép')),
-                ),
+                builder: (context, state) => const LeaveScreen(),
               ),
             ],
           ),
