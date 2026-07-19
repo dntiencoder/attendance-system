@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:geolocator/geolocator.dart';
 import '../core/utils/haversine.dart';
+import '../core/utils/app_logger.dart';
 
 class GpsService {
   // Xin quyền và lấy vị trí hiện tại
@@ -24,12 +27,21 @@ class GpsService {
     }
 
     // Lấy vị trí
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
-        timeLimit: Duration(seconds: 15),
-      ),
-    );
+    late final Position position;
+    try {
+      position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+    } on TimeoutException catch (e, st) {
+      AppLogger.error('GpsService.getCurrentPosition', e, st);
+      throw Exception(
+        'Không lấy được vị trí GPS trong thời gian cho phép.\n'
+        'Vui lòng ra khu vực thoáng, có tín hiệu GPS tốt hơn rồi thử lại.',
+      );
+    }
 
     // Kiểm tra Fake GPS
     if (position.isMocked) {
