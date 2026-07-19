@@ -347,3 +347,30 @@
   - `01_BACKLOG.md` (cập nhật đếm Bug Backlog: Fixed 14/Open 0/Won't Fix 1), `02_BUG_TRACKER.md` (BUG-014 → Fixed một phần) cập nhật theo.
 - **Task Remaining:** Sprint 5 (kiểm thử thủ công, chờ bạn báo kết quả, bao gồm cả TD01-02/03/04/08 để đóng hẳn BUG-014); Sprint 7 (Release Candidate) — điều kiện bắt đầu vẫn cần Phase C (Sprint 5) xong.
 - **Risk nổi bật:** không có rủi ro mới. Toàn bộ việc tự làm được (không cần thiết bị thật) trong Phase A/B coi như đã xong — điểm nghẽn duy nhất còn lại trước khi sang Phase E là kết quả kiểm thử thủ công từ bạn (Sprint 5).
+
+## 2026-07-20 (cùng ngày) — TẠM DỪNG PHIÊN LÀM VIỆC — điểm bắt đầu cho phiên sau
+
+**Đọc mục này trước khi tiếp tục — tóm tắt toàn bộ trạng thái tại thời điểm dừng.**
+
+### Đã xong trong phiên này (2026-07-20, sau buổi demo báo cáo tiến độ)
+- **Sprint 1** — đã đóng từ trước phiên này (2026-07-13), xác nhận lại vẫn hợp lệ.
+- **Sprint 4** (Code Quality bắt buộc + Unit Test) — DONE: TD-04, TD-05, TD-19, 14 unit test (UT-01→14).
+- **Sprint 6** (Code Quality mở rộng) — DONE toàn bộ 14 mục: TD-06, TD-07, TD-08, TD-09, TD-10, TD-11, TD-12, TD-13, TD-14, TD-17, TD-18, TD-20 (Done); TD-16 (Won't Fix — tiền đề sai); TD-15 (Cancelled — FEAT-01 thay thế).
+- **Sprint 2** (FEAT-01 — Nghỉ phép mobile) — DONE, kèm phát hiện+sửa BUG-015.
+- **Sprint 3** (FEAT-02 — Notification UI) — DONE. **→ Đạt Milestone M1 (Core Complete).**
+- **BUG-014** (GPS timeout) — sửa một phần (thông báo thân thiện); phần "tín hiệu yếu hay concurrency thật" vẫn treo, cần thiết bị thật.
+- **`test/widget_test.dart`** — xoá (test mẫu không liên quan). `flutter test` mobile giờ **19/19, "All tests passed!"** tuyệt đối.
+- **`flutter analyze`**: 0 issue cả 2 app, ổn định suốt phiên.
+- Dọn tài liệu: sửa lệch trạng thái BUG-008/009/010/013 trong Bug Tracker; quyết định D-013 (FEAT-01/02 làm, FEAT-03 hoãn).
+- Commit cuối cùng của phiên: `31956c6`.
+
+### Chưa làm — cần xử lý ở phiên sau
+1. **Sprint 5 (kiểm thử thủ công trên thiết bị thật)** — **việc quan trọng nhất còn treo**, chặn toàn bộ Phase E (Release Candidate). Checklist đầy đủ đã gửi cho bạn (mục A/B/C: Check In/Out GPS, Rotation/Business Date, Phân quyền + TD01-02/03/04/08 để đóng hẳn BUG-014). **→ Phiên sau: hỏi ngay "đã chạy Sprint 5 chưa, kết quả thế nào" trước khi làm gì khác.**
+2. **FEAT-03** (Phòng ban admin CRUD) — Deferred có chủ đích (D-013), không cần làm trừ khi đổi ý.
+3. **Sprint 7** (Release Candidate) — chưa mở, cần Sprint 5 xong trước (theo `02_SPRINT.md`).
+4. Phase G (viết Chương 3/4 báo cáo) — phần "viết nháp" có thể bắt đầu song song bất kỳ lúc nào, chưa động tới trong phiên này.
+
+### Việc KHÔNG cần làm lại
+- Đừng chạy lại `flutter run -t lib/main_dev.dart` (sẽ xoá dữ liệu thật hiện có).
+- Đừng mở lại quyết định FEAT-01/02/03 — đã chốt (D-013).
+- Đừng viết lại `test/widget_test.dart` — cố ý xoá, không thay thế.
