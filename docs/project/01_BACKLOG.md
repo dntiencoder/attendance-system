@@ -43,7 +43,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-03 | Đồng bộ nguồn mốc ngày `WorkScheduleHelper` ↔ `rotationStartDate` (P2-06) | High | **Done** (2026-07-13, commit `5d829ae`) — flutter analyze + build web sạch, 6 mục regression Pass trên thiết bị thật | 1 ngày | none | A |
 | TD-04 | Logging/crash reporting tối thiểu ở các nhánh `catch` quan trọng (P2-02) | High | **Done** (2026-07-20, commit `a3c6d4c`) — `AppLogger` (dart:developer, không thêm package) + 11 nhánh catch quan trọng ở cả 2 app | 1-2 ngày (thực tế <1 ngày) | none | B |
 | TD-05 | Xoá `.toUpperCase()` thừa khi đăng nhập email (P2-05) | High | **Done** (2026-07-20, commit `bf64a9e`) | <0.25 ngày | none | B |
-| TD-06 | Giới hạn/lọc theo ngày cho `getAttendanceLogs()` (P3-01) | Medium | Backlog | 1 ngày | none | B |
+| TD-06 | Giới hạn/lọc theo ngày cho `getAttendanceLogs()` (P3-01) | Medium | **Done** (2026-07-20, commit `3ac50c0`) — mặc định tháng hiện tại, chọn ngày cụ thể để xem xa hơn; đổi hành vi mặc định có chủ đích, đã xác nhận với bạn trước khi làm | 1 ngày | none | B |
 | TD-07 | Song song hoá 7 query tuần tự ở Dashboard (P3-02) | Medium | **Done** (2026-07-20, commit `690aa48`) | 0.5 ngày | none | B |
 | TD-08 | Cache `company_settings`/`users` trong lịch sử chấm công (P3-03) | Medium | **Done** (2026-07-20, commit `f819577`) — cache theo instance notifier, `refresh()` xoá cache để không bị "khoá cứng" dữ liệu cũ | 0.5 ngày | none | B |
 | TD-09 | Dùng lại `ConfirmDialog` thay `AlertDialog` tự dựng (P3-04) | Medium | **Done** (2026-07-20, commit `0ea3030`) — chỉ đúng 1/4 chỗ khớp hình dạng (xác nhận xoá nhân viên); 3 chỗ còn lại (form thêm/sửa, info 1-nút, dialog có TextField) không hợp `ConfirmDialog`, giữ nguyên | 0.5 ngày | none | B |

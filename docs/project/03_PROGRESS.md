@@ -262,3 +262,14 @@
   - `01_BACKLOG.md` (TD-18 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06 (giới hạn/lọc `getAttendanceLogs()`, phức tạp hơn — sửa logic query + có thể đụng UI phân trang); TD-15 (cần xác nhận ưu tiên FEAT-01 trước, có thể huỷ nếu FEAT-01 làm trước); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-06 — Sprint 6 gần như đóng)
+
+- **Milestone:** Sprint 6 chỉ còn TD-15 (đang chờ quyết định ưu tiên FEAT-01) — mọi task khác đã Done/Won't Fix. Chưa đạt M2 (còn thiếu Sprint 5).
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-06 hoàn thành, kèm 1 thay đổi hành vi có chủ đích đã xác nhận trước: `AttendanceRepository.getAttendanceLogs()` (admin) nay bắt buộc `start`/`end`, không còn stream toàn bộ collection `attendance` không giới hạn. `attendanceStreamProvider` đổi thành `StreamProvider.family<..., DateTime?>` theo ngày admin chọn — mặc định **tháng hiện tại** khi chưa chọn ngày (trước đây là toàn bộ lịch sử), chọn 1 ngày cụ thể thì chỉ tải đúng ngày đó. Thêm dòng hint UI báo đang xem tháng nào để tránh admin tưởng mất dữ liệu. Xuất Excel/PDF bị giới hạn theo cùng phạm vi (hệ quả tất yếu, đã báo trước).
+  - `flutter analyze` (admin) 0 issue; `flutter build web` thành công. Commit `3ac50c0`.
+  - `01_BACKLOG.md` (TD-06 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-15 (chờ quyết định ưu tiên FEAT-01); quyết định về `0xFFB91C1C` ở admin (phát hiện phụ từ TD-13, chưa vào backlog riêng); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013 trong Bug Tracker (phát hiện từ lượt review đầu, vẫn chưa làm).
+- **Risk nổi bật:** không có rủi ro mới.
