@@ -193,3 +193,14 @@
   - `flutter analyze` (mobile) 0 issue. Commit `73ce3bb`.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-11, TD-15, TD-18, TD-20 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
 - **Risk nổi bật:** không có rủi ro mới. Bài học quy trình: đáng giá lại tiền đề của backlog item trước khi code, không phải mọi ghi chú cũ đều còn đúng khi source đã thay đổi qua thời gian.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-20)
+
+- **Milestone:** Sprint 6 tiếp tục.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-20 hoàn thành: gỡ `firebase_storage` khỏi `pubspec.yaml` cả 2 app (xác nhận trước bằng grep — 0 file trong `lib/` import) + `flutter pub get`. Phát hiện phụ tự sửa: `flutter build web` lần đầu báo lỗi do `web_plugin_registrant.dart` cũ (cache) còn tham chiếu `firebase_storage_web` — không phải lỗi thật, chạy `flutter clean` rồi build lại là hết. Cũng tự phát hiện 2 lần chạy nhầm lệnh kiểm tra `attendance_admin` khi thư mục làm việc của shell còn đang ở `attendance_mobile` (do 2 lệnh Bash trong cùng 1 lượt chia sẻ chung trạng thái thư mục) — đã sửa lại bằng `cd` tường minh trong từng lệnh.
+  - `flutter analyze` cả 2 app: 0 issue. `flutter test` (mobile): 19/19 vẫn Pass. `flutter build web` cả 2 app: thành công sau `flutter clean`. Commit `4cbfe08` (gồm cả `GeneratedPluginRegistrant.swift`/`generated_plugin_registrant.cc`/`generated_plugins.cmake` tự regenerate, đã review diff chỉ gỡ đúng phần `firebase_storage`).
+  - `01_BACKLOG.md` (TD-20 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-11, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
+- **Risk nổi bật:** không có rủi ro mới.
