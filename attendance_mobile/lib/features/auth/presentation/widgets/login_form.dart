@@ -29,7 +29,7 @@ class _LoginFormState extends ConsumerState<LoginForm> {
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
     await ref.read(authProvider.notifier).signIn(
-      email: _emailController.text.trim().toUpperCase(),
+      email: _emailController.text.trim(),
       password: _passwordController.text,
     );
   }
