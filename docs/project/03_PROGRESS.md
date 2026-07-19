@@ -227,3 +227,14 @@
   - `01_BACKLOG.md` (TD-09 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08, TD-11, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-11)
+
+- **Milestone:** Sprint 6 tiếp tục.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-11 hoàn thành: 7 chỗ hiển thị lỗi kỹ thuật thô (`'Lỗi: $err'`/`'Lỗi: ${e.toString()}'`) đổi sang thông điệp thân thiện theo ngữ cảnh — admin: tải cấu hình/đơn nghỉ phép/nhật ký chấm công/danh sách nhân viên (4 chỗ `AsyncValue.error`) + lưu nhân viên; mobile: cập nhật số điện thoại + gửi email khôi phục mật khẩu. Thêm `AppLogger.error()` ở 4 chỗ chưa có (không mất chi tiết kỹ thuật, chỉ không hiện cho người dùng).
+  - `flutter analyze` cả 2 app: 0 issue. `flutter test` (mobile): 19/19 Pass. `flutter build web` (admin): thành công — lần đầu vô tình build nhầm `attendance_mobile` do thư mục làm việc còn giữ từ lệnh trước (lặp lại đúng lỗi đã gặp ở TD-14/TD-20), tự phát hiện và build lại đúng chỗ.
+  - Commit `c6d48bd`. `01_BACKLOG.md` (TD-11 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
+- **Risk nổi bật:** không có rủi ro mới. Lưu ý thao tác: khi chạy song song 2 lệnh Bash trong cùng 1 lượt, lệnh sau kế thừa thư mục làm việc của lệnh trước — cần `cd` tường minh mỗi lần đổi app, đã lặp lỗi này 3 lần trong Sprint 6 (TD-14, TD-20, TD-11).
