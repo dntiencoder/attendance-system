@@ -149,3 +149,14 @@
 **Tổng kết:** 4/4 task Done, đúng phạm vi từng task. Không có bug mới thật sự phát sinh, chỉ 2 điểm cần theo dõi (không chặn gì): `widget_test.dart` Fail và rủi ro lý thuyết ở dropdown nói trên.
 - **Task Remaining:** Sprint 5 (kiểm thử thủ công có kịch bản, tận dụng Demo Time System); `widget_test.dart` Fail; BUG-014; TD-06→TD-20 trừ TD-19 (Sprint 6); FEAT-01/02/03 (chờ xác nhận ưu tiên); sửa lệch BUG-008/009/010/013 trong Bug Tracker.
 - **Risk nổi bật:** không có rủi ro mới ngoài 2 điểm đã nêu ở trên.
+
+## 2026-07-20 (cùng ngày) — Sprint 5 giao cho bạn tự chạy; bắt đầu Sprint 6
+
+- **Milestone:** Sprint 5 đang chờ bạn tự thực hiện kiểm thử thủ công trên thiết bị thật (đã gửi checklist tổng hợp từ `01_TEST_PLAN.md` mục B/C/D + test tồn đọng TD01-02/03/04/08), báo kết quả sau. Song song, bắt đầu Sprint 6 (Code Quality mở rộng, không bắt buộc).
+- **Phase hiện tại:** B (Sprint 6) song song C (Sprint 5, chờ bạn).
+- **Task Completed:**
+  - TD-14 hoàn thành: xoá 4 file dead code thật sự tồn tại (`checkin_screen.dart`, `gps_test_screen.dart`, `gps_provider.dart`, `admin_model.dart` rỗng ở admin) — đã xác minh bằng grep không còn import/tham chiếu nào trước khi xoá. `auth_gate.dart` (mục 5 trong backlog gốc) hoá ra đã không còn tồn tại từ trước, không cần xoá.
+  - `flutter analyze`: mobile 1→0 (đóng nốt issue còn sót từ TD-19), admin vẫn 0. `flutter test` (mobile) 19/19 vẫn Pass. `flutter build web` (admin) build thành công — có 1 sai sót nhỏ tự phát hiện: lần build đầu tiên chạy nhầm thư mục `attendance_mobile` do thư mục làm việc của shell còn giữ từ lệnh trước, đã tự nhận ra và chạy lại đúng `attendance_admin`.
+  - Commit `bcaa2c0`. `01_BACKLOG.md` (TD-14 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06→TD-13, TD-15→TD-18, TD-20 (Sprint 6, còn lại); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013.
+- **Risk nổi bật:** không có rủi ro mới.

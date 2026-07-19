@@ -51,7 +51,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-11 | Thông điệp lỗi thân thiện thay `'Lỗi: $err'` (P3-06) | Medium | Backlog | 0.5 ngày | TD-04 | B |
 | TD-12 | Đồng bộ nhãn hiển thị ca ("Ca ngày" vs "Ca sáng") (P3-07) | Medium | Backlog | <0.25 ngày | none | B |
 | TD-13 | Thay hex màu hardcode bằng `AppColors.primary` (P3-08) | Medium | Backlog | <0.25 ngày | none | B |
-| TD-14 | Xoá dead code (5 file: `auth_gate.dart`, `admin_model.dart`, `checkin_screen.dart`, `gps_test_screen.dart`, `gps_provider.dart`) (P4-01) | Low | Backlog | 0.5 ngày | none | B |
+| TD-14 | Xoá dead code (`admin_model.dart`, `checkin_screen.dart`, `gps_test_screen.dart`, `gps_provider.dart`) (P4-01) | Low | **Done** (2026-07-20, commit `bcaa2c0`) — `auth_gate.dart` đã không còn tồn tại từ trước, không cần xoá | 0.5 ngày | none | B |
 | TD-15 | Thay placeholder "Nghỉ phép" bằng màn tử tế hơn (P4-02) | Low | Backlog | 0.5 ngày | **Có thể huỷ nếu FEAT-01 hoàn thành trước** | B |
 | TD-16 | Xoá `?.` thừa trên `startDate` không nullable (P4-03) | Low | Backlog | <0.25 ngày | none | B |
 | TD-17 | Set màu tường minh cho `CircularProgressIndicator` (P4-04) | Low | Backlog | <0.25 ngày | none | B |
