@@ -21,7 +21,7 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final attendanceAsync = ref.watch(attendanceStreamProvider);
+    final attendanceAsync = ref.watch(attendanceStreamProvider(_selectedDate));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,6 +103,13 @@ class _AttendanceScreenState extends ConsumerState<AttendanceScreen> {
               ),
           ],
         ),
+        if (_selectedDate == null) ...[
+          const SizedBox(height: 8),
+          Text(
+            'Đang hiển thị tháng ${DateTime.now().month}/${DateTime.now().year} — chọn ngày cụ thể để xem tháng khác.',
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+        ],
         const SizedBox(height: 16),
         Expanded(
           child: Card(
