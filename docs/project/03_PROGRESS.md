@@ -335,3 +335,15 @@
 **Tổng kết:** 1/1 task Done, không phát sinh bug mới. Milestone M1 đạt được sớm hơn dự kiến nhờ tránh lặp lại lỗi đã học từ Sprint 2.
 - **Task Remaining:** Sprint 5 (kiểm thử thủ công, chờ bạn báo kết quả); TD-06→TD-18 hạng Low còn sót (không có, đã xong hết Sprint 6 trừ TD-15 Cancelled); `widget_test.dart` Fail; BUG-014 (Open, duy nhất còn lại); Sprint 7 (Release Candidate) chưa mở.
 - **Risk nổi bật:** không có rủi ro mới. Điểm cần chú ý tiếp theo: Phase B (Nên làm/Dọn dẹp, tuỳ chọn) và Phase C (Testing thủ công, Sprint 5) trước khi có thể tiến tới Phase E (Release Candidate).
+
+## 2026-07-20 (cùng ngày) — Dọn 2 việc tồn đọng cuối: BUG-014 + widget_test.dart
+
+- **Milestone:** Không có milestone mới, nhưng `flutter test` (mobile) lần đầu tiên báo "All tests passed!" tuyệt đối — điều kiện `01_RELEASE_CHECKLIST.md` yêu cầu ("flutter test pass 100%") giờ đã đạt cho mobile.
+- **Phase hiện tại:** B/C.
+- **Task Completed:**
+  - BUG-014 sửa một phần: bọc `TimeoutException` trong `GpsService.getCurrentPosition()` bằng thông báo tiếng Việt thân thiện + `AppLogger.error()`. Câu hỏi gốc "tín hiệu yếu hay concurrency thật" **vẫn chưa giải quyết** — cần thiết bị thật ở điều kiện tín hiệu tốt để tách bạch, TD01-02/03/04/08 vẫn Blocked chờ test tay thật. Commit `5e96441`.
+  - Xoá `test/widget_test.dart` — bài test mẫu mặc định từ `flutter create` (đếm số), chưa từng khớp với app thực tế, fail từ đầu không phải do hồi quy. Không viết thay thế (viết smoke test thật cần mock Firebase/auth/routing, ngoài phạm vi việc này). Commit `4f2f15b`.
+  - `flutter analyze` 0 issue; `flutter test`: **19/19, "All tests passed!"** — không còn fail nào.
+  - `01_BACKLOG.md` (cập nhật đếm Bug Backlog: Fixed 14/Open 0/Won't Fix 1), `02_BUG_TRACKER.md` (BUG-014 → Fixed một phần) cập nhật theo.
+- **Task Remaining:** Sprint 5 (kiểm thử thủ công, chờ bạn báo kết quả, bao gồm cả TD01-02/03/04/08 để đóng hẳn BUG-014); Sprint 7 (Release Candidate) — điều kiện bắt đầu vẫn cần Phase C (Sprint 5) xong.
+- **Risk nổi bật:** không có rủi ro mới. Toàn bộ việc tự làm được (không cần thiết bị thật) trong Phase A/B coi như đã xong — điểm nghẽn duy nhất còn lại trước khi sang Phase E là kết quả kiểm thử thủ công từ bạn (Sprint 5).
