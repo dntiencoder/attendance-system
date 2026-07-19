@@ -44,7 +44,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-04 | Logging/crash reporting tối thiểu ở các nhánh `catch` quan trọng (P2-02) | High | **Done** (2026-07-20, commit `a3c6d4c`) — `AppLogger` (dart:developer, không thêm package) + 11 nhánh catch quan trọng ở cả 2 app | 1-2 ngày (thực tế <1 ngày) | none | B |
 | TD-05 | Xoá `.toUpperCase()` thừa khi đăng nhập email (P2-05) | High | **Done** (2026-07-20, commit `bf64a9e`) | <0.25 ngày | none | B |
 | TD-06 | Giới hạn/lọc theo ngày cho `getAttendanceLogs()` (P3-01) | Medium | Backlog | 1 ngày | none | B |
-| TD-07 | Song song hoá 7 query tuần tự ở Dashboard (P3-02) | Medium | Backlog | 0.5 ngày | none | B |
+| TD-07 | Song song hoá 7 query tuần tự ở Dashboard (P3-02) | Medium | **Done** (2026-07-20, commit `690aa48`) | 0.5 ngày | none | B |
 | TD-08 | Cache `company_settings`/`users` trong lịch sử chấm công (P3-03) | Medium | Backlog | 0.5 ngày | none | B |
 | TD-09 | Dùng lại `ConfirmDialog` thay `AlertDialog` tự dựng (P3-04) | Medium | Backlog | 0.5 ngày | none | B |
 | TD-10 | Dùng lại `Validators.email/phone` thay validator inline (P3-05) | Medium | Backlog | 0.5 ngày | none | B |

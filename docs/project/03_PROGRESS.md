@@ -160,3 +160,14 @@
   - Commit `bcaa2c0`. `01_BACKLOG.md` (TD-14 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06→TD-13, TD-15→TD-18, TD-20 (Sprint 6, còn lại); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013.
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-07)
+
+- **Milestone:** Sprint 6 tiếp tục (không bắt buộc, dừng được bất kỳ lúc nào).
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-07 hoàn thành: `_getWeeklyAttendance()` (Dashboard admin) đổi từ vòng `for` + `await` tuần tự (7 query/ngày, nối tiếp nhau) sang `Future.wait()` chạy đồng thời, giữ đúng thứ tự ngày cũ→mới khi ghép kết quả.
+  - `flutter analyze` (admin) 0 issue; `flutter build web` (admin) build thành công, đúng thư mục lần này (rút kinh nghiệm từ sai sót cwd ở TD-14).
+  - Commit `690aa48`. `01_BACKLOG.md` (TD-07 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-13, TD-15→TD-18, TD-20 (Sprint 6, còn lại); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013.
+- **Risk nổi bật:** không có rủi ro mới.
