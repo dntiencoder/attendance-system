@@ -104,3 +104,15 @@
   - `01_BACKLOG.md` (TD-05 → Done), `02_BUG_TRACKER.md` (BUG-011 → Fixed) cập nhật theo.
 - **Task Remaining:** TD-04 (logging/crash reporting, High, tiếp theo trong Sprint 4); BUG-014 (Open); TD-06 → TD-20 (Medium/Low); FEAT-01/02/03 (chờ xác nhận ưu tiên); 14 unit test (UT-01→14) + manual test suite (Sprint 5) chưa chạy lần nào; sửa lệch BUG-008/009/010/013 trong Bug Tracker (chưa làm).
 - **Risk nổi bật:** không có rủi ro mới. `docs/demo/DEMO_GUIDE.md`/`01_DEMO_DATA.md` từ nay đóng vai trò tư liệu lịch sử cho D.2 (demo bảo vệ), không còn là mục tiêu vận hành trước mắt.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-04)
+
+- **Milestone:** vẫn trong Sprint 4, chưa đạt M1/M2.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-04 hoàn thành: thêm `AppLogger` (dùng `dart:developer.log()`, không thêm package mới, đúng nguyên tắc "không thêm package nếu không yêu cầu") ở `core/utils/app_logger.dart` cho cả 2 app; gọi ở 11 nhánh `catch` quan trọng (6 file mobile, 5 file admin — attendance/auth/employee/settings/leave), không đổi luồng xử lý lỗi hiện có cho người dùng.
+  - `flutter analyze` cả 2 app: đúng baseline (23/13 issue), không phát sinh mới. Test tay bị bỏ qua có chủ đích theo yêu cầu.
+  - Commit `a3c6d4c`, đúng 13 file dự kiến (2 file mới + 11 file sửa), không lẫn `.idea/`/file untracked khác.
+  - `01_BACKLOG.md` (TD-04 → Done) cập nhật theo.
+- **Task Remaining:** BUG-014 (Open); TD-06 → TD-20 (Medium/Low, Sprint 6); FEAT-01/02/03 (chờ xác nhận ưu tiên); 14 unit test (UT-01→14, Sprint 4) + manual test suite (Sprint 5) chưa chạy; sửa lệch BUG-008/009/010/013 trong Bug Tracker (chưa làm).
+- **Risk nổi bật:** không có rủi ro mới.
