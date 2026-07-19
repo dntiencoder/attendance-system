@@ -171,3 +171,14 @@
   - Commit `690aa48`. `01_BACKLOG.md` (TD-07 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-13, TD-15→TD-18, TD-20 (Sprint 6, còn lại); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013.
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-12/TD-13)
+
+- **Milestone:** Sprint 6 tiếp tục.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-12 hoàn thành: đồng bộ nhãn ca — admin đổi `'Ca sáng'` → `'Ca ngày'` (`attendance_model.dart`) khớp với mobile.
+  - TD-13 hoàn thành: rà toàn bộ `Color(0xFF...)` hardcode ở cả 2 app, chỉ tìm thấy đúng 2 chỗ trùng khớp chính xác với `AppColors` có sẵn (mobile: `home_skeleton.dart` → `AppColors.primary`, `checkin_card.dart` → `AppColors.background`, đơn giản hoá luôn 1 ternary thừa cùng chỗ). Phát hiện phụ: admin có `0xFFB91C1C` lặp 6 lần (`sidebar.dart`, `main_layout.dart`, `leave_screen.dart`) — khác `AppColors.primary` (`0xFFC8102E`), có thể là màu UI cố ý riêng cho sidebar chứ không phải hardcode nhầm — cố ý chưa đụng, cần bạn xác nhận có muốn thống nhất lại không (sẽ đổi giao diện thấy được nếu làm).
+  - `flutter analyze` cả 2 app: 0 issue. Commit `6f34a9e`. `01_BACKLOG.md` (TD-12, TD-13 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-11, TD-15→TD-18, TD-20 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin (phát hiện phụ, chưa vào backlog riêng); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013.
+- **Risk nổi bật:** không có rủi ro mới.
