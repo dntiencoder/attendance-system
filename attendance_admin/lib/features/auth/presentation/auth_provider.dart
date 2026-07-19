@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/auth_repository.dart';
+import '../../../core/utils/app_logger.dart';
 
 class AuthState {
   final bool isLoading;
@@ -37,7 +38,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _repo.signIn(email: email, password: password);
       state = state.copyWith(isLoading: false, isSuccess: true);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AuthNotifier.signIn', e, st);
       state = state.copyWith(
         isLoading: false,
         isSuccess: false,

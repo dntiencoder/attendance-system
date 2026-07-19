@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_config.dart';
+import '../../../core/utils/app_logger.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -44,7 +45,8 @@ class AuthRepository {
         throw Exception('Tài khoản đã bị vô hiệu hóa');
       }
       
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e, st) {
+      AppLogger.error('AuthRepository.login', e, st);
       switch (e.code) {
         case 'user-not-found':
         case 'wrong-password':

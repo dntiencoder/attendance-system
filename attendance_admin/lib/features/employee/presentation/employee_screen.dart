@@ -9,6 +9,7 @@ import '../../department/domain/department_model.dart'; // Thêm model này
 import '../../department/presentation/department_provider.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/loading_widget.dart';
+import '../../../core/utils/app_logger.dart';
 
 /// Sinh mật khẩu ngẫu nhiên đủ mạnh cho tài khoản nhân viên mới. Loại bỏ các
 /// ký tự dễ đọc nhầm (I/l/O/0/1) vì admin cần đọc/gõ lại để báo cho nhân viên.
@@ -238,7 +239,8 @@ class EmployeeScreen extends ConsumerWidget {
                             ),
                           );
                         }
-                      } catch (e) {
+                      } catch (e, st) {
+                        AppLogger.error('EmployeeScreen.saveEmployee', e, st);
                         if (context.mounted) {
                           Navigator.pop(context); // Tắt loading
                           ScaffoldMessenger.of(context).showSnackBar(

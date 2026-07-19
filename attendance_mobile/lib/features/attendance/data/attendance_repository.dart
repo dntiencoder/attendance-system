@@ -9,6 +9,7 @@ import '../../../core/constants/app_config.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/business_date_helper.dart';
 import '../../../core/services/clock_service.dart';
+import '../../../core/utils/app_logger.dart';
 
 class AttendanceRepository {
   final FirebaseFirestore _db =
@@ -198,7 +199,8 @@ class AttendanceRepository {
         'createdAt': Timestamp.fromDate(now),
       });
     });
-    } on FirebaseException catch (e) {
+    } on FirebaseException catch (e, st) {
+      AppLogger.error('AttendanceRepository.checkIn', e, st);
       /// Transaction/đọc Firestore không dùng được hàng đợi ghi khi offline
       /// (khác set()/update() thường) — cố ý, để không chốt giờ Check In tại
       /// một thời điểm rồi ghi lên server ở một thời điểm khác. `e.code` là

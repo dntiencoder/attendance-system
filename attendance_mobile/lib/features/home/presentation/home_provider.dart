@@ -7,6 +7,7 @@ import '../../attendance/data/attendance_repository.dart';
 import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
 import '../../../core/utils/business_date_helper.dart';
 import '../../../core/services/clock_service.dart';
+import '../../../core/utils/app_logger.dart';
 
 // ===== STATE =====
 class HomeState {
@@ -104,7 +105,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
       }
 
       state = state.copyWith(isLoading: false);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('HomeNotifier.loadHomeData', e, st);
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
@@ -125,8 +127,9 @@ class HomeNotifier extends StateNotifier<HomeState> {
         today: businessDate,
       );
       state = state.copyWith(selectedShift: currentShift);
-    } catch (e) {
+    } catch (e, st) {
       // Nếu không lấy được settings, giữ mặc định là 'day'
+      AppLogger.error('HomeNotifier._determineAutoShift', e, st);
     }
   }
 

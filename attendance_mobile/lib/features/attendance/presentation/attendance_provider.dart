@@ -5,6 +5,7 @@ import '../data/attendance_repository.dart';
 import '../domain/attendance_model.dart';
 import '../../../core/utils/business_date_helper.dart';
 import '../../../core/services/clock_service.dart';
+import '../../../core/utils/app_logger.dart';
 
 // Provider cho repository
 final attendanceRepositoryProvider = Provider<AttendanceRepository>(
@@ -79,7 +80,8 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
         isLoading: false,
         isShiftEnded: shiftEnded,
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AttendanceNotifier.loadTodayAttendance', e, st);
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),
@@ -98,7 +100,8 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
         isLoading: false,
         successMessage: 'Check In thành công!',
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AttendanceNotifier.checkIn', e, st);
       final isShiftEndedError = e.toString().contains('Ca làm việc đã kết thúc');
       state = state.copyWith(
         isLoading: false,
@@ -119,7 +122,8 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
         isLoading: false,
         successMessage: 'Check Out thành công!',
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AttendanceNotifier.checkOut', e, st);
       state = state.copyWith(
         isLoading: false,
         error: e.toString(),

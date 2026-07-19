@@ -7,6 +7,7 @@ import '../../../core/constants/app_config.dart';
 import '../../../core/utils/work_schedule_helper.dart'; // ← thêm import
 import '../../../core/utils/business_date_helper.dart';
 import '../../../core/services/clock_service.dart';
+import '../../../core/utils/app_logger.dart';
 
 class AttendanceHistoryState {
   final DateTime selectedMonth;
@@ -154,7 +155,8 @@ class AttendanceHistoryNotifier
       allDaysRecords.sort((a, b) => b.attendanceDate.compareTo(a.attendanceDate));
 
       state = state.copyWith(records: allDaysRecords, isLoading: false);
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('AttendanceHistoryNotifier.loadMonth', e, st);
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }

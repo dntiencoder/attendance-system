@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../domain/user_model.dart';
+import '../../../core/utils/app_logger.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -61,7 +62,8 @@ class AuthRepository {
       }
 
       return user;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e, st) {
+      AppLogger.error('AuthRepository.login', e, st);
       switch (e.code) {
         case 'invalid-credential':
           throw Exception('Sai email hoặc mật khẩu');

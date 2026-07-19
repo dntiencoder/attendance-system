@@ -3,6 +3,7 @@ import '../data/leave_repository.dart';
 import '../domain/leave_request_model.dart';
 import '../../notification/data/notification_repository.dart';
 import '../../notification/domain/notification_model.dart';
+import '../../../core/utils/app_logger.dart';
 
 final leaveRepositoryProvider = Provider((ref) => LeaveRepository());
 final notificationRepositoryProvider = Provider((ref) => NotificationRepository());
@@ -43,6 +44,7 @@ class LeaveActionNotifier extends StateNotifier<AsyncValue<void>> {
       
       state = const AsyncValue.data(null);
     } catch (e, st) {
+      AppLogger.error('LeaveActionNotifier', e, st);
       state = AsyncValue.error(e, st);
     }
   }

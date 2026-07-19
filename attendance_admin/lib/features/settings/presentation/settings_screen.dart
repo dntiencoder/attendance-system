@@ -6,6 +6,7 @@ import '../../../shared/theme/app_colors.dart';
 import '../../../shared/theme/app_spacing.dart';
 import '../../../shared/widgets/loading_widget.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/utils/app_logger.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -237,7 +238,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SnackBar(content: Text('Đã cập nhật cấu hình hệ thống thành công!')),
         );
       }
-    } on FormatException catch (_) {
+    } on FormatException catch (e, st) {
+      AppLogger.error('SettingsScreen.save', e, st);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -246,7 +248,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error('SettingsScreen.save', e, st);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Lỗi khi lưu: $e'), backgroundColor: AppColors.error),
