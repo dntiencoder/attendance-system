@@ -182,3 +182,14 @@
   - `flutter analyze` cả 2 app: 0 issue. Commit `6f34a9e`. `01_BACKLOG.md` (TD-12, TD-13 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-11, TD-15→TD-18, TD-20 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin (phát hiện phụ, chưa vào backlog riêng); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013.
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-16/TD-17)
+
+- **Milestone:** Sprint 6 tiếp tục.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-16: phát hiện tiền đề backlog sai trước khi code — `LeaveRequestModel.startDate` thực sự là `DateTime?`, không phải "không nullable" như `REVIEW.md`/`01_BACKLOG.md` ghi. Xoá `?.` như mô tả gốc sẽ vỡ build. Đóng dưới dạng **Won't Fix** thay vì Done, cập nhật `01_BACKLOG.md` và `02_BUG_TRACKER.md` (BUG-012) kèm lý do, không đụng code.
+  - TD-17 hoàn thành: `attendance_mobile/lib/shared/widgets/custom_button.dart` — set `color: Colors.white` tường minh cho `CircularProgressIndicator` (trước đó dùng màu mặc định theme). Admin's `CustomButton` đã tự làm đúng từ trước, không cần sửa.
+  - `flutter analyze` (mobile) 0 issue. Commit `73ce3bb`.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-11, TD-15, TD-18, TD-20 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
+- **Risk nổi bật:** không có rủi ro mới. Bài học quy trình: đáng giá lại tiền đề của backlog item trước khi code, không phải mọi ghi chú cũ đều còn đúng khi source đã thay đổi qua thời gian.

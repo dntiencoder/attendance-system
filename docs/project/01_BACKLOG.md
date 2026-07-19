@@ -53,8 +53,8 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-13 | Thay hex màu hardcode bằng `AppColors.primary` (P3-08) | Medium | **Done** (2026-07-20, commit `6f34a9e`) — chỉ 2 chỗ trùng khớp chính xác ở mobile; 6 chỗ `0xFFB91C1C` ở admin (khác `AppColors.primary`) cố ý chưa đụng, cần bạn quyết định riêng | <0.25 ngày | none | B |
 | TD-14 | Xoá dead code (`admin_model.dart`, `checkin_screen.dart`, `gps_test_screen.dart`, `gps_provider.dart`) (P4-01) | Low | **Done** (2026-07-20, commit `bcaa2c0`) — `auth_gate.dart` đã không còn tồn tại từ trước, không cần xoá | 0.5 ngày | none | B |
 | TD-15 | Thay placeholder "Nghỉ phép" bằng màn tử tế hơn (P4-02) | Low | Backlog | 0.5 ngày | **Có thể huỷ nếu FEAT-01 hoàn thành trước** | B |
-| TD-16 | Xoá `?.` thừa trên `startDate` không nullable (P4-03) | Low | Backlog | <0.25 ngày | none | B |
-| TD-17 | Set màu tường minh cho `CircularProgressIndicator` (P4-04) | Low | Backlog | <0.25 ngày | none | B |
+| TD-16 | Xoá `?.` thừa trên `startDate` không nullable (P4-03) | Low | **Won't Fix** (2026-07-20) — tiền đề sai: `LeaveRequestModel.startDate` thực sự là `DateTime?` (nullable), `?.` là đúng và cần thiết, không phải thừa. Xoá sẽ vỡ build. Ghi chú gốc ở `REVIEW.md` 15.4 đã sai hoặc model đã đổi từ lúc đó | <0.25 ngày | none | B |
+| TD-17 | Set màu tường minh cho `CircularProgressIndicator` (P4-04) | Low | **Done** (2026-07-20, commit `73ce3bb`) — chỉ cần sửa ở mobile, admin đã tự set màu sẵn | <0.25 ngày | none | B |
 | TD-18 | Exception class thay so khớp chuỗi lỗi (P4-05) | Low | Backlog | 0.5-1 ngày | none | B |
 | TD-19 | Dọn 23+13 warning/info còn lại từ `flutter analyze` (baseline 2026-07-13) | Medium | **Done** (2026-07-20, commit `00fd541`) — mobile 23→1 (còn lại cố ý ở `checkin_screen.dart`, chờ TD-14), admin 13→0 | 0.5-1 ngày | none | B |
 | TD-20 | Gỡ dependency `firebase_storage` không dùng thực tế (cả 2 `pubspec.yaml`) | Low | Backlog | <0.25 ngày | none | B |
