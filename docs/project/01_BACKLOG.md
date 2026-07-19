@@ -56,7 +56,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-16 | Xoá `?.` thừa trên `startDate` không nullable (P4-03) | Low | Backlog | <0.25 ngày | none | B |
 | TD-17 | Set màu tường minh cho `CircularProgressIndicator` (P4-04) | Low | Backlog | <0.25 ngày | none | B |
 | TD-18 | Exception class thay so khớp chuỗi lỗi (P4-05) | Low | Backlog | 0.5-1 ngày | none | B |
-| TD-19 | Dọn 23+13 warning/info còn lại từ `flutter analyze` (baseline 2026-07-13) | Medium | Backlog | 0.5-1 ngày | none | B |
+| TD-19 | Dọn 23+13 warning/info còn lại từ `flutter analyze` (baseline 2026-07-13) | Medium | **Done** (2026-07-20, commit `00fd541`) — mobile 23→1 (còn lại cố ý ở `checkin_screen.dart`, chờ TD-14), admin 13→0 | 0.5-1 ngày | none | B |
 | TD-20 | Gỡ dependency `firebase_storage` không dùng thực tế (cả 2 `pubspec.yaml`) | Low | Backlog | <0.25 ngày | none | B |
 | BUG-014 | `GpsService.getCurrentPosition()` (`gps_service.dart`) ném `TimeoutException` thô sau 15s, không có thông báo thân thiện — xem chi tiết `docs/testing/02_BUG_TRACKER.md` | Medium | Backlog | 0.5-1 ngày (cần điều tra thêm trước khi ước lượng chắc) | none | B |
 

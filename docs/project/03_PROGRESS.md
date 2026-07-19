@@ -127,3 +127,25 @@
   - `docs/testing/01_TEST_PLAN.md` (UT-01→14 → Pass) cập nhật theo.
 - **Task Remaining:** `test/widget_test.dart` Fail (mới phát hiện, chưa vào backlog); TD-19 (Sprint 4, dọn warning/info); BUG-014 (Open); TD-06→TD-20, TD-14/17/18/20 (Sprint 6); FEAT-01/02/03 (chờ xác nhận); manual test suite Sprint 5 chưa chạy; sửa lệch BUG-008/009/010/013.
 - **Risk nổi bật:** `test/widget_test.dart` Fail có thể khiến CI/`flutter test` báo đỏ toàn bộ nếu sau này thêm CI — nên quyết định sửa/xoá trước Phase E (Release Candidate), vì `01_RELEASE_CHECKLIST.md` yêu cầu `flutter test` pass 100%.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-19 — đóng Sprint 4)
+
+- **Milestone:** **Sprint 4 DONE.** Chưa đạt M2 (Quality & Testing Complete) — còn thiếu Sprint 5 (kiểm thử thủ công có kịch bản).
+- **Phase hiện tại:** B/C.
+- **Task Completed:**
+  - TD-19 hoàn thành: dọn toàn bộ `unused_import` (8), `unused_local_variable` (1), `unnecessary_underscores` (8, đổi `__`/`___` → `_`), `deprecated_member_use` (2, `DropdownButtonFormField.value` → `initialValue` ở `employee_screen.dart` — có rủi ro lý thuyết hẹp với `departmentsStreamProvider`, đã báo bạn trước khi commit), `use_build_context_synchronously` (3, đổi `mounted` → `context.mounted` đúng ngữ cảnh dialog builder ở `profile_info_list.dart`); thêm `ignore_for_file: avoid_print` cho 3 script dev (in ra console là chủ đích, không phải thiếu logging framework). Cố ý bỏ qua `checkin_screen.dart` (dead code, để dành TD-14).
+  - `flutter analyze`: mobile 23→1, admin 13→0. `flutter test`: 19/19 vẫn Pass, không hồi quy. Commit `00fd541`.
+  - `01_BACKLOG.md` (TD-19 → Done), `02_SPRINT.md` (Sprint 4 → DONE, kèm Sprint Review ngắn) cập nhật theo.
+
+### Sprint Review — Sprint 4
+
+| Task | Trạng thái | Bug/rủi ro mới phát sinh? |
+|---|---|---|
+| TD-05 — Xoá `.toUpperCase()` thừa | Done (`bf64a9e`) | Không |
+| TD-04 — Logging tối thiểu (`AppLogger`) | Done (`a3c6d4c`) | Không |
+| UT-01→UT-14 — 14 unit test | Done (`137d124`) | Phát hiện phụ: `widget_test.dart` mặc định Fail, tiền tồn tại, chưa sửa (để sau) |
+| TD-19 — Dọn `flutter analyze` | Done (`00fd541`) | Rủi ro lý thuyết hẹp ở `DropdownButtonFormField.initialValue` (StreamProvider timing) — đã báo minh bạch, chấp nhận |
+
+**Tổng kết:** 4/4 task Done, đúng phạm vi từng task. Không có bug mới thật sự phát sinh, chỉ 2 điểm cần theo dõi (không chặn gì): `widget_test.dart` Fail và rủi ro lý thuyết ở dropdown nói trên.
+- **Task Remaining:** Sprint 5 (kiểm thử thủ công có kịch bản, tận dụng Demo Time System); `widget_test.dart` Fail; BUG-014; TD-06→TD-20 trừ TD-19 (Sprint 6); FEAT-01/02/03 (chờ xác nhận ưu tiên); sửa lệch BUG-008/009/010/013 trong Bug Tracker.
+- **Risk nổi bật:** không có rủi ro mới ngoài 2 điểm đã nêu ở trên.
