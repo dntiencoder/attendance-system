@@ -45,7 +45,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-05 | Xoá `.toUpperCase()` thừa khi đăng nhập email (P2-05) | High | **Done** (2026-07-20, commit `bf64a9e`) | <0.25 ngày | none | B |
 | TD-06 | Giới hạn/lọc theo ngày cho `getAttendanceLogs()` (P3-01) | Medium | Backlog | 1 ngày | none | B |
 | TD-07 | Song song hoá 7 query tuần tự ở Dashboard (P3-02) | Medium | **Done** (2026-07-20, commit `690aa48`) | 0.5 ngày | none | B |
-| TD-08 | Cache `company_settings`/`users` trong lịch sử chấm công (P3-03) | Medium | Backlog | 0.5 ngày | none | B |
+| TD-08 | Cache `company_settings`/`users` trong lịch sử chấm công (P3-03) | Medium | **Done** (2026-07-20, commit `f819577`) — cache theo instance notifier, `refresh()` xoá cache để không bị "khoá cứng" dữ liệu cũ | 0.5 ngày | none | B |
 | TD-09 | Dùng lại `ConfirmDialog` thay `AlertDialog` tự dựng (P3-04) | Medium | **Done** (2026-07-20, commit `0ea3030`) — chỉ đúng 1/4 chỗ khớp hình dạng (xác nhận xoá nhân viên); 3 chỗ còn lại (form thêm/sửa, info 1-nút, dialog có TextField) không hợp `ConfirmDialog`, giữ nguyên | 0.5 ngày | none | B |
 | TD-10 | Dùng lại `Validators.email/phone` thay validator inline (P3-05) | Medium | **Done** (2026-07-20, commit `311ede8`) — `login_screen.dart` + `employee_screen.dart` (email); số điện thoại giữ tuỳ chọn, chỉ validate định dạng khi có nhập | 0.5 ngày | none | B |
 | TD-11 | Thông điệp lỗi thân thiện thay `'Lỗi: $err'` (P3-06) | Medium | **Done** (2026-07-20, commit `c6d48bd`) — 7 chỗ ở cả 2 app, thêm `AppLogger` ở 4 chỗ chưa có để không mất chi tiết kỹ thuật | 0.5 ngày | TD-04 | B |

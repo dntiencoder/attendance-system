@@ -238,3 +238,16 @@
   - Commit `c6d48bd`. `01_BACKLOG.md` (TD-11 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
 - **Risk nổi bật:** không có rủi ro mới. Lưu ý thao tác: khi chạy song song 2 lệnh Bash trong cùng 1 lượt, lệnh sau kế thừa thư mục làm việc của lệnh trước — cần `cd` tường minh mỗi lần đổi app, đã lặp lỗi này 3 lần trong Sprint 6 (TD-14, TD-20, TD-11).
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-08)
+
+- **Milestone:** Sprint 6 tiếp tục.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-08 hoàn thành: `AttendanceHistoryNotifier` (mobile) cache `company_settings`/`shiftGroup` ở cấp instance, chỉ đọc Firestore 1 lần thay vì mỗi lần chuyển tháng; `refresh()` xoá cache trước khi tải lại để không bỏ lỡ thay đổi thật (VD admin đổi cấu hình công ty).
+  - Tự phát hiện 1 lỗi kiểu dữ liệu lúc code (`userDoc.data()?['shiftGroup']` trả về `dynamic` dù có `?? 'A'`, không khớp kiểu trả về `String` của hàm) — bắt được ngay qua `flutter analyze`, sửa bằng ép kiểu `as String?` trước khi fallback.
+  - Phát hiện phụ về quy trình: 1 lần `flutter analyze` báo "Analyzing attendance-system... No issues found" — hoá ra thư mục làm việc bị lệch (không phải `attendance_mobile` như tưởng), kết quả không đáng tin; đã tự phát hiện qua `pwd`, chạy lại đúng bằng 1 lệnh gộp `cd && flutter analyze` để tránh phụ thuộc trạng thái thư mục giữa các lệnh Bash riêng lẻ.
+  - `flutter analyze` (mobile) 0 issue (đã xác nhận đúng thư mục lần 2). `flutter test`: 19/19 Pass. Commit `f819577`.
+  - `01_BACKLOG.md` (TD-08 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
+- **Risk nổi bật:** không có rủi ro mới. Bài học quy trình bổ sung: luôn gộp `cd` + lệnh kiểm tra trong cùng 1 lời gọi Bash, không tách rời và giả định thư mục làm việc còn đúng từ lệnh trước.
