@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../shared/theme/app_colors.dart';
 
 class Sidebar extends ConsumerWidget {
   const Sidebar({super.key});

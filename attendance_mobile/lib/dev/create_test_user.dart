@@ -1,3 +1,6 @@
+// ignore_for_file: avoid_print
+// Script dev chạy tay qua console -- print() là output chủ đích, không phải
+// log lỗi cần thay bằng logging framework.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

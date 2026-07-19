@@ -59,14 +59,14 @@ class _ProfileInfoListState extends ConsumerState<ProfileInfoList> {
                   // Sau khi update Firestore thành công, gọi refresh homeProvider để cập nhật UI
                   ref.read(homeProvider.notifier).refresh();
 
-                  if (mounted) {
+                  if (context.mounted) {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Cập nhật thành công'), backgroundColor: AppColors.success),
                     );
                   }
                 } catch (e) {
-                  if (mounted) {
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppColors.error),
                     );

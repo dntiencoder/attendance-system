@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/department/presentation/department_provider.dart'; // Sửa import này
-import '../features/department/data/department_repository.dart';
 
 class DepartmentSeederScreen extends ConsumerWidget {
   const DepartmentSeederScreen({super.key});

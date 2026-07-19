@@ -128,7 +128,7 @@ class EmployeeScreen extends ConsumerWidget {
 
                                   return DropdownButtonFormField<String>(
                                     isExpanded: true,
-                                    value: selectedDeptId.isNotEmpty ? selectedDeptId : null,
+                                    initialValue: selectedDeptId.isNotEmpty ? selectedDeptId : null,
                                     decoration: const InputDecoration(labelText: 'Phòng ban', border: OutlineInputBorder()),
                                     items: depts.map((d) => DropdownMenuItem(
                                       value: d.id,
@@ -142,7 +142,7 @@ class EmployeeScreen extends ConsumerWidget {
                                   );
                                 },
                                 loading: () => const Center(child: CircularProgressIndicator()),
-                                error: (_, __) => const Text('Lỗi tải phòng ban'),
+                                error: (_, _) => const Text('Lỗi tải phòng ban'),
                               ),
                             ),
                           ],
@@ -152,7 +152,7 @@ class EmployeeScreen extends ConsumerWidget {
                           children: [
                             Expanded(
                               child: DropdownButtonFormField<String>(
-                                value: selectedShiftGroup,
+                                initialValue: selectedShiftGroup,
                                 decoration: const InputDecoration(labelText: 'Ca làm việc', border: OutlineInputBorder()),
                                 items: const [
                                   DropdownMenuItem(value: 'A', child: Text('Ca A')),
@@ -327,7 +327,7 @@ class EmployeeScreen extends ConsumerWidget {
                           return Text(dept.name);
                         },
                         loading: () => const Text('...'),
-                        error: (_, __) => Text(emp.departmentId),
+                        error: (_, _) => Text(emp.departmentId),
                       )),
                       DataCell(Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

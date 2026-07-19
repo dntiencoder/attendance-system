@@ -1,3 +1,6 @@
+// ignore_for_file: avoid_print
+// Script dev chạy tay qua console -- print() là output chủ đích, không phải
+// log lỗi cần thay bằng logging framework.
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../features/settings/domain/company_settings_model.dart';
 import 'dart:math';
@@ -135,8 +138,6 @@ class DemoSeeder {
           .difference(DateTime(rotationStart.year, rotationStart.month, rotationStart.day))
           .inDays;
       
-      // rotationIndex: khối 14 ngày (0, 1, 2...)
-      final rotationIndex = (daysPassed / 14).floor();
       // Tuần trong chu kỳ 14 ngày (0: tuần đầu, 1: tuần chuyển giao)
       final weekInRotation = ((daysPassed % 14) / 7).floor();
       final isRotationWeek = weekInRotation == 1;

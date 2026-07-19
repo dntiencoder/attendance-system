@@ -31,7 +31,7 @@ class LoginHeader extends StatelessWidget {
             child: Image.network(
               'https://umcvietnam.vn/wp-content/uploads/2024/04/Group-2.png',
               height: 40,
-              errorBuilder: (_, __, ___) => const Text(
+              errorBuilder: (_, _, _) => const Text(
                 'UMC',
                 style: TextStyle(
                   color: AppColors.primary,

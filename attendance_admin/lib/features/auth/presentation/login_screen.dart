@@ -84,7 +84,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Image.asset(
                   'assets/logo_umc.jpg',
                   height: 56,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (_, _, _) => const Icon(
                     Icons.business,
                     size: 56,
                     color: AppColors.primary,
