@@ -273,3 +273,14 @@
   - `01_BACKLOG.md` (TD-06 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-15 (chờ quyết định ưu tiên FEAT-01); quyết định về `0xFFB91C1C` ở admin (phát hiện phụ từ TD-13, chưa vào backlog riêng); `widget_test.dart` Fail; BUG-014; FEAT-01/02/03; sửa lệch BUG-008/009/010/013 trong Bug Tracker (phát hiện từ lượt review đầu, vẫn chưa làm).
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày) — Dọn việc nhỏ còn treo
+
+- **Milestone:** Sprint 6 đóng hoàn toàn trừ TD-15. Không có Sprint mới mở.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - Sửa lệch trạng thái Bug Tracker: BUG-008/009/010/013 chuyển từ Open → Fixed (đúng thực tế, fix đã Done từ Sprint 1); cập nhật lại bảng tóm tắt ở `01_BACKLOG.md` mục D (Fixed 12/Open 1/Won't Fix 1/Tổng 14). Commit `d5856e2`.
+  - Quyết định về màu `0xFFB91C1C` ở admin (giao cho tôi tự chọn): tách thành `AppColors.sidebarAccent` — **không đổi màu hiển thị**, chỉ hết lặp lại hex ở 6 chỗ (`sidebar.dart`, `main_layout.dart`, `leave_screen.dart`). Chọn hướng an toàn nhất vì đây là quyết định thẩm mỹ chủ quan, không phải bug — không tự ý đổi giao diện khi không chắc ý muốn thật sự của bạn. Commit `29223fb`.
+  - `flutter analyze` (admin) 0 issue cả 2 lần; `flutter build web` thành công.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-15 (chờ quyết định ưu tiên FEAT-01); `widget_test.dart` Fail; BUG-014 (Open, duy nhất còn lại); FEAT-01/02/03 (chờ xác nhận ưu tiên).
+- **Risk nổi bật:** không có rủi ro mới. Toàn bộ Sprint 6 (trừ TD-15) và các việc tồn đọng nhỏ đã dọn xong — điểm quyết định lớn tiếp theo là FEAT-01/02/03 (ảnh hưởng hướng đi toàn bộ phần còn lại của Phase A) và kết quả Sprint 5 từ bạn.
