@@ -26,7 +26,7 @@ Tính năng còn thiếu hoặc dở dang — nguồn: `PROJECT_MASTER_PLAN.md` 
 | ID | Hạng mục | Priority | Status | Estimate | Dependency | Phase |
 |---|---|---|---|---|---|---|
 | FEAT-01 | Nghỉ phép (mobile): repository + provider + UI tạo đơn + xem đơn của chính mình | Medium | **Done** (2026-07-20, commit `b742193`) — kiểm thử tay end-to-end Pass (tạo đơn mobile → duyệt admin → cập nhật lại mobile) | 2-3 ngày | none | A |
-| FEAT-02 | Notification: màn hiển thị danh sách thông báo (tối thiểu 1 app) | Medium | **Ready** (xác nhận 2026-07-20 — xem D-013) | 1-2 ngày | none | A |
+| FEAT-02 | Notification: màn hiển thị danh sách thông báo (tối thiểu 1 app) | Medium | **Done** (2026-07-20, commit `fc0a2b5`) — kiểm thử tay Pass; tiện thể xoá 1 dòng "Thông báo" chết ở Profile > Cài đặt (trùng lặp lối vào, không làm gì) | 1-2 ngày | none | A |
 | FEAT-03 | Phòng ban (admin): màn quản lý CRUD riêng thay vì chỉ seed qua route dev ẩn | Low-Medium | **Deferred** (từ chối 2026-07-20 — xem D-013) | 1-2 ngày | none | A |
 | FEAT-04 | Demo Time System: commit thay đổi hiện có + kiểm thử tay trên thiết bị thật | **Critical** (rủi ro mất công sức) | **Done** (2026-07-13, commit `9a2623e`) | 0.5-1 ngày | none | A |
 

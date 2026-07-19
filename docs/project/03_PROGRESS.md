@@ -315,3 +315,23 @@
 **Tổng kết:** 1/1 task Done. 1 bug phát hiện-và-sửa-ngay, không có việc tồn đọng nào từ Sprint này.
 - **Task Remaining:** Sprint 3 (FEAT-02 — Notification UI); Sprint 5 (chờ bạn báo kết quả); `widget_test.dart` Fail; BUG-014 (Open, duy nhất còn lại).
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày) — Sprint 3 DONE (FEAT-02) — đạt Milestone M1
+
+- **Milestone:** **Sprint 3 DONE. Đạt Milestone M1 (Core Complete).** Phase A coi như hoàn thành — FEAT-01/02 Done, FEAT-03 Deferred có chủ đích (D-013), không có tính năng nào khác còn "chưa làm" theo `PROJECT_MASTER_PLAN.md` §1.3 ngoài phạm vi đã hoãn.
+- **Phase hiện tại:** chuyển tiếp A → B/C (Code Quality mở rộng còn lại + Testing).
+- **Task Completed:**
+  - FEAT-02 hoàn thành: `notification_repository.dart` (đọc thông báo của chính mình, tránh lại đúng lỗi composite-index như BUG-015 ngay từ đầu), `notification_provider.dart`, `notification_screen.dart`. Nối vào nút chuông có sẵn ở `home_header.dart` (trước đó không làm gì); chấm báo hiệu đổi từ hardcode-luôn-hiện sang có điều kiện (có thông báo mới hiện) — không track được đã đọc/chưa đọc thật vì `firestore.rules` chặn `update` trên `notifications`.
+  - Tiện thể dọn 1 dòng "Thông báo" khác cũng chết (`onTap: () {}`) ở Profile > Cài đặt — trùng lặp lối vào với chuông ở Home, không có tính năng cài đặt thông báo nào thật để trỏ tới, nên xoá thay vì nối thêm 1 lối vào giống hệt.
+  - `flutter analyze` 0 issue, `flutter test` 19/19 Pass, `flutter build web` thành công. Kiểm thử tay Pass: duyệt/từ chối đơn nghỉ phép ở admin → hiện đúng thông báo ở mobile.
+  - Commit `fc0a2b5`. `01_BACKLOG.md` (FEAT-02 → Done), `02_SPRINT.md` (Sprint 3 → DONE, đạt M1) cập nhật theo.
+
+### Sprint Review — Sprint 3
+
+| Task | Trạng thái | Bug/phát sinh? |
+|---|---|---|
+| FEAT-02 — Notification UI (mobile) | Done (`fc0a2b5`) | Không — rút kinh nghiệm BUG-015 nên tránh được lỗi tương tự ngay từ đầu; tiện thể dọn 1 dead code phụ (dòng "Thông báo" ở Profile) |
+
+**Tổng kết:** 1/1 task Done, không phát sinh bug mới. Milestone M1 đạt được sớm hơn dự kiến nhờ tránh lặp lại lỗi đã học từ Sprint 2.
+- **Task Remaining:** Sprint 5 (kiểm thử thủ công, chờ bạn báo kết quả); TD-06→TD-18 hạng Low còn sót (không có, đã xong hết Sprint 6 trừ TD-15 Cancelled); `widget_test.dart` Fail; BUG-014 (Open, duy nhất còn lại); Sprint 7 (Release Candidate) chưa mở.
+- **Risk nổi bật:** không có rủi ro mới. Điểm cần chú ý tiếp theo: Phase B (Nên làm/Dọn dẹp, tuỳ chọn) và Phase C (Testing thủ công, Sprint 5) trước khi có thể tiến tới Phase E (Release Candidate).

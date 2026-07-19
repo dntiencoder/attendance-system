@@ -52,7 +52,7 @@
 
 ---
 
-## Sprint 3 — Notification UI — ✅ Sẵn sàng bắt đầu
+## Sprint 3 — Notification UI — ✅ DONE (2026-07-20)
 
 **Điều kiện tiên quyết:** đã xác nhận 2026-07-20 (D-013) — FEAT-02 làm, FEAT-03 hoãn (không nằm trong sprint này nữa).
 
@@ -61,6 +61,8 @@
 **Estimate:** ~1-2 ngày công.
 **Deliverable:** màn hiển thị thông báo (tối thiểu 1 app).
 **Definition of Done:** Phase A của `PROJECT_MASTER_PLAN.md` — checklist đã tick (trừ FEAT-03 hoãn có chủ đích) → đạt **Milestone M1**.
+
+**Đã đóng 2026-07-20** — FEAT-02 hoàn thành, commit `fc0a2b5`. Nối vào nút chuông có sẵn ở `home_header.dart` (trước đó `onPressed: () {}` chết); tiện thể xoá 1 dòng "Thông báo" khác cũng chết ở Profile > Cài đặt (trùng lặp lối vào). Kiểm thử tay Pass: duyệt/từ chối đơn nghỉ phép ở admin → hiện đúng thông báo ở mobile. **→ Đạt Milestone M1 (Core Complete)** — Phase A coi như xong (FEAT-03 hoãn có chủ đích, không chặn M1). Xem Sprint Review đầy đủ ở `docs/project/03_PROGRESS.md`.
 
 ---
 
