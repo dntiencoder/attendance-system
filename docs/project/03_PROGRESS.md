@@ -204,3 +204,14 @@
   - `01_BACKLOG.md` (TD-20 → Done) cập nhật theo.
 - **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08→TD-11, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
 - **Risk nổi bật:** không có rủi ro mới.
+
+## 2026-07-20 (cùng ngày, sau khi hoàn thành TD-10)
+
+- **Milestone:** Sprint 6 tiếp tục.
+- **Phase hiện tại:** B.
+- **Task Completed:**
+  - TD-10 hoàn thành, phạm vi rộng hơn dự tính ban đầu sau khi khảo sát: `login_screen.dart` (validator email tự viết yếu hơn `Validators.email` — chỉ kiểm tra `contains('@')`) và `employee_screen.dart` (ô Email chỉ kiểm tra không rỗng, chưa từng validate định dạng dù là email đăng nhập thật của nhân viên) đều đổi sang `Validators.email`. Số điện thoại (`employee_screen.dart`) được giao cho tôi tự quyết định phạm vi — chọn giữ **tuỳ chọn** (không bắt buộc nhập), chỉ validate định dạng bằng `Validators.phone` khi có nhập, để không đổi hành vi hiện tại (admin có thể thêm nhân viên mà chưa có SĐT).
+  - `flutter analyze` (admin) 0 issue; `flutter build web` thành công. Commit `311ede8`.
+  - `01_BACKLOG.md` (TD-10 → Done) cập nhật theo.
+- **Task Remaining:** Sprint 5 (chờ bạn báo kết quả); TD-06, TD-08, TD-09, TD-11, TD-15, TD-18 (Sprint 6, còn lại); quyết định về `0xFFB91C1C` ở admin; `widget_test.dart` Fail; BUG-014; FEAT-01/02/03.
+- **Risk nổi bật:** không có rủi ro mới.

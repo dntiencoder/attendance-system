@@ -47,7 +47,7 @@ Nguồn: `ROADMAP.md` Phase 2 (còn lại sau khi P2-03 đã vô tình xong ở 
 | TD-07 | Song song hoá 7 query tuần tự ở Dashboard (P3-02) | Medium | **Done** (2026-07-20, commit `690aa48`) | 0.5 ngày | none | B |
 | TD-08 | Cache `company_settings`/`users` trong lịch sử chấm công (P3-03) | Medium | Backlog | 0.5 ngày | none | B |
 | TD-09 | Dùng lại `ConfirmDialog` thay `AlertDialog` tự dựng (P3-04) | Medium | Backlog | 0.5 ngày | none | B |
-| TD-10 | Dùng lại `Validators.email/phone` thay validator inline (P3-05) | Medium | Backlog | 0.5 ngày | none | B |
+| TD-10 | Dùng lại `Validators.email/phone` thay validator inline (P3-05) | Medium | **Done** (2026-07-20, commit `311ede8`) — `login_screen.dart` + `employee_screen.dart` (email); số điện thoại giữ tuỳ chọn, chỉ validate định dạng khi có nhập | 0.5 ngày | none | B |
 | TD-11 | Thông điệp lỗi thân thiện thay `'Lỗi: $err'` (P3-06) | Medium | Backlog | 0.5 ngày | TD-04 | B |
 | TD-12 | Đồng bộ nhãn hiển thị ca ("Ca ngày" vs "Ca sáng") (P3-07) | Medium | **Done** (2026-07-20, commit `6f34a9e`) | <0.25 ngày | none | B |
 | TD-13 | Thay hex màu hardcode bằng `AppColors.primary` (P3-08) | Medium | **Done** (2026-07-20, commit `6f34a9e`) — chỉ 2 chỗ trùng khớp chính xác ở mobile; 6 chỗ `0xFFB91C1C` ở admin (khác `AppColors.primary`) cố ý chưa đụng, cần bạn quyết định riêng | <0.25 ngày | none | B |
