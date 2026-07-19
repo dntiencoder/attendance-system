@@ -38,7 +38,7 @@
 
 ---
 
-## Sprint 2 — Nghỉ phép (mobile) — ✅ Sẵn sàng bắt đầu
+## Sprint 2 — Nghỉ phép (mobile) — ✅ DONE (2026-07-20)
 
 **Điều kiện tiên quyết:** đã xác nhận 2026-07-20 (D-013, `docs/decision/01_DECISION_LOG.md`) — không còn chờ gì thêm.
 
@@ -47,6 +47,8 @@
 **Estimate:** ~2-3 ngày công.
 **Deliverable:** `LeaveRepository`/`leave_provider.dart`/UI tạo đơn + danh sách đơn ở mobile.
 **Definition of Done:** tạo đơn từ mobile → hiện đúng ở màn Duyệt Nghỉ Phép (admin) → duyệt/từ chối → trạng thái cập nhật lại đúng ở mobile.
+
+**Đã đóng 2026-07-20** — FEAT-01 hoàn thành, commit `b742193`. Phát hiện + sửa 1 bug ngay trong lúc test tay: query `.where('uid',...).orderBy('createdAt',...)` cần composite index chưa khai báo cho `leave_requests` trong `firestore.indexes.json`, khiến cập nhật trạng thái từ admin không phản ánh lại mobile — sửa bằng cách bỏ `orderBy` ở Firestore, sort lại bằng code (giống pattern đã dùng ở `attendance_history_provider.dart`). Kiểm thử tay end-to-end Pass sau khi sửa. Xem Sprint Review đầy đủ ở `docs/project/03_PROGRESS.md`.
 
 ---
 

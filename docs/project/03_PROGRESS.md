@@ -295,3 +295,23 @@
   - `02_SPRINT.md`: Sprint 2 (chỉ FEAT-01) và Sprint 3 (chỉ FEAT-02, FEAT-03 tách khỏi sprint) bỏ điều kiện tiên quyết "chờ xác nhận".
 - **Task Remaining:** Sprint 2 (FEAT-01) — chưa bắt đầu code; Sprint 3 (FEAT-02) sau đó; Sprint 5 (chờ bạn báo kết quả); `widget_test.dart` Fail; BUG-014.
 - **Risk nổi bật:** không có rủi ro mới. Phạm vi Phase A giờ đã rõ ràng hoàn toàn — không còn mục nào mơ hồ chờ quyết định.
+
+## 2026-07-20 (cùng ngày) — Sprint 2 DONE (FEAT-01)
+
+- **Milestone:** **Sprint 2 DONE.** Chưa đạt M1 (còn Sprint 3 — FEAT-02).
+- **Phase hiện tại:** A.
+- **Task Completed:**
+  - FEAT-01 hoàn thành: `leave_repository.dart` (tạo đơn + stream đơn của chính mình), `leave_provider.dart` (StreamProvider + Notifier luồng tạo đơn), `leave_screen.dart` (danh sách + badge trạng thái + form tạo đơn qua bottom sheet) — thay hẳn placeholder tĩnh ở route `/leave`. Chỉ có Tạo + Xem, không có Sửa/Huỷ (đúng theo `firestore.rules` — nhân viên không có quyền `update`/`delete` trên `leave_requests`).
+  - Phát hiện **BUG-015** ngay trong lúc test tay: query kết hợp `.where('uid',...).orderBy('createdAt',...)` cần composite index chưa khai báo cho `leave_requests`, khiến admin duyệt/từ chối không phản ánh lại mobile. Sửa ngay trong cùng task bằng cách bỏ `orderBy` ở Firestore, sort lại bằng code (đúng pattern đã dùng ở `attendance_history_provider.dart`) — không cần deploy thêm index mới.
+  - `flutter analyze` 0 issue, `flutter test` 19/19 Pass, `flutter build web` thành công. Kiểm thử tay end-to-end (tạo đơn mobile → duyệt admin → cập nhật mobile) **Pass** sau khi sửa BUG-015.
+  - Commit `b742193`. `01_BACKLOG.md` (FEAT-01 → Done), `02_SPRINT.md` (Sprint 2 → DONE), `02_BUG_TRACKER.md` (BUG-015 → Fixed) cập nhật theo.
+
+### Sprint Review — Sprint 2
+
+| Task | Trạng thái | Bug phát sinh? |
+|---|---|---|
+| FEAT-01 — Nghỉ phép (mobile) | Done (`b742193`) | BUG-015 (composite index thiếu) — phát hiện và **sửa ngay trong cùng task**, đã đóng |
+
+**Tổng kết:** 1/1 task Done. 1 bug phát hiện-và-sửa-ngay, không có việc tồn đọng nào từ Sprint này.
+- **Task Remaining:** Sprint 3 (FEAT-02 — Notification UI); Sprint 5 (chờ bạn báo kết quả); `widget_test.dart` Fail; BUG-014 (Open, duy nhất còn lại).
+- **Risk nổi bật:** không có rủi ro mới.

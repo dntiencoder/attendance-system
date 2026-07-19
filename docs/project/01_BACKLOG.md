@@ -25,7 +25,7 @@ Tính năng còn thiếu hoặc dở dang — nguồn: `PROJECT_MASTER_PLAN.md` 
 
 | ID | Hạng mục | Priority | Status | Estimate | Dependency | Phase |
 |---|---|---|---|---|---|---|
-| FEAT-01 | Nghỉ phép (mobile): repository + provider + UI tạo đơn + xem đơn của chính mình | Medium | **Ready** (xác nhận 2026-07-20 — xem D-013, `docs/decision/01_DECISION_LOG.md`) | 2-3 ngày | none | A |
+| FEAT-01 | Nghỉ phép (mobile): repository + provider + UI tạo đơn + xem đơn của chính mình | Medium | **Done** (2026-07-20, commit `b742193`) — kiểm thử tay end-to-end Pass (tạo đơn mobile → duyệt admin → cập nhật lại mobile) | 2-3 ngày | none | A |
 | FEAT-02 | Notification: màn hiển thị danh sách thông báo (tối thiểu 1 app) | Medium | **Ready** (xác nhận 2026-07-20 — xem D-013) | 1-2 ngày | none | A |
 | FEAT-03 | Phòng ban (admin): màn quản lý CRUD riêng thay vì chỉ seed qua route dev ẩn | Low-Medium | **Deferred** (từ chối 2026-07-20 — xem D-013) | 1-2 ngày | none | A |
 | FEAT-04 | Demo Time System: commit thay đổi hiện có + kiểm thử tay trên thiết bị thật | **Critical** (rủi ro mất công sức) | **Done** (2026-07-13, commit `9a2623e`) | 0.5-1 ngày | none | A |
@@ -78,12 +78,12 @@ Từ `REVIEW.md`, bị `ROADMAP.md` loại khỏi phạm vi ổn định hoá �
 
 Sống tại **`docs/testing/02_BUG_TRACKER.md`** — không liệt kê lại ở đây theo đúng yêu cầu "không copy lại, chỉ tham chiếu". Tóm tắt nhanh (cập nhật thủ công khi bug tracker đổi):
 
-| Trạng thái | Số lượng (tại 2026-07-20, sau khi sửa lệch trạng thái BUG-008/009/010/013) |
+| Trạng thái | Số lượng (tại 2026-07-20, sau FEAT-01/BUG-015) |
 |---|---|
-| Fixed | 12 |
+| Fixed | 13 |
 | Open | 1 (BUG-014) |
 | Won't Fix | 1 (BUG-012 — tiền đề sai, xem TD-16) |
-| Tổng | 14 |
+| Tổng | 15 |
 
 Xem chi tiết từng bug tại `docs/testing/02_BUG_TRACKER.md`.
 
