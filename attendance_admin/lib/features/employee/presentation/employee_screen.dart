@@ -374,6 +374,13 @@ class EmployeeScreen extends ConsumerWidget {
                             tooltip: 'Cấp mã kích hoạt thiết bị',
                             onPressed: () => _showIssueActivationCode(context, ref, emp),
                           ),
+                          // FEAT-05: thu hồi khẩn cấp — mất máy/nghỉ việc/nghi
+                          // ngờ gian lận. Xem docs/design/ANTI_FRAUD_DESIGN.md §4.1.
+                          IconButton(
+                            icon: const Icon(Icons.phonelink_erase_outlined, color: Colors.deepPurple),
+                            tooltip: 'Reset Trusted Device',
+                            onPressed: () => _showResetDevice(context, ref, emp),
+                          ),
                           IconButton(
                             icon: const Icon(Icons.delete_outline, color: Colors.red),
                             onPressed: () => _showDeleteConfirm(context, ref, emp),
@@ -458,6 +465,90 @@ class EmployeeScreen extends ConsumerWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Không thể cấp mã kích hoạt. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // FEAT-05: Reset Trusted Device — bắt buộc nhập lý do trước khi xác nhận
+  // (đúng thiết kế §4.1: mọi hành động bảo mật cần lý do ghi lại để tra soát
+  // sau này, ghi vào device_audit_log qua repository).
+  Future<void> _showResetDevice(
+    BuildContext context,
+    WidgetRef ref,
+    EmployeeModel emp,
+  ) async {
+    final reasonController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Trusted Device'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Thu hồi ngay quyền thiết bị hiện tại của ${emp.name}.\n'
+                'Dùng khi mất máy, thiết bị hỏng, hoặc nghỉ việc.',
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: reasonController,
+                decoration: const InputDecoration(
+                  labelText: 'Lý do (bắt buộc)',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Bắt buộc nhập lý do'
+                    : null,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Huỷ'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(context, true);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await ref
+          .read(deviceActivationRepositoryProvider)
+          .resetDevice(emp.id, reasonController.text.trim());
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đã reset thiết bị.')),
+        );
+      }
+    } catch (e, st) {
+      AppLogger.error('EmployeeScreen.resetDevice', e, st);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể reset thiết bị. Vui lòng thử lại.'),
             backgroundColor: Colors.red,
           ),
         );
