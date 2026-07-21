@@ -31,62 +31,77 @@ class DeviceActivationRepository {
     final docRef = _db.collection('device_activations').doc(user.uid);
 
     try {
-      await _db.runTransaction((transaction) async {
-        final snapshot = await transaction.get(docRef);
+      // Phục hồi khi bị gián đoạn GIỮA Ghi 1 và Ghi 2 ở lần thử trước (vd mất
+      // mạng ngay sau khi Ghi 1 thành công): nếu document đã 'redeemed' SẴN
+      // bởi ĐÚNG máy này, bỏ qua Ghi 1 (không báo "đã dùng" oan), chỉ chạy
+      // lại Ghi 2 — đúng đánh đổi đã mô tả ở
+      // docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md §2.1 ("chỉ cần bấm
+      // lại", không phải bị kẹt vĩnh viễn).
+      final existing = await docRef.get();
+      final alreadyRedeemedByThisDevice = existing.exists &&
+          DeviceActivationModel.fromFirestore(existing).status == 'redeemed' &&
+          DeviceActivationModel.fromFirestore(existing).newDeviceId == installId;
 
-        if (!snapshot.exists) {
-          throw Exception(
-            'Chưa có mã kích hoạt nào được cấp cho tài khoản này.\n'
-            'Vui lòng liên hệ quản trị viên.',
-          );
-        }
+      if (!alreadyRedeemedByThisDevice) {
+        await _db.runTransaction((transaction) async {
+          final snapshot = await transaction.get(docRef);
 
-        final activation = DeviceActivationModel.fromFirestore(snapshot);
+          if (!snapshot.exists) {
+            throw Exception(
+              'Chưa có mã kích hoạt nào được cấp cho tài khoản này.\n'
+              'Vui lòng liên hệ quản trị viên.',
+            );
+          }
 
-        if (activation.status == 'redeemed') {
-          throw Exception(
-            'Mã này đã được sử dụng.\nVui lòng liên hệ quản trị viên để cấp mã mới.',
-          );
-        }
+          final activation = DeviceActivationModel.fromFirestore(snapshot);
 
-        if (activation.isLocked) {
-          throw Exception(
-            'Mã đã bị khoá do nhập sai quá nhiều lần.\n'
-            'Vui lòng liên hệ quản trị viên để cấp mã mới.',
-          );
-        }
+          if (activation.status == 'redeemed') {
+            throw Exception(
+              'Mã này đã được sử dụng.\n'
+              'Vui lòng liên hệ quản trị viên để cấp mã mới.',
+            );
+          }
 
-        if (activation.isExpired) {
-          transaction.update(docRef, {'status': 'locked'});
-          throw Exception(
-            'Mã đã hết hạn.\nVui lòng liên hệ quản trị viên để cấp mã mới.',
-          );
-        }
+          if (activation.isLocked) {
+            throw Exception(
+              'Mã đã bị khoá do nhập sai quá nhiều lần.\n'
+              'Vui lòng liên hệ quản trị viên để cấp mã mới.',
+            );
+          }
 
-        if (activation.code != enteredCode.trim()) {
-          final nextAttempt = activation.attemptCount + 1;
-          final locked = nextAttempt >= DeviceActivationModel.maxAttempts;
+          if (activation.isExpired) {
+            transaction.update(docRef, {'status': 'locked'});
+            throw Exception(
+              'Mã đã hết hạn.\nVui lòng liên hệ quản trị viên để cấp mã mới.',
+            );
+          }
+
+          if (activation.code != enteredCode.trim()) {
+            final nextAttempt = activation.attemptCount + 1;
+            final locked = nextAttempt >= DeviceActivationModel.maxAttempts;
+            transaction.update(docRef, {
+              'attemptCount': nextAttempt,
+              if (locked) 'status': 'locked',
+            });
+            throw Exception(
+              locked
+                  ? 'Mã kích hoạt không đúng. Đã hết số lần thử — vui lòng liên hệ quản trị viên để cấp mã mới.'
+                  : 'Mã kích hoạt không đúng. Còn ${DeviceActivationModel.maxAttempts - nextAttempt} lần thử.',
+            );
+          }
+
+          // Đúng mã — Ghi 1: đánh dấu redeemed, lưu installId của máy đang
+          // redeem làm newDeviceId (Ghi 2 sẽ dùng lại đúng giá trị này).
           transaction.update(docRef, {
-            'attemptCount': nextAttempt,
-            if (locked) 'status': 'locked',
+            'status': 'redeemed',
+            'newDeviceId': installId,
+            'attemptCount': activation.attemptCount + 1,
           });
-          throw Exception(
-            locked
-                ? 'Mã kích hoạt không đúng. Đã hết số lần thử — vui lòng liên hệ quản trị viên để cấp mã mới.'
-                : 'Mã kích hoạt không đúng. Còn ${DeviceActivationModel.maxAttempts - nextAttempt} lần thử.',
-          );
-        }
-
-        // Đúng mã — Ghi 1: đánh dấu redeemed, lưu installId của máy đang
-        // redeem làm newDeviceId (Ghi 2 sẽ dùng lại đúng giá trị này).
-        transaction.update(docRef, {
-          'status': 'redeemed',
-          'newDeviceId': installId,
-          'attemptCount': activation.attemptCount + 1,
         });
-      });
+      }
 
-      // Ghi 2 — chỉ chạy khi Ghi 1 (transaction ở trên) không ném lỗi.
+      // Ghi 2 — chỉ chạy khi Ghi 1 (transaction ở trên, hoặc lần thử trước
+      // đó) không ném lỗi.
       await _db.collection('users').doc(user.uid).update({
         'trustedDeviceId': installId,
         'deviceStatus': 'trusted',
