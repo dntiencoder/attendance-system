@@ -7,6 +7,7 @@ import '../domain/employee_model.dart';
 import 'employee_provider.dart';
 import '../../department/domain/department_model.dart'; // Thêm model này
 import '../../department/presentation/department_provider.dart';
+import '../../device/presentation/device_activation_provider.dart';
 import '../../../core/utils/validators.dart';
 import '../../../shared/theme/app_colors.dart';
 import '../../../shared/widgets/confirm_dialog.dart';
@@ -366,6 +367,13 @@ class EmployeeScreen extends ConsumerWidget {
                                 .read(employeeRepositoryProvider)
                                 .toggleStatus(emp.id, emp.isActive),
                           ),
+                          // FEAT-05: cấp mã kích hoạt thiết bị (lần đầu hoặc
+                          // đổi máy) — xem docs/design/ANTI_FRAUD_DESIGN.md §3.
+                          IconButton(
+                            icon: const Icon(Icons.vpn_key_outlined, color: Colors.orange),
+                            tooltip: 'Cấp mã kích hoạt thiết bị',
+                            onPressed: () => _showIssueActivationCode(context, ref, emp),
+                          ),
                           IconButton(
                             icon: const Icon(Icons.delete_outline, color: Colors.red),
                             onPressed: () => _showDeleteConfirm(context, ref, emp),
@@ -381,6 +389,80 @@ class EmployeeScreen extends ConsumerWidget {
         )
       ],
     );
+  }
+
+  // FEAT-05: cấp Activation Code — mã CHỈ hiển thị 1 lần ngay sau khi sinh,
+  // Admin đọc trực tiếp cho nhân viên qua điện thoại/gặp mặt (kênh ngoài app
+  // — đây là điểm mấu chốt bảo mật của cơ chế, xem
+  // docs/design/ANTI_FRAUD_DESIGN.md §3.2/§4.6). Không có nút "gửi" tự động
+  // qua bất kỳ kênh nào khác.
+  Future<void> _showIssueActivationCode(
+    BuildContext context,
+    WidgetRef ref,
+    EmployeeModel emp,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final code =
+          await ref.read(deviceActivationRepositoryProvider).issueCode(emp.id);
+
+      if (!context.mounted) return;
+      Navigator.pop(context); // Tắt loading
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Mã kích hoạt thiết bị'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Đọc mã này cho ${emp.name} qua điện thoại hoặc gặp trực tiếp.',
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  code,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 8,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Có hiệu lực 15 phút, dùng được 1 lần.',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Đóng'),
+            ),
+          ],
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.error('EmployeeScreen.issueActivationCode', e, st);
+      if (context.mounted) {
+        Navigator.pop(context); // Tắt loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Không thể cấp mã kích hoạt. Vui lòng thử lại.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _showDeleteConfirm(BuildContext context, WidgetRef ref, EmployeeModel emp) async {
