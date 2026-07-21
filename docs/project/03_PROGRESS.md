@@ -373,4 +373,38 @@
 ### Việc KHÔNG cần làm lại
 - Đừng chạy lại `flutter run -t lib/main_dev.dart` (sẽ xoá dữ liệu thật hiện có).
 - Đừng mở lại quyết định FEAT-01/02/03 — đã chốt (D-013).
+
+## 2026-07-21 — TẠM DỪNG PHIÊN LÀM VIỆC FEAT-05 — điểm bắt đầu cho phiên sau
+
+**Đọc mục này trước khi tiếp tục — tóm tắt toàn bộ trạng thái FEAT-05 (Anti Fraud & Device Security) tại thời điểm dừng.**
+
+### Bối cảnh
+FEAT-05 là tính năng mới (ngoài `ROADMAP.md` gốc) — chống mượn máy/dùng chung tài khoản nhiều thiết bị khi chấm công. Quy trình đã đi qua đủ 3 giai đoạn: thiết kế (`docs/design/ANTI_FRAUD_DESIGN.md`, 3 vòng rà soát) → kế hoạch implementation 25 Phase (`docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md`, có theo dõi trạng thái từng Phase — **đọc file này trước, là nguồn chi tiết nhất**) → code + test tay thật.
+
+### Đã xong trong phiên này
+- **Thiết kế + kế hoạch**: `ANTI_FRAUD_DESIGN.md` và `FEAT_05_IMPLEMENTATION_PLAN.md` hoàn thiện, đã commit.
+- **Code — 22/25 Phase Done**: Sprint A (DeviceService — điểm truy cập duy nhất cho Device Identity, model mới), Sprint D (Biometric bắt buộc khi Check In/Out), Sprint B (Activation Code — cấp mã/nhập mã 2 app), Sprint C code (ghi `deviceId` vào `attendance`, soạn Rules), Sprint E (Reset Trusted Device, gộp vào Deactivate, màn Audit Log). `flutter analyze`/`flutter test`/`flutter build web` sạch xuyên suốt.
+- **Rules Production**: phần AN TOÀN (`device_activations`/`device_audit_log`/mở rộng `users`) đã **deploy thật**. Phần RỦI RO (enforce `deviceId` trên `attendance`) **cố ý để comment lại**, CHƯA bật — tránh khoá Check In/Out của mọi nhân viên khi chưa kiểm tra migration.
+- **Test tay thật trên Production** (không cần Emulator cho phần này): cấp mã (admin) → redeem đúng mã (mobile) → tự vào Home; nhập sai mã bị từ chối; sai liên tiếp 6 lần trên cùng 1 mã → bị khoá đúng như thiết kế. **Tất cả PASS.**
+- **4 bug thật tìm ra + sửa qua build/test tay thật** (không phải chỉ review tĩnh):
+  1. Bug build Gradle/Kotlin Build Tools API ("Could not close incremental caches") — tái hiện trên máy thật của bạn, không phải riêng sandbox. Sửa bằng `kotlin.incremental=false` trong `attendance_mobile/android/gradle.properties`.
+  2. **Lỗ hổng bảo mật**: code redeem ban đầu đọc trực tiếp `device_activations` (lộ field `code`) — sai nguyên tắc thiết kế. Sửa thành cơ chế "ghi mù" (client không đọc, Rules tự đối chiếu phía server).
+  3. Bug Navigator: `Navigator.pop(context)` pop nhầm Navigator của `ShellRoute` khi tắt loading dialog, gây crash che mất lỗi Firestore thật. Sửa bằng `Navigator.of(context, rootNavigator: true).pop()`.
+  4. **Lỗ hổng bảo mật nghiêm trọng nhất**: cơ chế "tự phục hồi" (thêm để tránh kẹt nếu Ghi 2 lỡ lỗi) vô tình tạo đường tắt — 1 thiết bị đã từng redeem đúng 1 lần thì mọi lần gọi lại `redeemCode()` sau đó **thành công bất kể nhập gì** (mã nhập đại cũng vào được), vì bước phục hồi chạy trước và không kiểm tra mã. Phát hiện qua chính bạn test tay. Đã bỏ hẳn cơ chế này.
+- Toàn bộ đã commit (từ `712588d` đến `3e0b49d`, ~28 commit riêng cho FEAT-05).
+
+### Chưa làm — cần xử lý ở phiên sau
+1. **Phase 15 — 2 kịch bản phụ còn thiếu** (không gấp, phần lõi đã PASS): mã hết hạn sau 15 phút; Admin cấp lại mã mới thì mã cũ phải vô hiệu ngay.
+2. **Phase 19-21 — việc quan trọng nhất còn treo**: bật enforce `deviceId` thật cho Check In/Out (`attendance`).
+   - Phase 19: cần quyết định phương án test cho riêng phần này — Firebase Emulator (cần JDK 21+, máy thực hiện hiện chỉ có JDK 17) hoặc phương án khác cùng bàn với bạn.
+   - Phase 20: kiểm tra **toàn bộ** nhân viên `isActive=true` đã có `trustedDeviceId` chưa — nếu còn ai thiếu, bật Rules sẽ khoá Check In/Out của người đó ngay lập tức.
+   - Phase 21: khôi phục 2 dòng điều kiện `deviceId` đang bị comment trong `firestore.rules` (`attendance.create`/`update`) rồi deploy đầy đủ lên Production.
+   - **→ Phiên sau: hỏi ngay "muốn test phần `attendance` enforcement bằng cách nào" trước khi làm gì khác liên quan Rules.**
+3. **Sprint 5** (kiểm thử thủ công dự án gốc, có từ trước FEAT-05, không liên quan) — vẫn treo, vẫn là điều kiện mở Sprint 7 (Release Candidate) theo `02_SPRINT.md`.
+
+### Việc KHÔNG cần làm lại
+- **Đừng thêm lại cơ chế "tự phục hồi"** trong `redeemCode()` (`attendance_mobile/lib/features/device/data/device_activation_repository.dart`) — đã cố tình bỏ vì lỗ hổng bảo mật nghiêm trọng, có comment giải thích rõ ngay đầu file.
+- **Đừng deploy nguyên `firestore.rules` (kể cả phần đang comment) lên Production** trước khi xong Phase 19-20 — sẽ khoá Check In/Out của MỌI nhân viên ngay lập tức.
+- Đừng chạy lại `flutter run -t lib/main_dev.dart` (sẽ xoá dữ liệu thật hiện có).
+- Đừng mở lại các quyết định thiết kế đã chốt qua 3 vòng rà soát trong `ANTI_FRAUD_DESIGN.md` (Activation Code 6 số/TTL 15 phút/rate-limit 5 lần, không đọc mã phía client, v.v.) trừ khi phát sinh lý do mới.
 - Đừng viết lại `test/widget_test.dart` — cố ý xoá, không thay thế.
