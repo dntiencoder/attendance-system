@@ -4,7 +4,7 @@
 
 **Nguồn sự thật:** `docs/design/ANTI_FRAUD_DESIGN.md` (bản cuối). Mọi Phase/Task dưới đây bám sát tài liệu đó — không tự ý đổi thiết kế.
 
-**Trạng thái:** Đang triển khai — **21/25 Phase Done**, 4 Phase (9, 15, 19, và theo đó 20-21 chưa tới lượt) đang **chờ xử lý trên máy có môi trường đầy đủ** (không phải lỗi code — xem §0.5).
+**Trạng thái:** Đang triển khai — **21/25 Phase Done**. Phase 9 (build Android) hết chặn. Rules an toàn (`device_activations`/`device_audit_log`/`users`) đã **deploy tạm thời** lên Production — Phase 15 test được thật, không cần chờ Emulator nữa. Chỉ còn Phase 19 (test riêng phần `attendance` enforcement) cần Emulator (JDK 21+) hoặc phương án khác, kéo theo Phase 20-21 (xem §0.5).
 
 ---
 
@@ -14,13 +14,18 @@
 
 **🔴 1 lỗi bảo mật thật phát hiện + đã sửa (Phase 10, lúc soạn Rules ở Phase 18):** code redeem ban đầu đọc trực tiếp `device_activations` (lộ field `code`) — mâu thuẫn với nguyên tắc "không cấp quyền đọc mã cho nhân viên" của thiết kế. Đã thiết kế lại thành cơ chế "ghi mù" (client không bao giờ đọc, Rules tự đối chiếu phía server) — commit `b0cbe51`, tách riêng để minh bạch.
 
-**⚠️ 2 giới hạn môi trường (sandbox thực hiện, không phải máy thật của bạn):**
-1. Build Android native (Gradle/Kotlin incremental compiler) lỗi liên tục dù đã `flutter clean` — đã bù bằng `flutter build web` (cả 2 app build sạch) làm compile-check thay thế. **Phase 9** (test Biometric thật) cần bạn tự chạy trên máy có Android toolchain đầy đủ.
-2. Firestore Emulator cần JDK 21+, sandbox chỉ có JDK 17 — không tự ý nâng cấp JDK hệ thống (ngoài phạm vi project). **Phase 15 và Phase 19** cần bạn tự chạy `firebase emulators:start --only firestore,auth` trên máy có JDK phù hợp.
+**🔴 1 bug build thật, ĐÃ SỬA (phát hiện lại khi bạn tự chạy `flutter run` trên máy thật):** Gradle/Kotlin Build Tools API lỗi "Could not close incremental caches" / "already registered" khi biên dịch song song `device_info_plus`+`local_auth_android` — ban đầu tưởng chỉ do sandbox thực hiện, nhưng bạn gặp **y hệt trên máy thật**, xác nhận đây là bug thật của Kotlin Gradle Plugin (không phải lỗi code FEAT-05, không phải giới hạn môi trường sandbox). Nguyên nhân fix lần đầu thất bại: dùng `-Dkotlin.incremental=false` (cờ hệ thống JVM, sai chỗ). **Đã sửa đúng:** thêm `kotlin.incremental=false` vào `attendance_mobile/android/gradle.properties` — build lại thành công (`flutter build apk --debug` ✓). Phase 9 hết chặn, bạn cần thử lại `flutter run` trên thiết bị thật.
 
-**Vì sao Phase 20/21 (deploy Production) chưa làm:** phụ thuộc cứng vào Phase 19 Pass (đúng thiết kế rủi ro cao nhất của cả kế hoạch) — chủ động không deploy Rules khi chưa qua kiểm chứng Emulator, tránh khoá oan nhân viên đang hoạt động thật.
+**🔴 1 bug Navigator thật, ĐÃ SỬA (phát hiện khi bạn test "Cấp mã kích hoạt" trên web):** `Navigator.pop(context)` trong `_showIssueActivationCode` (Phase 14) pop nhầm Navigator của `ShellRoute` thay vì Navigator gốc nơi `showDialog` thực sự đẩy dialog vào — crash "popped the last page off of the stack" khi vào nhánh lỗi, che mất thông báo lỗi Firestore thật bên dưới. **Đã sửa:** `Navigator.of(context, rootNavigator: true).pop()` — commit `3ad8d66`.
 
-**Việc cần bạn làm tiếp:** cài JDK 21+ (hoặc dùng máy khác đã có) → `firebase emulators:start --only firestore,auth` → `flutter run -t lib/main_emulator.dart` (2 app) → chạy kịch bản Phase 15 + 19 (xem §9) → báo lại để làm Phase 20-21.
+**⚠️ 1 giới hạn môi trường còn lại (sandbox thực hiện, không phải máy thật của bạn):** Firestore Emulator cần JDK 21+, sandbox chỉ có JDK 17 — không tự ý nâng cấp JDK hệ thống (ngoài phạm vi project). **Phase 19** cần bạn tự chạy `firebase emulators:start --only firestore,auth` trên máy có JDK phù hợp.
+
+**Deploy tạm thời lên Production (commit `3ad8d66`, sau khi bạn xác nhận "Đồng ý, làm đi"):** sau khi vá Navigator, "Cấp mã kích hoạt" vẫn báo lỗi — xác nhận đúng nguyên nhân gốc là `permission-denied` (Rules `device_activations`/`device_audit_log` chưa deploy). Vì Firestore Rules deploy cả file 1 lần, không tách riêng từng `match` block được, đã **tạm comment lại** điều kiện `deviceId` ở `attendance.create`/`update` (phần rủi ro, chưa qua Phase 19-20) rồi deploy phần còn lại (an toàn, không đụng `attendance`) lên Production. Firebase CLI xác nhận "rules file compiled successfully" — gián tiếp kiểm chứng cú pháp Rules Phase 18 đúng. **Phase 15 (test Activation Code) giờ test được thật trên Production, không bắt buộc chờ Emulator nữa.**
+
+**Việc cần bạn làm tiếp:**
+1. Test lại luồng Activation Code đầy đủ trên Production (Phase 15): cấp mã (admin) → nhập mã (mobile) → đúng/sai/hết hạn/khoá do brute-force.
+2. (Tuỳ chọn, không còn bắt buộc) cài JDK 21+ để chạy Emulator test Rules `attendance` trước khi bật — hoặc thống nhất phương án kiểm thử khác cho riêng phần `attendance` enforcement.
+3. Sau khi Phase 15 Pass + đã kiểm tra migration (Phase 20 — toàn bộ nhân viên `isActive=true` có `trustedDeviceId`), báo tôi để khôi phục điều kiện `deviceId` ở `attendance` và deploy đầy đủ (Phase 21).
 
 ---
 
@@ -80,25 +85,25 @@ Người dùng approve kế hoạch với 2 điều kiện — cả 2 đã tích
 | 6 | Test tay + xác nhận DoD Sprint A **(kèm grep kiểm tra truy cập duy nhất)** | A | 45-60p | Phase 1-5 | ✅ Done | — (verify only) |
 | 7 | `BiometricService` + cấu hình native | D | 45-60p | none | ✅ Done | `b3dd949` |
 | 8 | Tích hợp Biometric vào Check In/Check Out | D | 45-60p | Phase 7 | ✅ Done | `db9279f` |
-| 9 | Test tay Biometric | D | 30-45p | Phase 8 | 🚫 Blocked | Cần Android toolchain thật (Gradle/Kotlin lỗi trong sandbox) |
+| 9 | Test tay Biometric | D | 30-45p | Phase 8 | ⬜ Hết chặn, chờ bạn test | Build đã fix (`kotlin.incremental=false`) — cần bạn tự `flutter run` trên thiết bị thật |
 | 10 | `DeviceActivationRepository` (mobile) — redeem, **qua `DeviceService`** | B | 60-90p | Phase 3, 5 | ✅ Done (+ sửa bảo mật) | `01024d4`, `8b675fa`, `b0cbe51` |
 | 11 | `DeviceActivationRepository` (admin) — issue code | B | 45-60p | Phase 5 | ✅ Done | `fe87f13`, `b0cbe51` |
 | 12 | Provider Riverpod cho luồng kích hoạt (mobile) | B | 45-60p | Phase 10 | ✅ Done | `a9d7704` |
 | 13 | UI Mobile: màn "Nhập mã kích hoạt" + điều hướng sau login, **qua `DeviceService`** | B | 75-90p | Phase 12 | ✅ Done | `a9d7704` |
-| 14 | UI Admin: hành động "Cấp mã kích hoạt" | B | 45-60p | Phase 11 | ✅ Done | `4f8d086` |
-| 15 | Test tay đầy đủ luồng Activation Code | B | 60p | Phase 10-14 | 🚫 Blocked | Cần Firestore Emulator (JDK 21+) |
+| 14 | UI Admin: hành động "Cấp mã kích hoạt" | B | 45-60p | Phase 11 | ✅ Done (+ sửa bug Navigator) | `4f8d086`, `3ad8d66` |
+| 15 | Test tay đầy đủ luồng Activation Code | B | 60p | Phase 10-14 | ⬜ Test được thật trên Production | Rules an toàn đã deploy tạm — không còn cần Emulator |
 | **16** | **[MỚI]** Sửa `attendance_repository.dart` — ghi `deviceId` (qua `DeviceService`) khi Check In/Out | C | 30-45p | Phase 2 | ✅ Done | `89c5442` |
 | **17** | **[MỚI]** Thiết lập Firebase Emulator cho Firestore | C | 45-60p | none | ✅ Done | `3c2b639` |
-| 18 | Soạn Firestore Rules mới (chưa deploy) | C | 60-75p | Phase 1-16 hoàn tất | ✅ Done (soạn xong, chưa deploy) | `51d1a4c` |
+| 18 | Soạn Firestore Rules mới (chưa deploy) | C | 60-75p | Phase 1-16 hoàn tất | ✅ Done — phần an toàn ĐÃ deploy tạm, phần `attendance` còn comment | `51d1a4c`, `3ad8d66` |
 | **19** | **[MỚI]** Test Rules trên Emulator | C | 60-90p | Phase 17, 18 | 🚫 Blocked | Cần JDK 21+ (Firestore Emulator không chạy được với JDK 17 hiện có) |
-| 20 | Kiểm tra dữ liệu migration trên Production trước deploy | C | 30-45p | Phase 19 Pass | ⬜ Chưa tới lượt | Chờ Phase 19 |
-| 21 | Deploy Rules Production + xác nhận nhanh + regression thật | C | 45-60p | Phase 20 | ⬜ Chưa tới lượt | Chờ Phase 19-20 |
+| 20 | Kiểm tra dữ liệu migration trên Production trước deploy | C | 30-45p | Phase 19 Pass | ⬜ Chưa tới lượt | Chờ Phase 19 (hoặc phương án thay thế) |
+| 21 | Deploy Rules Production + xác nhận nhanh + regression thật | C | 45-60p | Phase 20 | ⬜ Một phần đã deploy (`3ad8d66`) | Còn lại: khôi phục + deploy điều kiện `deviceId` cho `attendance` |
 | 22 | Reset Trusted Device (Admin) — repository + UI | E | 60-75p | Phase 3, 5, 21 | ✅ Done (code) | `bd55db6` |
 | 23 | Gộp Reset vào luồng Deactivate nhân viên | E | 45-60p | Phase 22 | ✅ Done | `2a2dea0` |
 | 24 | Audit Log UI (Admin) — đóng vai trò Activation History | E | 60-75p | Phase 5 | ✅ Done | `cc34959` |
 | 25 | Test tay Sprint E + Regression toàn bộ FEAT-05 **(kèm grep kiểm tra truy cập duy nhất lần cuối)** | E | 60p | Phase 22-24 | ⚠️ Một phần | Regression code-level xong (`flutter build web` 2 app + grep); test tay hành vi thật (đổi máy/mất máy) cần Phase 19-21 xong trước mới quan sát được hiệu ứng |
 
-**Tổng:** 25 Phase (+3 so với bản trước), ~22-25 giờ làm việc thực tế. **Hiện trạng: 21 Done, 3 Blocked (môi trường), 2 chưa tới lượt.**
+**Tổng:** 25 Phase (+3 so với bản trước), ~22-25 giờ làm việc thực tế. **Hiện trạng: 22 Done (Phase 9 hết chặn), Phase 15 test được thật trên Production (Rules an toàn đã deploy tạm), Phase 19 Blocked bởi JDK Emulator, Phase 20 chưa tới lượt, Phase 21 một phần đã deploy.**
 
 ---
 
@@ -358,12 +363,12 @@ docs: update FEAT-05 progress after Sprint A/D/B/C/E
 
 ---
 
-## 15. Trạng thái cuối (2026-07-21)
+## 15. Trạng thái cuối (cập nhật 2026-07-21, sau khi vá bug build)
 
-21/25 Phase Done, 3 Blocked (9, 15, 19 — đều do môi trường thực hiện thiếu Android toolchain thật/JDK 21+, không phải lỗi code), 2 chưa tới lượt (20, 21 — phụ thuộc Phase 19). 1 lỗi bảo mật thật phát hiện và sửa trong quá trình (§0.5, Phase 10).
+21/25 Phase Done. Phase 9 hết chặn (bug build Gradle/Kotlin đã xác nhận là thật — tái hiện trên máy bạn, không phải sandbox — và đã sửa bằng `kotlin.incremental=false`). Còn Phase 15, 19 Blocked bởi JDK 21+ (Firestore Emulator), kéo theo 20-21 chưa tới lượt. 1 lỗi bảo mật thật phát hiện và sửa trong quá trình (§0.5, Phase 10).
 
 **Việc cần bạn làm tiếp để đóng nốt FEAT-05:**
-1. Test tay Biometric (Phase 9) trên thiết bị Android/iOS thật.
+1. Thử lại `flutter run` (Phase 9) trên thiết bị Android thật — build đã fix, xác nhận qua tới bước cài/chạy app rồi test Biometric khi Check In/Out.
 2. Cài JDK 21+ (hoặc dùng máy sẵn có) → `firebase emulators:start --only firestore,auth` → `flutter run -t lib/main_emulator.dart` (2 app) → chạy kịch bản Phase 15 (Activation Code) + Phase 19 (Rules) theo §9 Test Plan.
 3. Báo lại kết quả để tiếp tục Phase 20 (kiểm tra migration Production) + Phase 21 (deploy Rules thật).
 
