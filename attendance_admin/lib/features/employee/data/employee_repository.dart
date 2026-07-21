@@ -77,6 +77,20 @@ class EmployeeRepository {
 
   // Cập nhật trạng thái hoạt động
   Future<void> toggleStatus(String id, bool currentStatus) async {
-    await _db.collection('users').doc(id).update({'isActive': !currentStatus});
+    final newStatus = !currentStatus;
+    final updates = <String, dynamic>{'isActive': newStatus};
+
+    // FEAT-05: khi VÔ HIỆU HOÁ (offboarding), thu hồi luôn quyền thiết bị
+    // trong CÙNG 1 thao tác — không tách bước riêng dễ quên (xem
+    // docs/design/ANTI_FRAUD_DESIGN.md §5, kịch bản "nghỉ việc"). Khi kích
+    // hoạt lại KHÔNG tự cấp lại quyền thiết bị — Admin cần cấp Activation
+    // Code mới như onboarding lại (State Machine: DISABLED -> NONE, không
+    // phải thẳng -> TRUSTED).
+    if (!newStatus) {
+      updates['trustedDeviceId'] = null;
+      updates['deviceStatus'] = 'none';
+    }
+
+    await _db.collection('users').doc(id).update(updates);
   }
 }
