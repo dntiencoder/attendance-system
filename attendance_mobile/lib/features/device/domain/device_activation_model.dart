@@ -6,12 +6,23 @@ class DeviceActivationModel {
   /// = doc.id (uid nhân viên).
   final String uid;
 
+  /// LƯU Ý: field này chỉ có ý nghĩa khi Admin đọc (Admin có quyền `get` trên
+  /// collection này). Nhân viên KHÔNG BAO GIỜ được cấp quyền đọc document này
+  /// — việc đối chiếu mã diễn ra hoàn toàn phía Rules qua `lastAttemptCode`,
+  /// xem `DeviceActivationRepository.redeemCode()` (mobile) và
+  /// docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md §2.1 (đã cập nhật).
   final String code;
   final String newDeviceId;
   final int attemptCount;
+
+  /// Mã nhân viên vừa nhập ở lượt thử gần nhất — Rules so khớp field này với
+  /// `code` để quyết định cho phép chuyển `status` sang 'redeemed' hay không,
+  /// KHÔNG cần cấp quyền đọc `code` cho client.
+  final String lastAttemptCode;
+
   final DateTime expiresAt;
 
-  /// pending | redeemed | locked
+  /// pending | redeemed
   final String status;
 
   const DeviceActivationModel({
@@ -19,6 +30,7 @@ class DeviceActivationModel {
     required this.code,
     required this.newDeviceId,
     required this.attemptCount,
+    this.lastAttemptCode = '',
     required this.expiresAt,
     required this.status,
   });
@@ -27,7 +39,10 @@ class DeviceActivationModel {
 
   static const int maxAttempts = 5;
 
-  bool get isLocked => status == 'locked' || attemptCount >= maxAttempts;
+  /// Hết "ngân sách" đoán mã — không còn field `status: 'locked'` riêng
+  /// (đơn giản hoá: chỉ cần attemptCount đạt ngưỡng là đủ, không cần thêm 1
+  /// giá trị status khác để Rules phải xử lý thêm nhánh).
+  bool get isLocked => attemptCount >= maxAttempts;
 
   factory DeviceActivationModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -36,6 +51,7 @@ class DeviceActivationModel {
       code: data['code'] ?? '',
       newDeviceId: data['newDeviceId'] ?? '',
       attemptCount: data['attemptCount'] ?? 0,
+      lastAttemptCode: data['lastAttemptCode'] ?? '',
       expiresAt: data['expiresAt'] is Timestamp
           ? (data['expiresAt'] as Timestamp).toDate()
           : DateTime.now(),
@@ -48,6 +64,7 @@ class DeviceActivationModel {
       'code': code,
       'newDeviceId': newDeviceId,
       'attemptCount': attemptCount,
+      'lastAttemptCode': lastAttemptCode,
       'expiresAt': Timestamp.fromDate(expiresAt),
       'status': status,
     };

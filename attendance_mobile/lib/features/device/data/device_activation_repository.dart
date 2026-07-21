@@ -3,24 +3,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../../core/services/device_service.dart';
 import '../../../core/utils/app_logger.dart';
-import '../domain/device_activation_model.dart';
 
-/// FEAT-05 — luồng nhập/kiểm mã kích hoạt phía nhân viên. Xem
-/// docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md §2.1 để biết vì sao
-/// tách thành 2 lượt ghi tuần tự thay vì 1 giao dịch atomic xuyên 2 document.
+/// FEAT-05 — luồng nhập/kiểm mã kích hoạt phía nhân viên.
+///
+/// NGUYÊN TẮC BẢO MẬT BẮT BUỘC: repository này KHÔNG BAO GIỜ được gọi
+/// `get()`/`snapshots()` trên `device_activations/{uid}` — Firestore không hỗ
+/// trợ bảo mật theo từng field trong 1 lượt đọc, nên chỉ cần cấp `allow read`
+/// để đọc 1 field vô hại (vd `attemptCount`) là vô tình lộ luôn field `code`.
+/// Toàn bộ việc so khớp mã diễn ra HOÀN TOÀN phía Rules, client chỉ "ghi mù"
+/// và suy luận kết quả từ việc ghi có bị từ chối hay không. Xem
+/// docs/design/ANTI_FRAUD_DESIGN.md §4.6/§8.2 và
+/// docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md §2.1.
 class DeviceActivationRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final DeviceService _deviceService = DeviceService();
 
-  /// Ghi 1: đối chiếu mã NGAY TRONG document `device_activations/{uid}`
-  /// (không cần get() chéo document). Nếu đúng, lưu luôn `installId` của máy
-  /// đang redeem làm `newDeviceId` (Admin lúc cấp mã KHÔNG biết trước giá trị
-  /// này) và chuyển `status: 'pending' -> 'redeemed'`. Sai mã vẫn phải tăng
-  /// `attemptCount` trong cùng giao dịch (rate limiting, §4.3 thiết kế).
-  ///
-  /// Ghi 2: cập nhật `users/{uid}.trustedDeviceId` — chỉ chạy khi Ghi 1 không
-  /// ném lỗi.
   Future<void> redeemCode(String enteredCode) async {
     final user = _auth.currentUser;
     if (user == null) {
@@ -28,84 +26,63 @@ class DeviceActivationRepository {
     }
 
     final installId = await _deviceService.getInstallId();
-    final docRef = _db.collection('device_activations').doc(user.uid);
+    final activationRef = _db.collection('device_activations').doc(user.uid);
+    final userRef = _db.collection('users').doc(user.uid);
 
     try {
-      // Phục hồi khi bị gián đoạn GIỮA Ghi 1 và Ghi 2 ở lần thử trước (vd mất
-      // mạng ngay sau khi Ghi 1 thành công): nếu document đã 'redeemed' SẴN
-      // bởi ĐÚNG máy này, bỏ qua Ghi 1 (không báo "đã dùng" oan), chỉ chạy
-      // lại Ghi 2 — đúng đánh đổi đã mô tả ở
-      // docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md §2.1 ("chỉ cần bấm
-      // lại", không phải bị kẹt vĩnh viễn).
-      final existing = await docRef.get();
-      final alreadyRedeemedByThisDevice = existing.exists &&
-          DeviceActivationModel.fromFirestore(existing).status == 'redeemed' &&
-          DeviceActivationModel.fromFirestore(existing).newDeviceId == installId;
+      // Bước 0 (phục hồi): thử Ghi 2 TRƯỚC, mù hoàn toàn — nếu ở lần thử
+      // trước đó Write B (bên dưới) đã thành công nhưng Ghi 2 bị gián đoạn
+      // (vd mất mạng), thao tác này tự thành công ngay mà không cần nhập lại
+      // mã, không cần lặp lại Write A/B (đã bị khoá lại vì status không còn
+      // 'pending'). Nếu đây là lần thử đầu tiên (bình thường), thao tác này
+      // bị từ chối (permission-denied) và ta rơi xuống luồng đầy đủ bên dưới.
+      final recovered = await _tryMarkTrusted(userRef, installId);
+      if (recovered) return;
 
-      if (!alreadyRedeemedByThisDevice) {
-        await _db.runTransaction((transaction) async {
-          final snapshot = await transaction.get(docRef);
-
-          if (!snapshot.exists) {
-            throw Exception(
-              'Chưa có mã kích hoạt nào được cấp cho tài khoản này.\n'
-              'Vui lòng liên hệ quản trị viên.',
-            );
-          }
-
-          final activation = DeviceActivationModel.fromFirestore(snapshot);
-
-          if (activation.status == 'redeemed') {
-            throw Exception(
-              'Mã này đã được sử dụng.\n'
-              'Vui lòng liên hệ quản trị viên để cấp mã mới.',
-            );
-          }
-
-          if (activation.isLocked) {
-            throw Exception(
-              'Mã đã bị khoá do nhập sai quá nhiều lần.\n'
-              'Vui lòng liên hệ quản trị viên để cấp mã mới.',
-            );
-          }
-
-          if (activation.isExpired) {
-            transaction.update(docRef, {'status': 'locked'});
-            throw Exception(
-              'Mã đã hết hạn.\nVui lòng liên hệ quản trị viên để cấp mã mới.',
-            );
-          }
-
-          if (activation.code != enteredCode.trim()) {
-            final nextAttempt = activation.attemptCount + 1;
-            final locked = nextAttempt >= DeviceActivationModel.maxAttempts;
-            transaction.update(docRef, {
-              'attemptCount': nextAttempt,
-              if (locked) 'status': 'locked',
-            });
-            throw Exception(
-              locked
-                  ? 'Mã kích hoạt không đúng. Đã hết số lần thử — vui lòng liên hệ quản trị viên để cấp mã mới.'
-                  : 'Mã kích hoạt không đúng. Còn ${DeviceActivationModel.maxAttempts - nextAttempt} lần thử.',
-            );
-          }
-
-          // Đúng mã — Ghi 1: đánh dấu redeemed, lưu installId của máy đang
-          // redeem làm newDeviceId (Ghi 2 sẽ dùng lại đúng giá trị này).
-          transaction.update(docRef, {
-            'status': 'redeemed',
-            'newDeviceId': installId,
-            'attemptCount': activation.attemptCount + 1,
-          });
+      // Write A: LUÔN ghi — tăng attemptCount() (server-side, atomic, không
+      // cần đọc giá trị cũ) và ghi lại "mã vừa nhập" để Write B đối chiếu.
+      // Rules từ chối thẳng nếu status != 'pending' hoặc đã hết hạn/hết lượt
+      // thử — nghĩa là permission-denied ở BƯỚC NÀY = "không thể dùng mã này
+      // nữa", không phải "mã sai".
+      try {
+        await activationRef.update({
+          'attemptCount': FieldValue.increment(1),
+          'lastAttemptCode': enteredCode.trim(),
         });
+      } on FirebaseException catch (e) {
+        if (e.code == 'permission-denied') {
+          throw Exception(
+            'Không thể dùng mã này (đã hết hạn, hết lượt thử, hoặc chưa từng '
+            'được cấp).\nVui lòng liên hệ quản trị viên để cấp mã mới.',
+          );
+        }
+        rethrow;
       }
 
-      // Ghi 2 — chỉ chạy khi Ghi 1 (transaction ở trên, hoặc lần thử trước
-      // đó) không ném lỗi.
-      await _db.collection('users').doc(user.uid).update({
-        'trustedDeviceId': installId,
-        'deviceStatus': 'trusted',
-      });
+      // Write B: chỉ thành công nếu Rules xác nhận lastAttemptCode (vừa ghi ở
+      // Write A) khớp code thật đang lưu — client KHÔNG BAO GIỜ đọc code,
+      // không biết trước kết quả, chỉ biết qua việc ghi có bị từ chối không.
+      try {
+        await activationRef.update({
+          'status': 'redeemed',
+          'newDeviceId': installId,
+        });
+      } on FirebaseException catch (e) {
+        if (e.code == 'permission-denied') {
+          throw Exception('Mã kích hoạt không đúng. Vui lòng thử lại.');
+        }
+        rethrow;
+      }
+
+      // Ghi 2 thật sự — Write B vừa thành công nên chắc chắn hợp lệ.
+      final ghi2Ok = await _tryMarkTrusted(userRef, installId);
+      if (!ghi2Ok) {
+        // Không nên xảy ra (Write B vừa thành công) — vẫn xử lý an toàn.
+        throw Exception(
+          'Kích hoạt gần như thành công nhưng chưa hoàn tất.\n'
+          'Vui lòng thử lại — hệ thống sẽ tự nhận ra và hoàn tất ngay.',
+        );
+      }
 
       await _db.collection('device_audit_log').add({
         'uid': user.uid,
@@ -123,6 +100,26 @@ class DeviceActivationRepository {
           'Không có kết nối Internet. Vui lòng kết nối mạng trước khi kích hoạt.',
         );
       }
+      rethrow;
+    }
+  }
+
+  /// Ghi mù `users/{uid}.trustedDeviceId` — Rules chỉ chấp nhận nếu
+  /// `device_activations/{uid}` đang ở trạng thái 'redeemed' với đúng
+  /// `newDeviceId`. Trả `false` (không throw) khi bị từ chối vì đó là kết
+  /// quả BÌNH THƯỜNG khi chưa/không đủ điều kiện, không phải lỗi.
+  Future<bool> _tryMarkTrusted(
+    DocumentReference<Map<String, dynamic>> userRef,
+    String installId,
+  ) async {
+    try {
+      await userRef.update({
+        'trustedDeviceId': installId,
+        'deviceStatus': 'trusted',
+      });
+      return true;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') return false;
       rethrow;
     }
   }

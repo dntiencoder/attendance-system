@@ -22,6 +22,7 @@ class DeviceActivationRepository {
       'code': code,
       'newDeviceId': '',
       'attemptCount': 0,
+      'lastAttemptCode': '',
       'expiresAt': Timestamp.fromDate(now.add(_ttl)),
       'status': 'pending',
     });
