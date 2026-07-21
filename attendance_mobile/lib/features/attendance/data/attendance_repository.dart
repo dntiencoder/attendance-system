@@ -10,6 +10,7 @@ import '../../../core/constants/app_config.dart';
 import '../../../core/utils/date_helper.dart';
 import '../../../core/utils/business_date_helper.dart';
 import '../../../core/services/clock_service.dart';
+import '../../../core/services/device_service.dart';
 import '../../../core/utils/app_logger.dart';
 
 class AttendanceRepository {
@@ -21,6 +22,10 @@ class AttendanceRepository {
 
   final GpsService _gpsService =
   GpsService();
+
+  /// FEAT-05: điểm truy cập duy nhất cho installId — không đọc
+  /// flutter_secure_storage trực tiếp ở đây.
+  final DeviceService _deviceService = DeviceService();
 
   /// Khung ân hạn Check Out muộn cho ca đêm (đã chốt ở
   /// docs/design/ATTENDANCE_BUSINESS_FLOW.md).
@@ -173,6 +178,11 @@ class AttendanceRepository {
     /// nhận đúng lỗi nghiệp vụ bên dưới thay vì âm thầm ghi đè dữ liệu.
     final docRef = _db.collection('attendance').doc(docId);
 
+    // FEAT-05: installId của thiết bị đang Check In — dùng để Rules đối
+    // chiếu với users.trustedDeviceId (chưa enforce ở bước này, chỉ ghi
+    // trước để chuẩn bị dữ liệu — xem docs/design/ANTI_FRAUD_DESIGN.md §7).
+    final deviceId = await _deviceService.getInstallId();
+
     await _db.runTransaction((transaction) async {
       final existing = await transaction.get(docRef);
 
@@ -198,6 +208,7 @@ class AttendanceRepository {
         'isLate': isLate,
         'status': isLate ? 'late' : 'on_time',
         'createdAt': Timestamp.fromDate(now),
+        'deviceId': deviceId,
       });
     });
     } on FirebaseException catch (e, st) {
@@ -434,6 +445,11 @@ class AttendanceRepository {
       window: window,
     );
 
+    // FEAT-05: installId của thiết bị đang Check Out — ghi đè lên
+    // deviceId đã lưu lúc Check In (Rules sẽ đối chiếu cả 2 thời điểm với
+    // cùng 1 trustedDeviceId, xem docs/design/ANTI_FRAUD_DESIGN.md §7).
+    final deviceId = await _deviceService.getInstallId();
+
     await _db
         .collection('attendance')
         .doc(targetDocId)
@@ -455,6 +471,8 @@ class AttendanceRepository {
 
       'updatedAt':
       Timestamp.fromDate(now),
+
+      'deviceId': deviceId,
     });
   }
 }
