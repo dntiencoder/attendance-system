@@ -28,11 +28,32 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
-    function isAdmin() {
+    function currentUserExists() {
       return isSignedIn()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isAdmin() {
+      return currentUserExists()
         && currentUserData().role == 'admin'
         && currentUserData().isActive == true;
+    }
+
+    // FEAT-05: đọc device_activations/{uid} CHỈ dùng nội bộ trong Rules (để
+    // đối chiếu khi ghi users.trustedDeviceId) — KHÔNG BAO GIỜ cấp `allow
+    // read` cho owner trên collection này (xem match /device_activations/
+    // bên dưới). Xem docs/design/ANTI_FRAUD_DESIGN.md §4.6/§8.2.
+    //
+    // Luôn kiểm tra exists() trước khi get().data — đúng pattern đã có sẵn ở
+    // isAdmin() (get().data trên document CHƯA từng tồn tại, vd nhân viên
+    // chưa từng được cấp mã kích hoạt, làm rule lỗi thay vì trả false gọn
+    // gàng nếu không guard trước).
+    function deviceActivationExists(uid) {
+      return exists(/databases/$(database)/documents/device_activations/$(uid));
+    }
+
+    function deviceActivationData(uid) {
+      return get(/databases/$(database)/documents/device_activations/$(uid)).data;
     }
 
     // users/{uid} — hồ sơ nhân viên/admin, doc ID = Firebase Auth uid.
@@ -42,12 +63,79 @@ service cloud.firestore {
       // Tạo/xoá hồ sơ: chỉ admin (khớp EmployeeRepository.addEmployee/deleteEmployee).
       allow create, delete: if isAdmin();
 
-      // Cập nhật: admin sửa toàn quyền; chủ tài khoản chỉ tự sửa được field 'phone'
-      // (khớp AuthRepository.updatePhoneNumber - mobile). Không ai tự đổi được
-      // role/isActive/employeeCode/shiftGroup/departmentId của chính mình.
+      // Cập nhật: admin sửa toàn quyền.
       allow update: if isAdmin()
+        // Chủ tài khoản chỉ tự sửa được field 'phone' (khớp
+        // AuthRepository.updatePhoneNumber - mobile). Không ai tự đổi được
+        // role/isActive/employeeCode/shiftGroup/departmentId của chính mình.
         || (isOwner(uid)
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['phone']));
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['phone']))
+        // FEAT-05: chủ tài khoản tự ghi trustedDeviceId/deviceStatus CHỈ khi
+        // device_activations/{uid} đã 'redeemed' (đúng mã, xem match bên
+        // dưới) VÀ giá trị đang ghi khớp đúng newDeviceId đã lưu ở đó — client
+        // không tự ý ghi đè trustedDeviceId bằng giá trị tuỳ ý.
+        || (isOwner(uid)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['trustedDeviceId', 'deviceStatus'])
+            && request.resource.data.deviceStatus == 'trusted'
+            && deviceActivationExists(uid)
+            && deviceActivationData(uid).status == 'redeemed'
+            && request.resource.data.trustedDeviceId == deviceActivationData(uid).newDeviceId);
+    }
+
+    // FEAT-05: device_activations/{uid} — 1 document hiện hành/nhân viên
+    // (docId = uid). Xem docs/design/ANTI_FRAUD_DESIGN.md §4.
+    //
+    // Nhân viên KHÔNG BAO GIỜ được `allow read` trên collection này —
+    // Firestore không hỗ trợ bảo mật theo từng field trong 1 lượt đọc, nên
+    // cấp đọc dù chỉ 1 field vô hại cũng vô tình lộ field `code`. Toàn bộ
+    // việc đối chiếu mã diễn ra NGAY TRONG rule `allow update` bên dưới —
+    // client "ghi mù" (gửi `lastAttemptCode`), Rules tự so khớp với `code`
+    // đang lưu (Rules có quyền đọc resource.data dù client không có `read`).
+    match /device_activations/{uid} {
+      allow read: if isAdmin();
+
+      // Admin cấp mã lần đầu / cấp lại (set() ghi đè toàn bộ document).
+      allow create: if isAdmin();
+
+      allow update: if isAdmin()
+        // Write A — LUÔN được phép ghi (kể cả đoán sai): tăng đúng 1
+        // attemptCount + ghi lại mã vừa nhập, miễn còn "ngân sách" thử và
+        // chưa hết hạn/chưa redeemed. Không được đổi field nào khác.
+        || (isOwner(uid)
+            && resource.data.status == 'pending'
+            && resource.data.attemptCount < 5
+            && resource.data.expiresAt > request.time
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attemptCount', 'lastAttemptCode'])
+            && request.resource.data.attemptCount == resource.data.attemptCount + 1)
+        // Write B — chỉ được phép chuyển sang 'redeemed' nếu lastAttemptCode
+        // (vừa ghi ở Write A) khớp đúng code thật đang lưu. Đây là bước đối
+        // chiếu mã DUY NHẤT của toàn bộ cơ chế, hoàn toàn phía server.
+        || (isOwner(uid)
+            && resource.data.status == 'pending'
+            && resource.data.expiresAt > request.time
+            && resource.data.lastAttemptCode == resource.data.code
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'newDeviceId'])
+            && request.resource.data.status == 'redeemed');
+
+      allow delete: if false;
+    }
+
+    // FEAT-05: device_audit_log/{id} — append-only, đóng vai trò Activation
+    // History (không tạo collection riêng, xem
+    // docs/design/ANTI_FRAUD_DESIGN.md §6).
+    match /device_audit_log/{id} {
+      // Đọc: Admin đọc toàn bộ; nhân viên chỉ đọc log của chính mình (minh
+      // bạch, xem thiết kế §5.3/§7).
+      allow read: if isSignedIn() && (isAdmin() || resource.data.uid == request.auth.uid);
+
+      // Tạo: Admin (cấp mã/reset) hoặc chính nhân viên ghi log hành động họ
+      // vừa thực hiện (redeem thành công).
+      allow create: if isAdmin()
+        || (isSignedIn()
+            && request.resource.data.uid == request.auth.uid
+            && request.resource.data.actorUid == request.auth.uid);
+
+      allow update, delete: if false;
     }
 
     // attendance/{docId} — docId dạng "<yyyy-MM-dd>_<uid>", 1 doc/người/ngày.
@@ -74,14 +162,25 @@ service cloud.firestore {
 
       // Check-in: chỉ tạo được đúng doc của chính mình, đúng quy ước đặt tên
       // "<yyyy-MM-dd>_<uid>" (khớp AttendanceRepository.checkIn - mobile).
+      // FEAT-05: bắt buộc deviceId khớp trustedDeviceId đã lưu ở users/{uid}
+      // — đây là điểm enforce Device Binding THẬT sự (khác GPS, deviceId có
+      // nguồn đối chiếu độc lập phía server — xem
+      // docs/design/ANTI_FRAUD_DESIGN.md §6.2/§8.3).
       allow create: if isSignedIn()
         && request.resource.data.uid == request.auth.uid
-        && docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_' + request.auth.uid + '$');
+        && docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_' + request.auth.uid + '$')
+        && currentUserExists()
+        && request.resource.data.deviceId == currentUserData().trustedDeviceId;
 
-      // Check-out: chỉ chủ bản ghi được cập nhật, không đổi được uid sang người khác.
+      // Check-out: chỉ chủ bản ghi được cập nhật, không đổi được uid sang
+      // người khác. FEAT-05: cùng điều kiện deviceId như create — v1 của
+      // thiết kế từng bỏ sót nhánh update này (đã ghi nhận là lỗ hổng, vá
+      // ở đây), xem docs/design/ANTI_FRAUD_DESIGN.md §6.1.
       allow update: if isSignedIn()
         && resource.data.uid == request.auth.uid
-        && request.resource.data.uid == request.auth.uid;
+        && request.resource.data.uid == request.auth.uid
+        && currentUserExists()
+        && request.resource.data.deviceId == currentUserData().trustedDeviceId;
 
       allow delete: if false;
     }
