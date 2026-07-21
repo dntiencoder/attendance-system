@@ -4,7 +4,7 @@
 
 **Nguồn sự thật:** `docs/design/ANTI_FRAUD_DESIGN.md` (bản cuối). Mọi Phase/Task dưới đây bám sát tài liệu đó — không tự ý đổi thiết kế.
 
-**Trạng thái:** Đang triển khai — **21/25 Phase Done**. Phase 9 (build Android) hết chặn. Rules an toàn (`device_activations`/`device_audit_log`/`users`) đã **deploy tạm thời** lên Production — Phase 15 test được thật, không cần chờ Emulator nữa. Chỉ còn Phase 19 (test riêng phần `attendance` enforcement) cần Emulator (JDK 21+) hoặc phương án khác, kéo theo Phase 20-21 (xem §0.5).
+**Trạng thái:** Đang triển khai — **22/25 Phase Done** (Phase 15 test tay PASS phần lõi, còn 2 kịch bản phụ không gấp). Rules an toàn đã deploy tạm lên Production. Còn Phase 19-21 (bật enforce `deviceId` cho `attendance`) cần quyết định phương án test (JDK 21+/Emulator hoặc khác) ở phiên tiếp theo — xem §0.5.
 
 ---
 
@@ -22,10 +22,15 @@
 
 **Deploy tạm thời lên Production (commit `3ad8d66`, sau khi bạn xác nhận "Đồng ý, làm đi"):** sau khi vá Navigator, "Cấp mã kích hoạt" vẫn báo lỗi — xác nhận đúng nguyên nhân gốc là `permission-denied` (Rules `device_activations`/`device_audit_log` chưa deploy). Vì Firestore Rules deploy cả file 1 lần, không tách riêng từng `match` block được, đã **tạm comment lại** điều kiện `deviceId` ở `attendance.create`/`update` (phần rủi ro, chưa qua Phase 19-20) rồi deploy phần còn lại (an toàn, không đụng `attendance`) lên Production. Firebase CLI xác nhận "rules file compiled successfully" — gián tiếp kiểm chứng cú pháp Rules Phase 18 đúng. **Phase 15 (test Activation Code) giờ test được thật trên Production, không bắt buộc chờ Emulator nữa.**
 
+**🔴🔴 1 lỗ hổng bảo mật NGHIÊM TRỌNG phát hiện + đã sửa (qua test tay thật trên Production, không phải review tĩnh):** cơ chế "tự phục hồi" thêm ở `8b675fa` (thử ghi thẳng `users.trustedDeviceId` TRƯỚC khi kiểm mã, để tránh kẹt nếu Ghi 2 lỡ thất bại) tạo lỗ hổng: một khi 1 thiết bị **từng** redeem đúng 1 lần (`device_activations.status` còn `'redeemed'` khớp `newDeviceId` của máy đó — trạng thái này **không tự mất** kể cả khi Admin cấp lại mã mới, vì `issueCode()` không đụng tới `users.trustedDeviceId`), mọi lần gọi `redeemCode()` SAU ĐÓ trên đúng máy đó **thành công ngay lập tức bất kể nhập gì vào ô mã** — vì bước "phục hồi" chạy TRƯỚC và không hề nhìn vào mã vừa nhập. Phát hiện qua chính user test tay ("mã nhập đại là tự vô được"). **Đã sửa (commit `6c15ce0`):** bỏ hẳn cơ chế tự phục hồi — Ghi 2 giờ chỉ chạy khi Write B (kiểm mã thật) vừa thành công trong đúng lần gọi đó, không còn đường tắt nào. Đánh đổi chấp nhận: nếu Ghi 2 lỡ thất bại giữa chừng (hiếm, chỉ khi mất mạng đúng lúc giữa 2 lượt ghi liên tiếp), nhân viên cần Admin cấp mã MỚI thay vì tự bấm lại được.
+
+**Đã test tay thật, PASS đầy đủ (sau khi sửa cả 2 lỗ hổng trên):** cấp mã → redeem đúng mã → tự chuyển Home ✓; nhập sai mã → bị từ chối ✓; sai liên tiếp 6 lần trên cùng 1 mã (không cấp lại mã giữa chừng) → lần 6 bị khoá hẳn ✓. Còn 2 kịch bản phụ chưa test (không gấp): hết hạn 15 phút, cấp lại mã vô hiệu mã cũ ngay.
+
 **Việc cần bạn làm tiếp:**
-1. Test lại luồng Activation Code đầy đủ trên Production (Phase 15): cấp mã (admin) → nhập mã (mobile) → đúng/sai/hết hạn/khoá do brute-force.
-2. (Tuỳ chọn, không còn bắt buộc) cài JDK 21+ để chạy Emulator test Rules `attendance` trước khi bật — hoặc thống nhất phương án kiểm thử khác cho riêng phần `attendance` enforcement.
-3. Sau khi Phase 15 Pass + đã kiểm tra migration (Phase 20 — toàn bộ nhân viên `isActive=true` có `trustedDeviceId`), báo tôi để khôi phục điều kiện `deviceId` ở `attendance` và deploy đầy đủ (Phase 21).
+1. (Không gấp) Test nốt 2 kịch bản phụ của Phase 15: hết hạn mã, cấp lại mã vô hiệu mã cũ.
+2. Quyết định phương án test riêng phần `attendance` enforcement (Phase 19) — cài JDK 21+ để chạy Emulator, hoặc phương án khác (xem thảo luận cần thống nhất ở phiên tiếp theo).
+3. Phase 20: kiểm tra toàn bộ nhân viên `isActive=true` đã có `trustedDeviceId` chưa trước khi bật.
+4. Phase 21: khôi phục 2 dòng điều kiện `deviceId` đang comment trong `firestore.rules` (`attendance.create`/`update`) rồi deploy đầy đủ lên Production.
 
 ---
 
