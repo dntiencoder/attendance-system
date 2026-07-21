@@ -16,6 +16,7 @@ class Sidebar extends ConsumerWidget {
       _Item(Icons.assignment_turned_in_outlined, Icons.assignment_turned_in, 'Nhật Ký Chấm Công', '/attendance'),
       _Item(Icons.mail_outline_rounded, Icons.mail_rounded, 'Duyệt Nghỉ Phép', '/leave'),
       _Item(Icons.pin_drop_outlined, Icons.pin_drop, 'Cấu Hình Vị Trí GPS', '/settings'),
+      _Item(Icons.phonelink_lock_outlined, Icons.phonelink_lock, 'Lịch Sử Thiết Bị', '/device-audit-log'),
     ];
 
     return Container(
