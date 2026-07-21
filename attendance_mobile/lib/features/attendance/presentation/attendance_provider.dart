@@ -6,6 +6,7 @@ import '../domain/attendance_model.dart';
 import '../domain/attendance_exceptions.dart';
 import '../../../core/utils/business_date_helper.dart';
 import '../../../core/services/clock_service.dart';
+import '../../../core/services/biometric_service.dart';
 import '../../../core/utils/app_logger.dart';
 
 // Provider cho repository
@@ -49,6 +50,7 @@ class AttendanceState {
 // ===== NOTIFIER =====
 class AttendanceNotifier extends StateNotifier<AttendanceState> {
   final AttendanceRepository _repo;
+  final BiometricService _biometric = BiometricService();
 
   AttendanceNotifier(this._repo) : super(AttendanceState()) {
     loadTodayAttendance();
@@ -93,6 +95,19 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   // Check In
   Future<void> checkIn() async {
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
+
+    // FEAT-05: xác thực sinh trắc học bắt buộc trước khi Check In (xem
+    // docs/design/ANTI_FRAUD_DESIGN.md §9) — huỷ/thất bại thì dừng lại, không
+    // gọi tới GPS/Firestore.
+    final authenticated = await _biometric.authenticate();
+    if (!authenticated) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Xác thực sinh trắc học thất bại hoặc bị huỷ. Vui lòng thử lại.',
+      );
+      return;
+    }
+
     try {
       await _repo.checkIn();
       final attendance = await _repo.getTodayAttendance();
@@ -115,6 +130,18 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
   // Check Out
   Future<void> checkOut() async {
     state = state.copyWith(isLoading: true, error: null, successMessage: null);
+
+    // FEAT-05: xác thực sinh trắc học bắt buộc trước khi Check Out — cùng mức
+    // quan trọng như Check In (§9 thiết kế).
+    final authenticated = await _biometric.authenticate();
+    if (!authenticated) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Xác thực sinh trắc học thất bại hoặc bị huỷ. Vui lòng thử lại.',
+      );
+      return;
+    }
+
     try {
       await _repo.checkOut();
       final attendance = await _repo.getTodayAttendance();
