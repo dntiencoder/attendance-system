@@ -14,6 +14,20 @@ import '../../../core/utils/app_logger.dart';
 /// và suy luận kết quả từ việc ghi có bị từ chối hay không. Xem
 /// docs/design/ANTI_FRAUD_DESIGN.md §4.6/§8.2 và
 /// docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md §2.1.
+///
+/// KHÔNG được thêm lại cơ chế "tự phục hồi" (thử ghi thẳng
+/// users.trustedDeviceId trước khi kiểm mã) — bản đầu tiên từng có cơ chế
+/// này và tạo ra lỗ hổng nghiêm trọng: một khi `device_activations/{uid}`
+/// từng đạt trạng thái 'redeemed' bởi ĐÚNG thiết bị này, Rules cho phép ghi
+/// lại `trustedDeviceId` với giá trị KHÔNG ĐỔI bất kỳ lúc nào sau đó — nghĩa
+/// là gọi lại `redeemCode()` với BẤT KỲ chuỗi nào (kể cả rác) đều "thành
+/// công" ngay, bỏ qua hoàn toàn bước kiểm mã, vì bước phục hồi chạy TRƯỚC và
+/// không hề nhìn vào `enteredCode`. Phát hiện qua test tay thật (Admin cấp
+/// lại mã cho nhân viên đã từng redeem — `users.trustedDeviceId` cũ vẫn còn,
+/// khiến "phục hồi" luôn thắng). Đánh đổi chấp nhận: nếu Ghi 2 lỡ thất bại
+/// giữa chừng (mất mạng ngay sau khi Write B thành công), nhân viên cần
+/// Admin cấp mã MỚI thay vì tự bấm lại được — hẹp nhưng AN TOÀN, thay vì
+/// tiện nhưng có lỗ hổng.
 class DeviceActivationRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -30,16 +44,7 @@ class DeviceActivationRepository {
     final userRef = _db.collection('users').doc(user.uid);
 
     try {
-      // Bước 0 (phục hồi): thử Ghi 2 TRƯỚC, mù hoàn toàn — nếu ở lần thử
-      // trước đó Write B (bên dưới) đã thành công nhưng Ghi 2 bị gián đoạn
-      // (vd mất mạng), thao tác này tự thành công ngay mà không cần nhập lại
-      // mã, không cần lặp lại Write A/B (đã bị khoá lại vì status không còn
-      // 'pending'). Nếu đây là lần thử đầu tiên (bình thường), thao tác này
-      // bị từ chối (permission-denied) và ta rơi xuống luồng đầy đủ bên dưới.
-      final recovered = await _tryMarkTrusted(userRef, installId);
-      if (recovered) return;
-
-      // Write A: LUÔN ghi — tăng attemptCount() (server-side, atomic, không
+      // Write A: LUÔN ghi — tăng attemptCount (server-side, atomic, không
       // cần đọc giá trị cũ) và ghi lại "mã vừa nhập" để Write B đối chiếu.
       // Rules từ chối thẳng nếu status != 'pending' hoặc đã hết hạn/hết lượt
       // thử — nghĩa là permission-denied ở BƯỚC NÀY = "không thể dùng mã này
@@ -52,8 +57,9 @@ class DeviceActivationRepository {
       } on FirebaseException catch (e) {
         if (e.code == 'permission-denied') {
           throw Exception(
-            'Không thể dùng mã này (đã hết hạn, hết lượt thử, hoặc chưa từng '
-            'được cấp).\nVui lòng liên hệ quản trị viên để cấp mã mới.',
+            'Không thể dùng mã này (đã hết hạn, hết lượt thử, đã được dùng '
+            'trước đó, hoặc chưa từng được cấp).\n'
+            'Vui lòng liên hệ quản trị viên để cấp mã mới.',
           );
         }
         rethrow;
@@ -74,14 +80,26 @@ class DeviceActivationRepository {
         rethrow;
       }
 
-      // Ghi 2 thật sự — Write B vừa thành công nên chắc chắn hợp lệ.
-      final ghi2Ok = await _tryMarkTrusted(userRef, installId);
-      if (!ghi2Ok) {
-        // Không nên xảy ra (Write B vừa thành công) — vẫn xử lý an toàn.
-        throw Exception(
-          'Kích hoạt gần như thành công nhưng chưa hoàn tất.\n'
-          'Vui lòng thử lại — hệ thống sẽ tự nhận ra và hoàn tất ngay.',
-        );
+      // Ghi 2 — chỉ chạy khi Write B (ngay ở trên) VỪA thành công trong đúng
+      // lần gọi redeemCode() này (không suy đoán từ trạng thái cũ để lại) —
+      // đảm bảo mã luôn được kiểm tra thật mỗi lần gọi hàm, không có đường
+      // tắt nào bỏ qua bước này.
+      try {
+        await userRef.update({
+          'trustedDeviceId': installId,
+          'deviceStatus': 'trusted',
+        });
+      } on FirebaseException catch (e) {
+        if (e.code == 'permission-denied') {
+          // Hiếm gặp (Write B vừa thành công) — có thể do mất mạng đúng lúc
+          // giữa 2 lượt ghi. KHÔNG tự phục hồi (xem lý do ở đầu file) — cần
+          // Admin cấp mã mới, không cho phép "bấm lại" tự động.
+          throw Exception(
+            'Kích hoạt gần hoàn tất nhưng chưa xong (có thể do mất mạng).\n'
+            'Vui lòng liên hệ quản trị viên để được cấp mã kích hoạt mới.',
+          );
+        }
+        rethrow;
       }
 
       await _db.collection('device_audit_log').add({
@@ -100,26 +118,6 @@ class DeviceActivationRepository {
           'Không có kết nối Internet. Vui lòng kết nối mạng trước khi kích hoạt.',
         );
       }
-      rethrow;
-    }
-  }
-
-  /// Ghi mù `users/{uid}.trustedDeviceId` — Rules chỉ chấp nhận nếu
-  /// `device_activations/{uid}` đang ở trạng thái 'redeemed' với đúng
-  /// `newDeviceId`. Trả `false` (không throw) khi bị từ chối vì đó là kết
-  /// quả BÌNH THƯỜNG khi chưa/không đủ điều kiện, không phải lỗi.
-  Future<bool> _tryMarkTrusted(
-    DocumentReference<Map<String, dynamic>> userRef,
-    String installId,
-  ) async {
-    try {
-      await userRef.update({
-        'trustedDeviceId': installId,
-        'deviceStatus': 'trusted',
-      });
-      return true;
-    } on FirebaseException catch (e) {
-      if (e.code == 'permission-denied') return false;
       rethrow;
     }
   }
