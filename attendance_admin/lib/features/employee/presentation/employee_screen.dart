@@ -419,7 +419,12 @@ class EmployeeScreen extends ConsumerWidget {
           await ref.read(deviceActivationRepositoryProvider).issueCode(emp.id);
 
       if (!context.mounted) return;
-      Navigator.pop(context); // Tắt loading
+      // Dùng rootNavigator: true để chắc chắn pop ĐÚNG Navigator mà
+      // showDialog() đã đẩy dialog vào (showDialog mặc định
+      // useRootNavigator: true) — Navigator.pop(context) trần dễ pop nhầm
+      // Navigator của ShellRoute (chỉ có đúng 1 trang), gây crash "popped
+      // the last page off of the stack".
+      Navigator.of(context, rootNavigator: true).pop(); // Tắt loading
 
       showDialog(
         context: context,
@@ -461,7 +466,7 @@ class EmployeeScreen extends ConsumerWidget {
     } catch (e, st) {
       AppLogger.error('EmployeeScreen.issueActivationCode', e, st);
       if (context.mounted) {
-        Navigator.pop(context); // Tắt loading
+        Navigator.of(context, rootNavigator: true).pop(); // Tắt loading
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Không thể cấp mã kích hoạt. Vui lòng thử lại.'),
