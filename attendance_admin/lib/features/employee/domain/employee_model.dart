@@ -13,6 +13,10 @@ class EmployeeModel {
   final bool isActive;
   final DateTime? createdAt;
 
+  // FEAT-05: Anti Fraud & Device Security
+  final String? trustedDeviceId;
+  final String deviceStatus; // none | activation_required | trusted | locked
+
   EmployeeModel({
     required this.id,
     required this.employeeCode,
@@ -25,6 +29,8 @@ class EmployeeModel {
     this.avatarUrl = '',
     this.isActive = true,
     this.createdAt,
+    this.trustedDeviceId,
+    this.deviceStatus = 'none',
   });
 
   Map<String, dynamic> toFirestore() {
@@ -55,7 +61,18 @@ class EmployeeModel {
       phone: map['phone'] ?? '',
       avatarUrl: map['avatarUrl'] ?? '',
       isActive: map['isActive'] ?? true,
-      createdAt: map['createdAt'] != null 
+
+      // FEAT-05 — chỉ đọc để hiển thị; KHÔNG thêm vào toFirestore() vì
+      // updateEmployee() (sửa thông tin cơ bản) dựng lại EmployeeModel mới mỗi
+      // lần lưu mà không mang theo trustedDeviceId/deviceStatus hiện có — nếu
+      // toFirestore() serialize 2 field này, mọi lần sửa tên/SĐT nhân viên sẽ
+      // vô tình ghi đè (xoá) trustedDeviceId thật. Việc ghi 2 field này chỉ
+      // được thực hiện qua DeviceActivationRepository (issueCode/resetDevice),
+      // không qua EmployeeRepository.
+      trustedDeviceId: map['trustedDeviceId'],
+      deviceStatus: map['deviceStatus'] ?? 'none',
+
+      createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : null,
     );

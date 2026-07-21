@@ -16,6 +16,10 @@ class UserModel {
   final bool isActive;
   final DateTime createdAt;
 
+  // FEAT-05: Anti Fraud & Device Security
+  final String? trustedDeviceId;
+  final String deviceStatus; // none | activation_required | trusted | locked
+
   const UserModel({
     required this.uid,
     required this.employeeCode,
@@ -28,6 +32,8 @@ class UserModel {
     this.avatarUrl = '',
     this.isActive = true,
     required this.createdAt,
+    this.trustedDeviceId,
+    this.deviceStatus = 'none',
   });
 
   bool get isAdmin => role == 'admin';
@@ -55,6 +61,10 @@ class UserModel {
       createdAt: data['createdAt'] != null
           ? (data['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
+
+      // FEAT-05
+      trustedDeviceId: data['trustedDeviceId'],
+      deviceStatus: data['deviceStatus'] ?? 'none',
     );
   }
 
