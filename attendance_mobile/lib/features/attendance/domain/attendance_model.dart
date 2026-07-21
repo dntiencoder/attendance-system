@@ -34,6 +34,10 @@ class AttendanceModel {
 
   final DateTime createdAt;
 
+  // FEAT-05: Anti Fraud & Device Security — installId của thiết bị thực hiện
+  // Check In/Out (ghi ở AttendanceRepository, xem device_service.dart).
+  final String? deviceId;
+
   const AttendanceModel({
     required this.id,
     required this.uid,
@@ -52,6 +56,7 @@ class AttendanceModel {
     required this.isEarlyLeave,
     required this.status,
     required this.createdAt,
+    this.deviceId,
   });
 
   factory AttendanceModel.fromFirestore(
@@ -132,6 +137,8 @@ class AttendanceModel {
       as Timestamp)
           .toDate()
           : DateTime.now(),
+
+      deviceId: data['deviceId'],
     );
   }
 
