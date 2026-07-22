@@ -97,12 +97,17 @@ class CheckinCard extends StatelessWidget {
                   )
                       : '--:--',
 
-                  subText: isOffDay 
-                      ? 'Nghỉ bắt buộc'
-                      : isShiftEnded
-                        ? 'Đã hết ca (Vắng)'
-                        : hasCheckedIn
-                          ? 'Cách CT: ${todayAttendance!.distance.toStringAsFixed(0)}m'
+                  // hasCheckedIn được ưu tiên kiểm tra trước isOffDay/
+                  // isShiftEnded: đã có dữ liệu Check In thật (vd ca đêm hôm
+                  // qua carryover sang ngày nghỉ bắt buộc hôm nay) thì phải
+                  // hiển thị đúng dữ liệu đó, không được đè bằng nhãn suy ra
+                  // từ "hôm nay" (ngày lịch) — cùng nguyên nhân với BUG-017.
+                  subText: hasCheckedIn
+                      ? 'Cách CT: ${todayAttendance!.distance.toStringAsFixed(0)}m'
+                      : isOffDay
+                        ? 'Nghỉ bắt buộc'
+                        : isShiftEnded
+                          ? 'Đã hết ca (Vắng)'
                           : 'Nhấn để check in',
 
                   canTap:
@@ -117,8 +122,8 @@ class CheckinCard extends StatelessWidget {
 
                   onTap:
                   onCheckIn,
-                  
-                  isDisabled: isOffDay || isShiftEnded, // Thêm flag để đổi màu xám
+
+                  isDisabled: !hasCheckedIn && (isOffDay || isShiftEnded), // Chỉ xám khi thật sự chưa check in
                 ),
               ),
 
@@ -142,16 +147,20 @@ class CheckinCard extends StatelessWidget {
                   )
                       : '--:--',
 
-                  subText: isOffDay
-                      ? 'Nghỉ bắt buộc'
-                      : hasCheckedOut
-                        ? 'Đã làm ${todayAttendance!.calculatedWorkHours.toStringAsFixed(1)} giờ'
-                        : hasCheckedIn
-                          ? 'Nhấn để check out'
+                  // isOffDay không chặn Check Out: hoàn tất 1 ca đã lỡ bắt
+                  // đầu hợp lệ (vd ca đêm hôm qua rollover sang sáng ngày
+                  // nghỉ bắt buộc) phải luôn được phép, dù "hôm nay" theo
+                  // lịch là ngày nghỉ. isOffDay chỉ còn ý nghĩa chặn Check In
+                  // (không được BẮT ĐẦU ca mới vào ngày nghỉ).
+                  subText: hasCheckedOut
+                      ? 'Đã làm ${todayAttendance!.calculatedWorkHours.toStringAsFixed(1)} giờ'
+                      : hasCheckedIn
+                        ? 'Nhấn để check out'
+                        : isOffDay
+                          ? 'Nghỉ bắt buộc'
                           : 'Chưa check in',
 
                   canTap:
-                  !isOffDay && // Thêm điều kiện không phải ngày nghỉ
                   hasCheckedIn &&
                       !hasCheckedOut &&
                       !isLoading,
@@ -166,8 +175,8 @@ class CheckinCard extends StatelessWidget {
 
                   isCheckOut:
                   true,
-                  
-                  isDisabled: isOffDay, // Thêm flag để đổi màu xám
+
+                  isDisabled: isOffDay && !hasCheckedIn, // Chỉ xám khi thật sự không có gì để check out
                 ),
               ),
             ],
