@@ -408,3 +408,46 @@ FEAT-05 là tính năng mới (ngoài `ROADMAP.md` gốc) — chống mượn m�
 - Đừng chạy lại `flutter run -t lib/main_dev.dart` (sẽ xoá dữ liệu thật hiện có).
 - Đừng mở lại các quyết định thiết kế đã chốt qua 3 vòng rà soát trong `ANTI_FRAUD_DESIGN.md` (Activation Code 6 số/TTL 15 phút/rate-limit 5 lần, không đọc mã phía client, v.v.) trừ khi phát sinh lý do mới.
 - Đừng viết lại `test/widget_test.dart` — cố ý xoá, không thay thế.
+
+---
+
+## 2026-07-22 — FEAT-05 đóng hoàn toàn (Phase 19-21) + Sprint 5 test tay (Nhóm B/C/D/G) — tạm dừng, điểm bắt đầu phiên sau
+
+### Bối cảnh
+Tiếp nối phiên trước (FEAT-05 dừng ở Phase 19-21 treo). Phiên này đóng nốt FEAT-05 rồi chuyển sang Sprint 5 (`02_SPRINT.md`) — kiểm thử thủ công có kịch bản theo `docs/testing/01_TEST_PLAN.md`, lần đầu tiên chạy tay đầy đủ Nhóm B/C/D/G.
+
+### Đã xong — FEAT-05 (Phase 19-21, đóng hoàn toàn 25/25 Phase)
+- **Phase 19 (test Emulator)**: bạn tự cài JDK 21 (Temurin, qua `winget`). Emulator Firestore+Auth chạy được, test qua REST API thật (không qua app Flutter, tương đương về Rules-evaluation) — cả 5 kịch bản trọng tâm PASS (deviceId đúng/sai lúc create/update, nhân viên chưa activate bị từ chối fail-closed).
+- **Phase 20 (migration check)**: script Node.js đọc-only (tái dùng OAuth session của Firebase CLI đã đăng nhập sẵn, gọi thẳng Firestore REST `runQuery`) xác nhận ban đầu 0/5 nhân viên active có `trustedDeviceId` → bạn cấp mã kích hoạt thật cho cả 4 nhân viên (không tính tài khoản admin, không chấm công qua mobile) → chạy lại xác nhận đủ 4/4.
+- **Phase 21 (deploy)**: khôi phục 2 dòng điều kiện `deviceId` trong `firestore.rules`, deploy Production thành công, smoke-test thật PASS (thiết bị `TRUSTED` chấm công bình thường; thiết bị chưa activate bị từ chối đúng).
+- **Toàn bộ đã commit**: `7a94c79` trở về trước cho Rules; xem chi tiết ở `FEAT_05_IMPLEMENTATION_PLAN.md` §0.5.
+
+### Đã xong — Sprint 5, Nhóm B/C/D/G (test tay lần đầu, `01_TEST_PLAN.md`)
+- **Nhóm B (Check In/Out)**: MT-01→10 + TD01-01/02 — tất cả PASS. TD01-03/04/08 vẫn **Blocked** (cần thiết bị thứ 2 hoặc điều kiện offline riêng).
+- **Nhóm C (Rotation/Business Date)**: MT-11→13 PASS, bao gồm đủ 10 mốc giờ theo `docs/demo/DEMO_GUIDE.md` §3.2.
+- **Nhóm D (Phân quyền/Bảo mật)**: MT-14→17 PASS. MT-17 test bằng REST API thật (idToken thật của 1 tài khoản employee) trên Production — 6/6 thao tác trái phép đều bị `firestore.rules` từ chối đúng (ghi `company_settings`, đọc `users`/`attendance` người khác, query không lọc, đọc `device_activations`, tự đổi `role`).
+- **Nhóm G (Edge case)**: EC-01→03 PASS.
+- **Nhóm A, E**: đã PASS từ trước (không đụng lại phiên này).
+
+### 8 bug thật phát hiện + sửa qua chính quá trình test tay (không phải review tĩnh)
+Toàn bộ đều xoay quanh 1 mảng trước đây **chưa từng test tay**: ca đêm carryover qua ngày mới/ngày nghỉ bắt buộc, và vài lỗ hổng dịch thông báo lỗi. Chi tiết đầy đủ ở `docs/testing/02_BUG_TRACKER.md`:
+1. **BUG-014** (đóng lại, xác nhận qua TD01-02 trên thiết bị thật, tín hiệu tốt): timeout GPS trước đây nghi do concurrency, nay xác nhận do tín hiệu yếu — `runTransaction()` xử lý đồng thời đúng thiết kế.
+2. **BUG-016**: nút Check Out biến mất hoàn toàn sau khi Business Date rollover qua ca đêm, dù còn trong khung ân hạn — do `getTodayAttendance()` chỉ tìm doc "hôm nay", không biết ca đêm hôm qua còn dở dang.
+3. **BUG-017**: `isOffDay` (tính theo ngày lịch) khoá nhầm luôn cả Check Out của ca đêm hôm qua hợp lệ nếu hôm nay là ngày nghỉ bắt buộc.
+4. **BUG-018**: regression tự gây ra khi sửa BUG-016 — sau khi Check Out carryover thành công, UI không cập nhật lại giờ (hàm tìm doc loại trừ nhầm doc vừa ghi xong).
+5. **BUG-019**: cùng lỗi thứ tự ưu tiên như BUG-017 nhưng ở box Check In — hiện nhầm "Nghỉ bắt buộc" dù đã có Check In thật.
+6. **BUG-020**: đổi tài khoản (đăng xuất A → đăng nhập B) vẫn hiện dữ liệu cũ của A cho tới khi vuốt refresh thủ công — sửa 2 lần: lần đầu (invalidate lúc `signOut()`) gây regression mới (kẹt rỗng do khoảng trống `currentUser == null`), lần 2 chuyển invalidate sang ngay sau `signIn()` thành công mới đúng.
+7. **BUG-021**: `getTodayAttendance()` thiếu dịch lỗi `FirebaseException` như `checkIn()`/`checkOut()` — offline lúc mở Home lộ thông báo thô, hiện trước cả thông báo thân thiện của lần bấm Check In sau đó (gây tưởng nhầm 2 lỗi khác nhau).
+8. Nhiều chỗ dư chữ **"Exception: "** trong popup lỗi (`attendance_history_provider.dart`, `home_provider.dart`, `attendance_provider.dart` — `loadTodayAttendance()`/`checkOut()`) — dọn đồng bộ theo pattern `checkIn()` đã có sẵn.
+
+Tất cả đã sửa, `flutter analyze` sạch xuyên suốt, và đều đã **test tay xác nhận PASS** (không chỉ sửa xong là coi như xong).
+
+### Chưa làm — cần xử lý ở phiên sau
+1. **Nhóm F (Regression)** — RG-01/02/03 về bản chất là "chạy lại B/C/D/A sau khi có sửa lỗi lớn khác" (không phải test độc lập cần làm ngay). **RG-04 cần làm riêng**: ít nhất 1 lượt kiểm thử Nhóm B+C bằng **giờ thực** (không dùng Demo Time) trước Milestone M3 (Release)/M6 (Demo bảo vệ).
+2. **TD01-03/04/08 vẫn Blocked**: TD01-03 cần thiết bị thứ 2 (2 phiên cùng tài khoản gần như đồng thời); TD01-04/08 cần test lại kịch bản offline cụ thể (ngắt mạng đúng lúc gọi transaction / mở app khi đã offline hoàn toàn) — khác với EC-03 (offline lúc mở Home, đã Pass).
+3. **Sprint 5 chưa đóng hẳn**: còn thiếu 2 việc trên thì chưa đạt Definition of Done đầy đủ (`02_SPRINT.md`) — nhưng khối lượng chính (B/C/D/G) đã xong, rủi ro còn lại thấp.
+
+### Việc KHÔNG cần làm lại
+- **FEAT-05 coi như đã đóng hoàn toàn** — đừng mở lại Phase 19-21, đừng bàn lại phương án test Emulator/JDK.
+- Đừng quên: mọi provider dữ liệu theo-tài-khoản mới thêm sau này (giống `homeProvider`/`attendanceProvider`) cần cân nhắc invalidate lúc đăng nhập nếu không phải `.autoDispose` — đúng bài học từ BUG-020.
+- Đừng lặp lại nhầm lẫn BUG-018: nếu 1 hàm tìm-document dùng chung cho cả "tìm mục tiêu để ghi" và "tìm để hiển thị", đừng loại trừ theo field vừa được chính thao tác ghi đó cập nhật — sẽ tự làm mất hiển thị ngay sau khi ghi thành công.
