@@ -327,29 +327,39 @@ class AttendanceRepository {
       return null;
     }
 
-    final settings = await getCompanySettings();
+    try {
+      final settings = await getCompanySettings();
 
-    final userDoc = await _db
-        .collection('users')
-        .doc(user.uid)
-        .get();
+      final userDoc = await _db
+          .collection('users')
+          .doc(user.uid)
+          .get();
 
-    final shiftGroup =
-        userDoc.data()?['shiftGroup'] ?? 'A';
+      final shiftGroup =
+          userDoc.data()?['shiftGroup'] ?? 'A';
 
-    final doc = await _findRelevantAttendanceDoc(
-      uid: user.uid,
-      now: ClockService.now(),
-      settings: settings,
-      shiftGroup: shiftGroup,
-    );
+      final doc = await _findRelevantAttendanceDoc(
+        uid: user.uid,
+        now: ClockService.now(),
+        settings: settings,
+        shiftGroup: shiftGroup,
+      );
 
-    if (doc == null) {
-      return null;
+      if (doc == null) {
+        return null;
+      }
+
+      return AttendanceModel
+          .fromFirestore(doc);
+    } on FirebaseException catch (e, st) {
+      AppLogger.error('AttendanceRepository.getTodayAttendance', e, st);
+      if (e.code == 'unavailable') {
+        throw Exception(
+          'Không có kết nối Internet. Vui lòng kết nối mạng và thử lại.',
+        );
+      }
+      rethrow;
     }
-
-    return AttendanceModel
-        .fromFirestore(doc);
   }
 
   /// Lấy tất cả lịch sử chấm công của user
