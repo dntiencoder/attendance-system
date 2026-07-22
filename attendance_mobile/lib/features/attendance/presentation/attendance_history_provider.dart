@@ -174,7 +174,10 @@ class AttendanceHistoryNotifier
       state = state.copyWith(records: allDaysRecords, isLoading: false);
     } catch (e, st) {
       AppLogger.error('AttendanceHistoryNotifier.loadMonth', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
     }
   }
 

@@ -107,7 +107,10 @@ class HomeNotifier extends StateNotifier<HomeState> {
       state = state.copyWith(isLoading: false);
     } catch (e, st) {
       AppLogger.error('HomeNotifier.loadHomeData', e, st);
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
     }
   }
 

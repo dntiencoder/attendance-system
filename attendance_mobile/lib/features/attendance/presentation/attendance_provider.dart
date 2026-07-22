@@ -62,7 +62,7 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
     try {
       final attendance = await _repo.getTodayAttendance();
       
-      // Kiểm tra nếu chưa chấm công thì xem đã hết ca chưa
+      // Kiể  m tra nếu chưa chấm công thì xem đã hết ca chưa
       bool shiftEnded = false;
       if (attendance == null) {
         final settings = await _repo.getCompanySettings();
@@ -87,7 +87,7 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       AppLogger.error('AttendanceNotifier.loadTodayAttendance', e, st);
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: e.toString().replaceAll('Exception: ', ''),
       );
     }
   }
