@@ -223,6 +223,12 @@ class AttendanceRepository {
           'Không có kết nối Internet. Vui lòng kết nối mạng trước khi Check In.',
         );
       }
+      if (e.code == 'permission-denied') {
+        throw Exception(
+          'Thiết bị này chưa được xác thực để chấm công.\n'
+          'Vui lòng dùng đúng thiết bị đã kích hoạt, hoặc liên hệ quản trị viên.',
+        );
+      }
       rethrow;
     }
   }
@@ -450,29 +456,45 @@ class AttendanceRepository {
     // cùng 1 trustedDeviceId, xem docs/design/ANTI_FRAUD_DESIGN.md §7).
     final deviceId = await _deviceService.getInstallId();
 
-    await _db
-        .collection('attendance')
-        .doc(targetDocId)
-        .update({
-      'checkOut':
-      Timestamp.fromDate(now),
+    try {
+      await _db
+          .collection('attendance')
+          .doc(targetDocId)
+          .update({
+        'checkOut':
+        Timestamp.fromDate(now),
 
-      'checkOutLatitude':
-      position.latitude,
+        'checkOutLatitude':
+        position.latitude,
 
-      'checkOutLongitude':
-      position.longitude,
+        'checkOutLongitude':
+        position.longitude,
 
-      'workHours': workHours,
+        'workHours': workHours,
 
-      'isEarlyLeave': isEarlyLeave,
+        'isEarlyLeave': isEarlyLeave,
 
-      'status': 'completed',
+        'status': 'completed',
 
-      'updatedAt':
-      Timestamp.fromDate(now),
+        'updatedAt':
+        Timestamp.fromDate(now),
 
-      'deviceId': deviceId,
-    });
+        'deviceId': deviceId,
+      });
+    } on FirebaseException catch (e, st) {
+      AppLogger.error('AttendanceRepository.checkOut', e, st);
+      if (e.code == 'unavailable') {
+        throw Exception(
+          'Không có kết nối Internet. Vui lòng kết nối mạng trước khi Check Out.',
+        );
+      }
+      if (e.code == 'permission-denied') {
+        throw Exception(
+          'Thiết bị này chưa được xác thực để chấm công.\n'
+          'Vui lòng dùng đúng thiết bị đã kích hoạt, hoặc liên hệ quản trị viên.',
+        );
+      }
+      rethrow;
+    }
   }
 }

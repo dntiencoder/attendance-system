@@ -154,7 +154,7 @@ class AttendanceNotifier extends StateNotifier<AttendanceState> {
       AppLogger.error('AttendanceNotifier.checkOut', e, st);
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: e.toString().replaceAll('Exception: ', ''),
       );
     }
   }
