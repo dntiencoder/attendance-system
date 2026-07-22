@@ -64,17 +64,17 @@ Khuyến nghị dùng Demo Time System (`ClockService`, Fast Forward/Rewind) đ�
 | ID | Kịch bản | Steps | Expected | Status |
 |---|---|---|---|---|
 | MT-11 | Xác nhận ca hiện tại đúng nhóm A/B theo `rotationStartDate` | mở Home bằng tài khoản nhóm A và nhóm B | So khớp với `CompanySettingsModel.getCurrentShift()` tính tay | đúng | **Pass** (2026-07-22) — nhóm A ca ngày, nhóm B ca đêm, đối nghịch đúng. Quá trình test phát hiện thêm BUG-020 (dữ liệu tài khoản cũ còn sót khi đổi tài khoản), đã sửa và xác nhận Pass, xem `02_BUG_TRACKER.md` |
-| MT-12 | Đổi ca đúng ngày dự kiến | dùng Demo Time nhảy qua đúng ngày đổi ca (`rotationDays`) | Home hiển thị ca đảo ngược cho cả 2 nhóm | đúng | Chưa chạy |
-| MT-13 | Business Date quanh nửa đêm ca đêm — 10 mốc | dùng Demo Time đặt lần lượt 10 mốc trong `docs/demo/DEMO_GUIDE.md` §3.2 | khớp đúng bảng dự đoán Firestore/Home/History đã ghi trong Demo Guide | Chưa chạy |
+| MT-12 | Đổi ca đúng ngày dự kiến | dùng Demo Time nhảy qua đúng ngày đổi ca (`rotationDays`) | Home hiển thị ca đảo ngược cho cả 2 nhóm | đúng | **Pass** (2026-07-22, test tay Demo Time, +14 ngày) |
+| MT-13 | Business Date quanh nửa đêm ca đêm — 10 mốc | dùng Demo Time đặt lần lượt 10 mốc trong `docs/demo/DEMO_GUIDE.md` §3.2 | khớp đúng bảng dự đoán Firestore/Home/History đã ghi trong Demo Guide | **Pass** (2026-07-22, test tay Demo Time, cả 10/10 mốc) |
 
 ## D. Manual Test — Phân quyền / Bảo mật
 
 | ID | Kịch bản | Steps | Expected | Status |
 |---|---|---|---|---|
-| MT-14 | Employee đăng nhập vào app admin | đăng nhập tài khoản `role=employee` trên admin | bị từ chối + signOut, thông báo đúng | Chưa chạy |
-| MT-15 | Admin đăng nhập vào app mobile | đăng nhập tài khoản `role=admin` trên mobile | bị từ chối + signOut, thông báo đúng | Chưa chạy |
-| MT-16 | Tài khoản `isActive=false` đăng nhập | set `isActive=false` trên Firestore Console, thử đăng nhập | bị từ chối cả 2 app | Chưa chạy |
-| MT-17 | Đọc/ghi trái phép qua Firebase Console/REST với tài khoản không đủ quyền | dùng tài khoản employee thử đọc `company_settings` write, hoặc đọc `attendance` của người khác qua truy vấn không lọc | bị chặn bởi `firestore.rules` | Chưa chạy |
+| MT-14 | Employee đăng nhập vào app admin | đăng nhập tài khoản `role=employee` trên admin | bị từ chối + signOut, thông báo đúng | **Pass** (2026-07-22, test tay) |
+| MT-15 | Admin đăng nhập vào app mobile | đăng nhập tài khoản `role=admin` trên mobile | bị từ chối + signOut, thông báo đúng | **Pass** (2026-07-22, test tay) |
+| MT-16 | Tài khoản `isActive=false` đăng nhập | set `isActive=false` trên Firestore Console, thử đăng nhập | bị từ chối cả 2 app | **Pass** (2026-07-22, test tay qua chức năng Vô hiệu hoá của Admin) |
+| MT-17 | Đọc/ghi trái phép qua Firebase Console/REST với tài khoản không đủ quyền | dùng tài khoản employee thử đọc `company_settings` write, hoặc đọc `attendance` của người khác qua truy vấn không lọc | bị chặn bởi `firestore.rules` | **Pass** (2026-07-22) — test qua REST API thật (idToken thật của tài khoản employee) trên Production, 6/6 kịch bản bị từ chối đúng: ghi `company_settings`, đọc `users` người khác, đọc `attendance` người khác, query không lọc `attendance`, đọc `device_activations` của chính mình, tự đổi `role` thành admin |
 
 ## E. Manual Test — Demo Time System (chưa từng test tay)
 
@@ -100,6 +100,6 @@ Khuyến nghị dùng Demo Time System (`ClockService`, Fast Forward/Rewind) đ�
 
 | ID | Kịch bản | Expected | Status |
 |---|---|---|---|
-| EC-01 | `company_settings` bị thiếu field khi đọc (test khả năng chịu lỗi của `fromFirestore`) | không crash, dùng fallback hợp lý | Chưa chạy |
-| EC-02 | Document `attendance` thiếu `attendanceDate` (test P1-04 vẫn đứng vững) | không crash toàn bộ danh sách, chỉ bỏ qua/log document lỗi | Chưa chạy |
-| EC-03 | Mất mạng giữa lúc Check In (test hành vi khi Firestore write thất bại) | thông báo lỗi rõ ràng, không tạo doc dở dang | Chưa chạy |
+| EC-01 | `company_settings` bị thiếu field khi đọc (test khả năng chịu lỗi của `fromFirestore`) | không crash, dùng fallback hợp lý | **Pass** (2026-07-22, test tay xoá tạm field `companyName`) |
+| EC-02 | Document `attendance` thiếu `attendanceDate` (test P1-04 vẫn đứng vững) | không crash toàn bộ danh sách, chỉ bỏ qua/log document lỗi | **Pass** (2026-07-22, test tay) |
+| EC-03 | Mất mạng giữa lúc Check In (test hành vi khi Firestore write thất bại) | thông báo lỗi rõ ràng, không tạo doc dở dang | **Pass** (2026-07-22) — phát hiện thêm BUG-021 (`getTodayAttendance()` lộ lỗi thô khi offline), đã sửa và xác nhận Pass, xem `02_BUG_TRACKER.md` |
