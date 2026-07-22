@@ -163,28 +163,24 @@ service cloud.firestore {
       // Check-in: chỉ tạo được đúng doc của chính mình, đúng quy ước đặt tên
       // "<yyyy-MM-dd>_<uid>" (khớp AttendanceRepository.checkIn - mobile).
       //
-      // FEAT-05 — TẠM HOÃN enforce deviceId (dòng comment bên dưới): chờ
-      // Phase 19 (test Emulator) + Phase 20 (kiểm tra migration toàn bộ
-      // nhân viên đã có trustedDeviceId) hoàn tất trước khi bật lại — bật
-      // sớm sẽ khoá Check In của MỌI nhân viên ngay lập tức vì trustedDeviceId
-      // hiện chưa có ai được set (deploy tạm thời để mở khoá Activation Code
-      // — device_activations/device_audit_log — cho Sprint B, KHÔNG đụng gì
-      // tới attendance). Xem docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md
-      // Phase 21. KHÔI PHỤC lại 2 dòng comment ở create/update bên dưới trước
-      // khi deploy Phase 21 chính thức.
+      // FEAT-05: bắt buộc deviceId ghi lên phải khớp trustedDeviceId đã lưu ở
+      // users/{uid} — chặn chấm công từ thiết bị chưa được kích hoạt/tin
+      // cậy. Đã test PASS trên Firebase Emulator (Phase 19) và xác nhận toàn
+      // bộ nhân viên active trên Production đã có trustedDeviceId trước khi
+      // bật (Phase 20) — xem docs/implementation/FEAT_05_IMPLEMENTATION_PLAN.md.
       allow create: if isSignedIn()
         && request.resource.data.uid == request.auth.uid
-        && docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_' + request.auth.uid + '$');
-        // && currentUserExists()
-        // && request.resource.data.deviceId == currentUserData().trustedDeviceId;
+        && docId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_' + request.auth.uid + '$')
+        && currentUserExists()
+        && request.resource.data.deviceId == currentUserData().trustedDeviceId;
 
       // Check-out: chỉ chủ bản ghi được cập nhật, không đổi được uid sang
-      // người khác. FEAT-05 — cùng lý do TẠM HOÃN như create ở trên.
+      // người khác.
       allow update: if isSignedIn()
         && resource.data.uid == request.auth.uid
-        && request.resource.data.uid == request.auth.uid;
-        // && currentUserExists()
-        // && request.resource.data.deviceId == currentUserData().trustedDeviceId;
+        && request.resource.data.uid == request.auth.uid
+        && currentUserExists()
+        && request.resource.data.deviceId == currentUserData().trustedDeviceId;
 
       allow delete: if false;
     }
