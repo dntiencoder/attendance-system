@@ -72,7 +72,7 @@ Bản chất nghiệp vụ chấm công của hệ thống này là trả lời 
 │  3. Không thấy & candidate == hôm nay (không rollback) ->             │
 │       thử doc của HÔM QUA (candidate - 1 ngày):                       │
 │       - Tồn tại, shift=='night', checkOut==null,                      │
-│         VÀ (now - shiftWindow(hôm qua).end) <= 2 giờ                  │
+│         VÀ (now - shiftWindow(hôm qua).end) <= 1 giờ                  │
 │         -> DÙNG DOC NÀY, sang bước 4                                  │
 │       - Ngược lại -> TỪ CHỐI (xem thông báo ở mục 5.3)                │
 │  4. Lấy lại Shift Window của ĐÚNG document tìm được (dùng             │
@@ -172,7 +172,7 @@ Dùng **Dart record** `({DateTime start, DateTime end})` làm kiểu trả về 
 ### 5.3 `AttendanceRepository` — nơi duy nhất orchestrate cả luồng (đúng vai trò `data/` hiện tại)
 
 - `checkIn()`: chèn đúng thứ tự Bước 1→9 ở mục 3. Bước 4 (mới) cho phép Check In sớm tối đa **60 phút** trước `window.start` (đã chốt); nếu vẫn quá sớm, thông báo: `"Chưa tới giờ Check In. Ca làm việc mở lúc {window.start trừ 60 phút}."`.
-- `checkOut()`: viết lại theo đúng luồng "tìm document mục tiêu" ở mục 2 (candidate → fallback hôm qua trong khung ân hạn 2 giờ — **đã chốt ở lượt trước**, giữ nguyên). Nếu không tìm thấy gì hợp lệ: `"Không tìm thấy ca làm việc cần Check Out hợp lệ. Vui lòng liên hệ quản lý/admin để được hỗ trợ điều chỉnh chấm công."`
+- `checkOut()`: viết lại theo đúng luồng "tìm document mục tiêu" ở mục 2 (candidate → fallback hôm qua trong khung ân hạn 1 giờ — **đã chốt, giảm từ 2 giờ xuống 1 giờ ngày 2026-07-22**). Nếu không tìm thấy gì hợp lệ: `"Không tìm thấy ca làm việc cần Check Out hợp lệ. Vui lòng liên hệ quản lý/admin để được hỗ trợ điều chỉnh chấm công."`
 - `getTodayAttendance()`: đổi nguồn build `docId` từ `DateTime.now()` sang `businessDate` (cần biết `shiftGroup` của user — đọc từ `users/{uid}` như code hiện tại đã làm ở `checkIn()`, áp dụng thêm ở đây).
 
 ### 5.4 Không tạo thêm những gì (để tránh over-engineering)
@@ -208,7 +208,7 @@ Dùng **Dart record** `({DateTime start, DateTime end})` làm kiểu trả về 
 |---|---|---|
 | 1 | `rotationDays` = 14, đã sửa hardcode | ✅ Đã áp dụng (Task 1) |
 | 2 | Tách `RotationCalculator` riêng | ✅ Đã chốt |
-| 3 | Khung ân hạn Check Out = 2 giờ cố định | ✅ Đã chốt |
+| 3 | Khung ân hạn Check Out = 1 giờ cố định (giảm từ 2 giờ, 2026-07-22) | ✅ Đã chốt |
 | 4 | `countAbsentDays` sửa cùng đợt | ✅ Đã chốt |
 | 5 | Cho phép Check In sớm tối đa **60 phút** trước `window.start`; sau `window.start` luôn tính `isLate = true` (không có vùng đệm cho trễ) | ✅ Đã chốt |
 
