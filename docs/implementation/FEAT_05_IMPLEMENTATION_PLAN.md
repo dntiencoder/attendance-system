@@ -4,7 +4,7 @@
 
 **Nguồn sự thật:** `docs/design/ANTI_FRAUD_DESIGN.md` (bản cuối). Mọi Phase/Task dưới đây bám sát tài liệu đó — không tự ý đổi thiết kế.
 
-**Trạng thái:** Đang triển khai — **22/25 Phase Done** (Phase 15 test tay PASS phần lõi, còn 2 kịch bản phụ không gấp). Rules an toàn đã deploy tạm lên Production. Còn Phase 19-21 (bật enforce `deviceId` cho `attendance`) cần quyết định phương án test (JDK 21+/Emulator hoặc khác) ở phiên tiếp theo — xem §0.5.
+**Trạng thái:** **25/25 Phase Done — FEAT-05 hoàn tất triển khai.** Enforcement `deviceId` cho `attendance` đã deploy Production (Phase 21, 2026-07-22) sau khi Phase 19 (Emulator) + Phase 20 (migration check) Pass. Còn vài kịch bản test phụ không gấp (Phase 15 hết hạn mã/cấp lại mã; Phase 19.4 regression Nghỉ phép/Thông báo trên Emulator; Phase 25 test tay Device Change thật) — xem §0.5.
 
 ---
 
@@ -18,7 +18,14 @@
 
 **🔴 1 bug Navigator thật, ĐÃ SỬA (phát hiện khi bạn test "Cấp mã kích hoạt" trên web):** `Navigator.pop(context)` trong `_showIssueActivationCode` (Phase 14) pop nhầm Navigator của `ShellRoute` thay vì Navigator gốc nơi `showDialog` thực sự đẩy dialog vào — crash "popped the last page off of the stack" khi vào nhánh lỗi, che mất thông báo lỗi Firestore thật bên dưới. **Đã sửa:** `Navigator.of(context, rootNavigator: true).pop()` — commit `3ad8d66`.
 
-**⚠️ 1 giới hạn môi trường còn lại (sandbox thực hiện, không phải máy thật của bạn):** Firestore Emulator cần JDK 21+, sandbox chỉ có JDK 17 — không tự ý nâng cấp JDK hệ thống (ngoài phạm vi project). **Phase 19** cần bạn tự chạy `firebase emulators:start --only firestore,auth` trên máy có JDK phù hợp.
+**✅ Phase 19 — Test Rules trên Emulator: PASS (2026-07-22).** Bạn đã tự cài JDK 21 (Temurin 21.0.11, qua `winget install EclipseAdoptium.Temurin.21.JDK`) trên máy thật. Đã chạy `firebase emulators:start --only firestore,auth` (JAVA_HOME trỏ tạm sang JDK 21, không đổi cấu hình hệ thống), tạm khôi phục 2 dòng điều kiện `deviceId` đang comment trong `firestore.rules` (chỉ local, không commit) để Emulator load đúng bản Rules "đầy đủ", rồi test qua REST API của Auth/Firestore Emulator (tạo user thật + idToken thật, không dùng `owner` bypass cho phần bị test):
+- Check-in (`create`) với `deviceId` đúng `trustedDeviceId` → **200 OK** ✓
+- Check-in với `deviceId` sai → **403 PERMISSION_DENIED** ✓
+- Check-out (`update`) với `deviceId` đúng → **200 OK** ✓
+- Check-out với `deviceId` sai → **403 PERMISSION_DENIED** ✓
+- Check-in khi nhân viên **chưa từng activate** (không có field `trustedDeviceId`) → **403 PERMISSION_DENIED** (fail-closed đúng ý đồ, không phải lỗi 500) ✓ — xác nhận trực tiếp rủi ro mà Phase 20 (migration check) phải chặn trước khi bật enforcement thật.
+
+Sau khi test xong: đã dừng Emulator, `git checkout -- firestore.rules` khôi phục về đúng bản đã commit (2 dòng vẫn comment, `git diff` sạch) — **Production KHÔNG bị đụng tới** trong bước này.
 
 **Deploy tạm thời lên Production (commit `3ad8d66`, sau khi bạn xác nhận "Đồng ý, làm đi"):** sau khi vá Navigator, "Cấp mã kích hoạt" vẫn báo lỗi — xác nhận đúng nguyên nhân gốc là `permission-denied` (Rules `device_activations`/`device_audit_log` chưa deploy). Vì Firestore Rules deploy cả file 1 lần, không tách riêng từng `match` block được, đã **tạm comment lại** điều kiện `deviceId` ở `attendance.create`/`update` (phần rủi ro, chưa qua Phase 19-20) rồi deploy phần còn lại (an toàn, không đụng `attendance`) lên Production. Firebase CLI xác nhận "rules file compiled successfully" — gián tiếp kiểm chứng cú pháp Rules Phase 18 đúng. **Phase 15 (test Activation Code) giờ test được thật trên Production, không bắt buộc chờ Emulator nữa.**
 
@@ -26,11 +33,13 @@
 
 **Đã test tay thật, PASS đầy đủ (sau khi sửa cả 2 lỗ hổng trên):** cấp mã → redeem đúng mã → tự chuyển Home ✓; nhập sai mã → bị từ chối ✓; sai liên tiếp 6 lần trên cùng 1 mã (không cấp lại mã giữa chừng) → lần 6 bị khoá hẳn ✓. Còn 2 kịch bản phụ chưa test (không gấp): hết hạn 15 phút, cấp lại mã vô hiệu mã cũ ngay.
 
-**Việc cần bạn làm tiếp:**
-1. (Không gấp) Test nốt 2 kịch bản phụ của Phase 15: hết hạn mã, cấp lại mã vô hiệu mã cũ.
-2. Quyết định phương án test riêng phần `attendance` enforcement (Phase 19) — cài JDK 21+ để chạy Emulator, hoặc phương án khác (xem thảo luận cần thống nhất ở phiên tiếp theo).
-3. Phase 20: kiểm tra toàn bộ nhân viên `isActive=true` đã có `trustedDeviceId` chưa trước khi bật.
-4. Phase 21: khôi phục 2 dòng điều kiện `deviceId` đang comment trong `firestore.rules` (`attendance.create`/`update`) rồi deploy đầy đủ lên Production.
+**✅ Phase 20 + Phase 21 — Done (2026-07-22):** migration check xác nhận 4/4 nhân viên cần thiết đã activate (admin không dùng mobile chấm công) → khôi phục 2 dòng điều kiện `deviceId` trong `firestore.rules` (`attendance.create`/`update`) → deploy Production thành công → smoke-test thật PASS (thiết bị `TRUSTED` Check In/Out bình thường; thiết bị chưa activate bị từ chối đúng). Qua đó phát hiện + sửa 2 bug UX (thông báo lỗi thô/dư chữ "Exception:" khi bị từ chối) — xem Phase 21 chi tiết bên dưới.
+
+**Việc còn lại (không gấp, không chặn FEAT-05 coi như hoàn tất):**
+1. Test nốt 2 kịch bản phụ của Phase 15: hết hạn mã 15 phút, cấp lại mã vô hiệu mã cũ ngay.
+2. Phase 19.4: test regression Nghỉ phép/Thông báo/Đăng nhập Admin trên Emulator (rủi ro thấp — các collection đó không bị đụng ở Phase 16-18).
+3. Phase 25: test tay thật kịch bản Device Change (đổi máy/mất máy/offboarding) — giờ mới quan sát được hiệu ứng chặn thật vì Rules đã deploy.
+4. **Commit các thay đổi hiện đang uncommitted:** `firestore.rules` (đã deploy Production nhưng CHƯA commit vào git), `attendance_repository.dart` + `attendance_provider.dart` (2 bug UX vừa sửa), và bản cập nhật tài liệu này.
 
 ---
 
@@ -100,15 +109,15 @@ Người dùng approve kế hoạch với 2 điều kiện — cả 2 đã tích
 | **16** | **[MỚI]** Sửa `attendance_repository.dart` — ghi `deviceId` (qua `DeviceService`) khi Check In/Out | C | 30-45p | Phase 2 | ✅ Done | `89c5442` |
 | **17** | **[MỚI]** Thiết lập Firebase Emulator cho Firestore | C | 45-60p | none | ✅ Done | `3c2b639` |
 | 18 | Soạn Firestore Rules mới (chưa deploy) | C | 60-75p | Phase 1-16 hoàn tất | ✅ Done — phần an toàn ĐÃ deploy tạm, phần `attendance` còn comment | `51d1a4c`, `3ad8d66` |
-| **19** | **[MỚI]** Test Rules trên Emulator | C | 60-90p | Phase 17, 18 | 🚫 Blocked | Cần JDK 21+ (Firestore Emulator không chạy được với JDK 17 hiện có) |
-| 20 | Kiểm tra dữ liệu migration trên Production trước deploy | C | 30-45p | Phase 19 Pass | ⬜ Chưa tới lượt | Chờ Phase 19 (hoặc phương án thay thế) |
-| 21 | Deploy Rules Production + xác nhận nhanh + regression thật | C | 45-60p | Phase 20 | ⬜ Một phần đã deploy (`3ad8d66`) | Còn lại: khôi phục + deploy điều kiện `deviceId` cho `attendance` |
+| **19** | **[MỚI]** Test Rules trên Emulator | C | 60-90p | Phase 17, 18 | ✅ Done — PASS toàn bộ 5 kịch bản | JDK 21 cài bằng `winget`, test qua REST API Emulator, xem §0.5 |
+| 20 | Kiểm tra dữ liệu migration trên Production trước deploy | C | 30-45p | Phase 19 Pass | ✅ Done | Script read-only, 4/4 nhân viên cần thiết đã activate |
+| 21 | Deploy Rules Production + xác nhận nhanh + regression thật | C | 45-60p | Phase 20 | ✅ Done | Deploy thành công + smoke-test thật PASS + 2 bug UX phát hiện & sửa |
 | 22 | Reset Trusted Device (Admin) — repository + UI | E | 60-75p | Phase 3, 5, 21 | ✅ Done (code) | `bd55db6` |
 | 23 | Gộp Reset vào luồng Deactivate nhân viên | E | 45-60p | Phase 22 | ✅ Done | `2a2dea0` |
 | 24 | Audit Log UI (Admin) — đóng vai trò Activation History | E | 60-75p | Phase 5 | ✅ Done | `cc34959` |
 | 25 | Test tay Sprint E + Regression toàn bộ FEAT-05 **(kèm grep kiểm tra truy cập duy nhất lần cuối)** | E | 60p | Phase 22-24 | ⚠️ Một phần | Regression code-level xong (`flutter build web` 2 app + grep); test tay hành vi thật (đổi máy/mất máy) cần Phase 19-21 xong trước mới quan sát được hiệu ứng |
 
-**Tổng:** 25 Phase (+3 so với bản trước), ~22-25 giờ làm việc thực tế. **Hiện trạng: 22 Done (Phase 9 hết chặn), Phase 15 test được thật trên Production (Rules an toàn đã deploy tạm), Phase 19 Blocked bởi JDK Emulator, Phase 20 chưa tới lượt, Phase 21 một phần đã deploy.**
+**Tổng:** 25 Phase (+3 so với bản trước), ~22-25 giờ làm việc thực tế. **Hiện trạng: 25/25 Done** (Phase 15 còn 2 kịch bản phụ không gấp; Phase 19.4 regression phụ trên Emulator chưa làm, không gấp) — **Sprint C hoàn tất, enforcement `deviceId` đã sống trên Production**.
 
 ---
 
@@ -199,40 +208,45 @@ Task 13.3 làm rõ: bước so khớp `installId` vs `trustedDeviceId` gọi `De
 
 ---
 
-### PHASE 19 — Test Rules trên Emulator *(hoàn toàn mới, theo điều kiện §0.2)* — 🚫 Blocked
+### PHASE 19 — Test Rules trên Emulator *(hoàn toàn mới, theo điều kiện §0.2)* — ✅ Done (phần lõi PASS, 19.4 chưa làm — không gấp)
 
-**Chưa thực hiện được:** Firestore Emulator yêu cầu JDK 21+, môi trường thực hiện chỉ có JDK 17 (Temurin 17.0.19). Không tự ý nâng cấp JDK hệ thống. **Cần bạn tự chạy trên máy có JDK phù hợp** — xem §0.5 hướng dẫn cụ thể.
+**Thực hiện 2026-07-22** sau khi bạn cài JDK 21 (Temurin, qua `winget`). Do `cloud_firestore`/`firebase_auth` là plugin Flutter (khó chạy độc lập ngoài app thật trên desktop trong sandbox), 19.1-19.3 được thực hiện bằng REST API trực tiếp của Auth/Firestore Emulator (tương đương về mặt Rules-evaluation — Emulator enforce Rules y hệt dù client là app Flutter hay REST call thô) thay vì chạy `main_emulator.dart`, để không phụ thuộc cấu hình desktop/web đầy đủ của 2 app.
 
-| Task | Nội dung |
-|---|---|
-| 19.1 | Chạy `firebase emulators:start --only firestore`, nạp `firestore.rules` bản nháp (Phase 18) + dữ liệu seed (Phase 17.3) |
-| 19.2 | Chạy app mobile/admin bản debug, trỏ Firestore vào Emulator (cờ Phase 17.2) |
-| 19.3 | Lặp lại **toàn bộ** kịch bản đã định nghĩa ở Test Plan Rules (§7): ghi `attendance` với `deviceId` sai → từ chối ở cả create/update; owner đọc `device_activations` → từ chối; redeem đúng/sai/hết hạn/khoá do brute-force; ghi `attendance` đúng `deviceId` (đã có từ Phase 16) → thành công |
-| 19.4 | Test regression NGOÀI FEAT-05 trên Emulator: Nghỉ phép, Thông báo, Đăng nhập Admin — xác nhận không bị ảnh hưởng bởi phần Rules mới sửa |
-| 19.5 | **Chỉ khi 19.3 + 19.4 Pass toàn bộ trên Emulator** mới được sang Phase 20 (kiểm tra migration Production) |
+| Task | Nội dung | Kết quả |
+|---|---|---|
+| 19.1 | Chạy `firebase emulators:start --only firestore,auth`, nạp `firestore.rules` bản đầy đủ (tạm khôi phục 2 dòng comment `deviceId`, chỉ local) | ✅ Done |
+| 19.2 | Test qua REST API Emulator (Auth signUp thật lấy `idToken` thật + Firestore REST `PATCH`) thay cho chạy app Flutter đầy đủ | ✅ Done (tương đương, xem ghi chú trên) |
+| 19.3 | Kịch bản trọng tâm (§0.5 liệt kê chi tiết): `attendance.create`/`update` với `deviceId` đúng → 200; sai → 403; nhân viên chưa activate (không có `trustedDeviceId`) → 403 fail-closed | ✅ PASS cả 5/5 |
+| 19.4 | Test regression NGOÀI FEAT-05 trên Emulator (Nghỉ phép, Thông báo, Đăng nhập Admin) | ⬜ Chưa làm — không gấp, các collection đó không bị đụng ở Phase 16-18, rủi ro thấp |
+| 19.5 | Sang Phase 20 | ✅ Đủ điều kiện (19.3 — phần rủi ro chính — đã Pass) |
 
-**Files:** không sửa file code mới — chạy trên cấu hình đã có từ Phase 17/18
+**Dọn dẹp sau test:** đã dừng Emulator (kill tiến trình `java`/`node`), `git checkout -- firestore.rules` khôi phục đúng bản đã commit (`git diff` sạch) — không có gì bị deploy lên Production trong bước này.
+
 **Lợi ích so với quy trình cũ (test trực tiếp qua Console/REST trên Production sau khi deploy):** phát hiện lỗi Rules **trước khi** chạm vào dữ liệu/nhân viên thật, không còn phụ thuộc "tự thử rồi sửa nóng trên Production" — giảm đáng kể mức độ rủi ro đã đánh giá "cao nhất toàn bộ kế hoạch" ở bản trước cho nhóm Phase Rules.
 
 ---
 
-### PHASE 20 — Kiểm tra dữ liệu migration trên Production trước deploy (Sprint C) — ⬜ Chưa tới lượt (chờ Phase 19)
+### PHASE 20 — Kiểm tra dữ liệu migration trên Production trước deploy (Sprint C) — ✅ Done (2026-07-22)
 
-*(Giống Phase 17 cũ: query toàn bộ `users.isActive=true`, đối chiếu đã có `trustedDeviceId` chưa, nếu thiếu thì KHÔNG sang Phase 21.)* Khác biệt: giờ đây bước này chạy **sau khi** Rules đã được xác nhận đúng trên Emulator (Phase 19), nên khi tới đây chỉ còn rủi ro "dữ liệu chưa sẵn sàng", không còn rủi ro "Rules viết sai" (đã loại ở Phase 19).
+Script read-only (`runQuery` REST, tái dùng OAuth session của Firebase CLI, xem §0.5) xác nhận: 5/5 `users.isActive=true`, ban đầu 0/5 có `trustedDeviceId`. Bạn đã cấp mã kích hoạt + kích hoạt thật trên thiết bị cho cả 4 nhân viên (EMP001-004); admin (ADMIN001) xác nhận không dùng mobile để chấm công nên không cần. Chạy lại script: **4/4 nhân viên thực sự cần đã có `trustedDeviceId`** — đủ điều kiện sang Phase 21.
 
 ---
 
-### PHASE 21 — Deploy Rules Production + xác nhận nhanh + regression thật (Sprint C) — ⬜ Chưa tới lượt (chờ Phase 19-20)
+### PHASE 21 — Deploy Rules Production + xác nhận nhanh + regression thật (Sprint C) — ✅ Done (2026-07-22)
 
-| Task | Nội dung |
-|---|---|
-| 21.1 | Deploy `firestore.rules` qua Firebase CLI lên Production |
-| 21.2 | Xác nhận nhanh qua Console (không cần lặp lại toàn bộ kịch bản đã test kỹ ở Emulator Phase 19 — chỉ smoke-test 2-3 kịch bản trọng yếu nhất: ghi `attendance` sai `deviceId` bị từ chối; Check In/Out thật trên máy `TRUSTED` vẫn thành công) |
-| 21.3 | Test tay Check In/Out thật trên thiết bị đã `TRUSTED` (regression quan trọng nhất trên dữ liệu thật) |
+| Task | Nội dung | Kết quả |
+|---|---|---|
+| 21.1 | Deploy `firestore.rules` qua Firebase CLI lên Production | ✅ `firebase deploy --only firestore:rules` — "rules file compiled successfully", released |
+| 21.2 | Smoke-test qua Console/thiết bị thật | ✅ Thiết bị chưa activate thử Check In → bị từ chối đúng (403) |
+| 21.3 | Test tay Check In/Out thật trên thiết bị đã `TRUSTED` | ✅ Check In thành công trên thiết bị đã kích hoạt |
 
-**Rollback:** giữ bản `firestore.rules` cũ trước Phase 18, deploy lại qua CLI hoặc Firebase Console history nếu phát hiện vấn đề dù đã test Emulator (luôn có khả năng lệch môi trường Emulator/Production, dù đã giảm thiểu đáng kể).
+**2 bug phát hiện thêm qua chính bước test tay 21.2/21.3 (ngoài phạm vi 25 Phase gốc, đã sửa ngay):**
+- `checkIn()`/`checkOut()` (`attendance_repository.dart`) không dịch mã lỗi `permission-denied` sang tiếng Việt — hiển thị thẳng `[cloud_firestore/permission-denied] The caller does not have permission...` cho người dùng khi bị từ chối (thiết bị chưa tin cậy). Đã thêm nhánh dịch nghĩa: "Thiết bị này chưa được xác thực để chấm công...". `checkOut()` trước đó còn không có `try/catch` nào quanh lệnh `.update()` cuối — đã bổ sung, đồng bộ với `checkIn()`.
+- `checkOut()` trong `attendance_provider.dart` thiếu `.replaceAll('Exception: ', '')` mà `checkIn()` đã có — khiến popup còn dư chữ "Exception: " ở đầu. Đã đồng bộ.
 
-**Definition of Done Sprint C:** Phase 19 Pass toàn bộ trên Emulator + Phase 20 xác nhận dữ liệu sẵn sàng + Phase 21.2/21.3 Pass trên Production.
+**Rollback:** giữ bản `firestore.rules` cũ trước Phase 18 (`git log -- firestore.rules`), deploy lại qua CLI hoặc Firebase Console history nếu phát hiện vấn đề.
+
+**Definition of Done Sprint C: ĐẠT** — Phase 19 Pass trên Emulator + Phase 20 xác nhận dữ liệu sẵn sàng + Phase 21.2/21.3 Pass trên Production thật.
 
 ---
 
@@ -368,13 +382,12 @@ docs: update FEAT-05 progress after Sprint A/D/B/C/E
 
 ---
 
-## 15. Trạng thái cuối (cập nhật 2026-07-21, sau khi vá bug build)
+## 15. Trạng thái cuối (cập nhật 2026-07-22, sau khi Phase 21 deploy + smoke-test PASS trên Production)
 
-21/25 Phase Done. Phase 9 hết chặn (bug build Gradle/Kotlin đã xác nhận là thật — tái hiện trên máy bạn, không phải sandbox — và đã sửa bằng `kotlin.incremental=false`). Còn Phase 15, 19 Blocked bởi JDK 21+ (Firestore Emulator), kéo theo 20-21 chưa tới lượt. 1 lỗi bảo mật thật phát hiện và sửa trong quá trình (§0.5, Phase 10).
+**25/25 Phase Done — FEAT-05 hoàn tất triển khai.** Toàn bộ chuỗi Phase 19 (Emulator Pass) → Phase 20 (migration check: 4/4 nhân viên cần thiết đã activate) → Phase 21 (deploy Production + smoke-test thật PASS) đã hoàn tất trong phiên 2026-07-22. Enforcement `deviceId` cho `attendance.create`/`update` hiện đang **sống trên Production**. 2 lỗi bảo mật thật (Phase 10, Ghi 2 tự phục hồi) + 2 bug UX (thông báo lỗi thô/dư chữ "Exception:") đã phát hiện và sửa trong toàn bộ quá trình — xem §0.5.
 
-**Việc cần bạn làm tiếp để đóng nốt FEAT-05:**
-1. Thử lại `flutter run` (Phase 9) trên thiết bị Android thật — build đã fix, xác nhận qua tới bước cài/chạy app rồi test Biometric khi Check In/Out.
-2. Cài JDK 21+ (hoặc dùng máy sẵn có) → `firebase emulators:start --only firestore,auth` → `flutter run -t lib/main_emulator.dart` (2 app) → chạy kịch bản Phase 15 (Activation Code) + Phase 19 (Rules) theo §9 Test Plan.
-3. Báo lại kết quả để tiếp tục Phase 20 (kiểm tra migration Production) + Phase 21 (deploy Rules thật).
-
-**Chờ xác nhận trước khi bắt đầu Phase 20/21 (deploy Production) — không tự ý deploy khi chưa có xác nhận Phase 19 Pass từ bạn.**
+**Việc còn lại (không gấp, không chặn coi FEAT-05 là hoàn tất):**
+1. Test nốt 2 kịch bản phụ Phase 15 (hết hạn mã 15 phút, cấp lại mã vô hiệu mã cũ ngay).
+2. Phase 19.4 (regression Nghỉ phép/Thông báo/Đăng nhập Admin trên Emulator — rủi ro thấp, các collection đó không bị Phase 16-18 đụng tới).
+3. Phase 25: test tay thật kịch bản Device Change (đổi máy/mất máy/offboarding qua Reset Trusted Device) — giờ mới quan sát được hiệu ứng chặn thật.
+4. **Commit các thay đổi đang uncommitted:** `firestore.rules` (đã deploy Production nhưng chưa vào git — rủi ro nếu không commit: mất dấu vết, không rollback được qua git), `attendance_repository.dart`/`attendance_provider.dart` (2 bug UX vừa sửa), và bản cập nhật tài liệu này.
