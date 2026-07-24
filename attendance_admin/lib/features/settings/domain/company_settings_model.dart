@@ -43,6 +43,17 @@ class CompanySettingsModel {
     };
   }
 
+  /// Lấy giờ bắt đầu ca -- mirror mobile's company_settings_model.dart, giữ
+  /// đồng bộ theo CLAUDE.md (shared contract giữa 2 app).
+  String getShiftStartTime(String shift) {
+    return shift == 'day' ? dayShiftStart : nightShiftStart;
+  }
+
+  /// Lấy giờ kết thúc ca
+  String getShiftEndTime(String shift) {
+    return shift == 'day' ? dayShiftEnd : nightShiftEnd;
+  }
+
   factory CompanySettingsModel.fromFirestore(DocumentSnapshot doc) {
     final map = doc.data() as Map<String, dynamic>;
     return CompanySettingsModel(

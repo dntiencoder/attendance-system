@@ -67,7 +67,7 @@ class ExportService {
         ..cellStyle = dataStyle;
 
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: rowIndex))
-        ..value = TextCellValue('${log.distance.round()}m')
+        ..value = TextCellValue(log.checkIn == null ? '-' : '${log.distance.round()}m')
         ..cellStyle = dataStyle;
 
       // Logic riêng cho cột Trạng thái (Màu sắc theo lỗi)
@@ -75,7 +75,10 @@ class ExportService {
       String statusText = 'Đúng giờ';
       String statusColor = '#16A34A'; // Xanh lá
 
-      if (log.isLate && log.isEarlyLeave) {
+      if (log.status == 'absent') {
+        statusText = 'Vắng mặt';
+        statusColor = '#DC2626'; // Đỏ
+      } else if (log.isLate && log.isEarlyLeave) {
         statusText = 'Muộn & Về sớm';
         statusColor = '#9333EA'; // Tím
       } else if (log.isLate) {
@@ -115,6 +118,7 @@ class ExportService {
     // Tính toán thống kê nhanh
     final totalAttendance = logs.where((e) => e.checkIn != null).length;
     final totalLate = logs.where((e) => e.isLate).length;
+    final totalAbsent = logs.where((e) => e.status == 'absent').length;
     final totalEmployees = logs.map((e) => e.uid).toSet().length;
 
     pdf.addPage(
@@ -161,7 +165,7 @@ class ExportService {
               _summaryCard('$totalEmployees', 'Tổng nhân viên'),
               _summaryCard('$totalAttendance', 'Lượt chấm công'),
               _summaryCard('$totalLate', 'Lượt đi muộn'),
-              _summaryCard('0', 'Ngày vắng'),
+              _summaryCard('$totalAbsent', 'Ngày vắng'),
             ],
           ),
           pw.SizedBox(height: 20),
@@ -184,9 +188,9 @@ class ExportService {
                 log.shift == 'day' ? 'Ngày' : 'Đêm',
                 log.checkIn != null ? DateHelper.toTimeString(log.checkIn!) : '--:--',
                 log.checkOut != null ? DateHelper.toTimeString(log.checkOut!) : '--:--',
-                '${log.calculatedWorkHours.toStringAsFixed(1)}h',
-                '${log.distance.round()}m',
-                log.isLate ? 'Đi muộn' : 'Đúng giờ',
+                log.hasCheckedOut ? '${log.calculatedWorkHours.toStringAsFixed(1)}h' : '-',
+                log.checkIn == null ? '-' : '${log.distance.round()}m',
+                log.status == 'absent' ? 'Vắng mặt' : (log.isLate ? 'Đi muộn' : 'Đúng giờ'),
               ];
             }),
             cellAlignment: pw.Alignment.center,

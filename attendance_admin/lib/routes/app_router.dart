@@ -33,28 +33,34 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/dashboard',
-            builder: (context, state) => const DashboardScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DashboardScreen()),
           ),
           GoRoute(
             path: '/employees',
-            builder: (context, state) => const EmployeeScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: EmployeeScreen()),
           ),
           GoRoute(
             path: '/attendance',
-            builder: (context, state) => const AttendanceScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: AttendanceScreen()),
           ),
           GoRoute(
             path: '/leave',
-            builder: (context, state) => const LeaveScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: LeaveScreen()),
           ),
           GoRoute(
             path: '/settings',
-            builder: (context, state) => const SettingsScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: SettingsScreen()),
           ),
           // FEAT-05: Lịch sử thiết bị — đóng vai trò Activation History.
           GoRoute(
             path: '/device-audit-log',
-            builder: (context, state) => const DeviceAuditLogScreen(),
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: DeviceAuditLogScreen()),
           ),
           // Route ẩn để seed dữ liệu phòng ban — chỉ có trong debug build,
           // không được đăng ký ở bản production (P1-06).
