@@ -82,7 +82,10 @@ flutter_native_splash:
   web: true
   android_12:
     color: "#FFFFFF"
-    image: "assets/app_icon_source.png"
+    # Android 12+ SplashScreen API masks the icon into a fixed-size safe
+    # zone — a full-bleed image gets clipped, so use a version with extra
+    # padding around the logo instead of app_icon_source.png.
+    image: "assets/splash_icon_android12.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -98,6 +101,7 @@ flutter:
   assets:
     - assets/logo_umc.jpg
     - assets/app_icon_source.png
+    - assets/splash_icon_android12.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
