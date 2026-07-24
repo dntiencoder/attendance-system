@@ -1,11 +1,11 @@
 {
-    "name": "attendance_admin",
-    "short_name": "attendance_admin",
+    "name": "UMC Admin",
+    "short_name": "UMC Admin",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#C8102E",
+    "description": "Trang quản trị chấm công UMC Việt Nam.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -4,7 +4,7 @@
     <!-- allowBackup=false: FEAT-05 installId (flutter_secure_storage) không được
          phép nhân bản sang máy khác qua Auto Backup — xem docs/design/ANTI_FRAUD_DESIGN.md §2.3 -->
     <application
-        android:label="attendance_app"
+        android:label="UMC Chấm Công"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false">
