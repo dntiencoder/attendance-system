@@ -34,7 +34,7 @@
 ## Manual Test
 
 ```
-☐ docs/testing/01_TEST_PLAN.md — toàn bộ mục B, C, D, E ở trạng thái Pass (không còn "Chưa chạy"/"Fail")
+☐ docs/testing/01_TEST_PLAN.md — toàn bộ mục B, C, D, E ở trạng thái Pass (không còn "Chưa chạy"/"Fail") — ngoại trừ ~~TD01-03~~ **Blocked có chủ đích** (quyết định 2026-07-24, không có thiết bị thứ 2), không chặn Release
 ☐ ~~RG-04 (docs/testing/01_TEST_PLAN.md) — đã chạy ít nhất 1 lượt bằng thời gian thực, không chỉ Demo Time~~ — **Skipped có chủ đích** (quyết định 2026-07-23, xem `01_TEST_PLAN.md`), không chặn Release
 ```
 

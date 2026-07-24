@@ -57,7 +57,7 @@ Khuyến nghị dùng Demo Time System (`ClockService`, Fast Forward/Rewind) đ�
 | TD01-02 | Double tap nút Check In thật nhanh | như trên | bấm 2 lần liên tiếp nhanh | chỉ 1 lần thành công, lần kia nhận đúng lỗi "Bạn đã Check In hôm nay rồi" — không ghi đè âm thầm | **Pass** (2026-07-22, thiết bị thật, tín hiệu GPS tốt) — đóng nốt BUG-014: xác nhận nguyên nhân timeout trước đây là do tín hiệu yếu, không phải do `runTransaction()` xử lý sai khi đụng độ 2 request |
 | TD01-04 | Ngắt mạng đúng lúc gọi transaction | GPS đã lấy xong, tắt mạng trước khi bấm xác nhận cuối | Check In | "Không có kết nối Internet. Vui lòng kết nối mạng trước khi Check In." — không có document rác | **Pass** (2026-07-23, thiết bị thật) — đúng thông báo, không tạo document rác |
 | TD01-08 | Check In khi thiết bị offline hoàn toàn | tắt mạng trước khi mở app | Check In | lỗi rõ ràng ngay, không "thành công giả" rồi đồng bộ ngầm | **Pass** (2026-07-23, thiết bị thật) — lỗi rõ ràng ngay, không có "thành công giả" hay document rác sau khi bật mạng lại |
-| TD01-03 | 2 request gần như đồng thời | 2 thiết bị/phiên cùng tài khoản | Check In gần như cùng lúc trên cả 2 | đúng 1 thành công, 1 báo lỗi nghiệp vụ | **Blocked** — không có thiết bị thứ 2 để test, để lại làm việc tồn đọng |
+| TD01-03 | 2 request gần như đồng thời | 2 thiết bị/phiên cùng tài khoản | Check In gần như cùng lúc trên cả 2 | đúng 1 thành công, 1 báo lỗi nghiệp vụ | **Blocked** (2026-07-24, theo quyết định của bạn — không có thiết bị thứ 2, chấp nhận Blocked, không chặn Release; bảo vệ tầng backend đã có `runTransaction()`, xem TD-01) |
 
 ## C. Manual Test — Rotation / Business Date
 
